@@ -58,12 +58,6 @@ commands:
   chopper:
     description: Enable or disable hoppers on a protection
     usage: /<command> <on|off>
-  cmagnet:
-    description: Enable or disable the magnet flag on an inventory protection, which makes it pick up items automatically around it.
-    usage: /<command> <on|off>
-  cdroptransfer:
-    description: Configure drop transferring (allows you to transfer to a selected chest by dropping items.)
-    usage: /<command> <select|on|off>
   cpersist:
     description: Toggle command persistence which allows you to use commands without retyping the command (e.g /cprivate)
     usage: /<command>
