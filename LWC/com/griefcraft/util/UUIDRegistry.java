@@ -177,5 +177,19 @@ public class UUIDRegistry {
             return name;
         }
     }
+    
+    public static String getNameOrUUID(String name) {
+        if (isValidUUID(name)) {
+            String formattedName = getName(UUID.fromString(name));
+
+            if (formattedName == null) {
+                return "Unknown (" + name + ")";
+            } else {
+                return formattedName;
+            }
+        } else {
+            return name;
+        }
+    }
 
 }

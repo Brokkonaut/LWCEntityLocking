@@ -967,7 +967,7 @@ public class Protection {
             lastAccessed += " ago";
         }
 
-        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Owner=%s Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockId)) : "Not yet cached"), id, owner, world, x, y, z, creation, flagStr, lastAccessed);
+        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockId)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
     }
 
     /**

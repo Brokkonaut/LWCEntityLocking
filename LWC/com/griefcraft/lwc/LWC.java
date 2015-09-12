@@ -683,7 +683,7 @@ public class LWC {
 
 			// check that they aren't an admin and if they are, they need to be
 			// the owner of the protection or have access through /cmodify
-			if (protection.isOwner(player)
+			if (protection.isRealOwner(player)
 					|| protection.getAccess(player.getName(),
 							Permission.Type.PLAYER) != Permission.Access.NONE) {
 				protection.setLastAccessed(timestamp);
@@ -707,7 +707,7 @@ public class LWC {
 				if (protection.isRealOwner(player)) {
 					owner = parser.parseMessage("you");
 				} else {
-					owner = protection.getFormattedOwnerPlayerName();
+					owner = UUIDRegistry.getNameOrUUID(protection.getOwner());
 				}
 
 				String blockName = materialToString(block);
