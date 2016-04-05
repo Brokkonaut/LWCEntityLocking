@@ -40,6 +40,7 @@ import com.griefcraft.util.matchers.WallMatcher;
 
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -140,7 +141,7 @@ public class DoorsModule extends JavaModule {
         }
 
         // toggle the other side of the door open
-        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || block.getType() == Material.TRAP_DOOR);
+        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || DoorMatcher.TRAP_DOORS.contains(block.getType()));
         changeDoorStates(true, (opensWhenClicked ? null : block) /* opens when clicked */, doubleDoorBlock);
 
         if (action == Action.OPEN_AND_CLOSE || protection.hasFlag(Flag.Type.AUTOCLOSE)) {
@@ -199,7 +200,23 @@ public class DoorsModule extends JavaModule {
             door.setData((byte) (door.getData() ^ 0x4));
 
             // Play the door open/close sound
-            door.getWorld().playEffect(door.getLocation(), Effect.DOOR_TOGGLE, 0);
+            // door.getWorld().playEffect(door.getLocation(), Effect.DOOR_TOGGLE, 0);
+            Sound s = null;
+            System.out.println(door.getType());
+            switch (door.getType()) {
+                case IRON_DOOR_BLOCK:
+                    s = Sound.BLOCK_IRON_DOOR_OPEN;
+                    break;
+                case IRON_TRAPDOOR:
+                    s = Sound.BLOCK_IRON_TRAPDOOR_OPEN;
+                    break;
+                default:
+                    s = Sound.BLOCK_WOODEN_DOOR_OPEN;
+
+            }
+            if (s != null) {
+                door.getWorld().playSound(door.getLocation(), s, 1, 1);
+            }
 
             // Only change the block above it if it is something we can open or close
             if (isValid(topHalf.getType())) {

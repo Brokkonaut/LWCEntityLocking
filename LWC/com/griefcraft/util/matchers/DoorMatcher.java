@@ -47,7 +47,7 @@ import java.util.Set;
 public class DoorMatcher implements ProtectionFinder.Matcher {
 
     public static final Set<Material> PROTECTABLES_DOORS = EnumSet.of(Material.WOODEN_DOOR, Material.IRON_DOOR_BLOCK);
-    public static final Set<Material> WOODEN_DOORS = EnumSet.of(Material.WOODEN_DOOR); // doors that open when clicked
+    public static final Set<Material> WOODEN_DOORS = EnumSet.of(Material.WOODEN_DOOR, Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.DARK_OAK_DOOR, Material.JUNGLE_DOOR, Material.SPRUCE_DOOR); // doors that open when clicked
     public static final Set<Material> PRESSURE_PLATES = EnumSet.of(Material.STONE_PLATE, Material.WOOD_PLATE);
     public static final Set<Material> FENCE_GATES = EnumSet.of(Material.FENCE_GATE);
     public static final Set<Material> TRAP_DOORS = EnumSet.of(Material.TRAP_DOOR);

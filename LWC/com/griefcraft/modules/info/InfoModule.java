@@ -62,7 +62,7 @@ public class InfoModule extends JavaModule {
 
         lwc.sendLocale(player, "lwc.info", "owner", protection.getFormattedOwnerPlayerName(), "type", type);
 
-        if (event.canAdmin()) {
+//        if (event.canAdmin()) {
             if (protection.getType() == Protection.Type.PRIVATE || protection.getType() == Protection.Type.DONATION) {
                 lwc.sendLocale(player, "lwc.acl", "size", protection.getPermissions().size());
                 int index = 0;
@@ -75,18 +75,22 @@ public class InfoModule extends JavaModule {
                     index ++;
                 }
 
-                if (index == 0) {
+                if (index == 0 && event.canAdmin()) {
                     lwc.sendLocale(player, "lwc.acl.empty");
                 } else if (index >= 9) {
                     lwc.sendLocale(player, "lwc.acl.limitreached");
                 }
-
-                player.sendMessage("");
+                if (index > 0)
+                {
+                    player.sendMessage("");
+                }
             }
-        }
+//        }
 
         if (lwc.isAdmin(player)) {
             lwc.sendLocale(player, "protection.interact.info.raw", "raw", protection.toString());
+        } else {
+            player.sendMessage(protection.toShortString());
         }
 
         lwc.removeModes(player);

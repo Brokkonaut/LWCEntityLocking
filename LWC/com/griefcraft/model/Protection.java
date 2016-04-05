@@ -28,6 +28,7 @@
 
 package com.griefcraft.model;
 
+import com.griefcraft.bukkit.NMS;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
@@ -933,6 +934,9 @@ public class Protection {
         if (cachedBlock != null) {
             return cachedBlock;
         }
+        if(getBlockId() >= NMS.ENTITY_BLOCK_ID){
+            return null;
+        }
 
         World world = getBukkitWorld();
 
@@ -968,6 +972,17 @@ public class Protection {
         }
 
         return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockId)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
+    }
+    
+    public String toShortString() {
+        // format the last accessed time
+        String lastAccessed = TimeUtil.timeToString((System.currentTimeMillis() / 1000L) - this.lastAccessed);
+
+        if (!lastAccessed.equals("Not yet known")) {
+            lastAccessed += " ago";
+        }
+
+        return String.format(Colors.Green + "Created: %s; LastAccessed: %s", creation, lastAccessed);
     }
 
     /**
