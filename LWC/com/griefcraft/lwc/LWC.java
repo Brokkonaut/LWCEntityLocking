@@ -1560,6 +1560,9 @@ public class LWC {
 	 */
 	@SuppressWarnings("deprecation")
 	public String resolveProtectionConfiguration(Block block, String node) {
+	    if(block == null) {
+	        return null;
+	    }
 		Material material = block.getType();
 		if (material == null) {
 			return null;
