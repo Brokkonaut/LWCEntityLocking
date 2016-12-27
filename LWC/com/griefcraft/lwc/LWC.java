@@ -1685,8 +1685,6 @@ public class LWC {
 			currency = new VaultCurrency();
 		}
 
-		plugin.getUpdater().init();
-
 		log("Connecting to " + Database.DefaultType);
 		try {
 			if (!physicalDatabase.connect()) {

@@ -58,10 +58,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -86,124 +86,120 @@ public class LWCPlayerListener implements Listener {
 	/**
 	 * The plugin instance
 	 */
-	private static LWCPlugin plugin;
+	private LWCPlugin plugin;
 
 	public LWCPlayerListener(LWCPlugin plugin) {
-		LWCPlayerListener.plugin = plugin;
+		this.plugin = plugin;
 	}
 
     @EventHandler
-	public void hangingBreakByEvent(HangingBreakByEntityEvent event) {
-		Entity entity = event.getEntity();
-		int A = 50000 + entity.getUniqueId().hashCode();
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		if (event.getRemover() instanceof Projectile && protection != null) {
-			event.setCancelled(true);
-		}
-		if (event.getRemover() instanceof Player) {
-			Player p = (Player) event.getRemover();
-			if (onPlayerEntityInteract(p, entity, event.isCancelled())) {
-				event.setCancelled(true);
-			}
-			if (protection != null && !event.isCancelled()) {
-				boolean canAccess = lwc.canAdminProtection(p, protection);
-				if (canAccess) {
-					protection.remove();
-					return;
-				}
-				event.setCancelled(true);
-			}
-		}
-	}
+    public void hangingBreakByEvent(HangingBreakByEntityEvent event) {
+        Entity entity = event.getEntity();
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection == null) {
+            return;
+        }
+        if (event.getRemover() instanceof Player) {
+            Player p = (Player) event.getRemover();
+            if (onPlayerEntityInteract(p, entity, event.isCancelled())) {
+                event.setCancelled(true);
+            }
+            if (!event.isCancelled()) {
+                boolean canAccess = lwc.canAdminProtection(p, protection);
+                if (canAccess) {
+                    protection.remove();
+                    return;
+                }
+                event.setCancelled(true);
+            }
+        } else {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	public void minecartBreak(VehicleDestroyEvent e) {
-		Entity entity = e.getVehicle();
-		int A = 50000 + entity.getUniqueId().hashCode();
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		if ((((entity instanceof StorageMinecart)) || ((entity instanceof HopperMinecart)))
-				&& (protection != null)) {
-			if (e.getAttacker() instanceof Projectile) {
-				e.setCancelled(true);
-			}
-			Player p = (Player) e.getAttacker();
-			boolean canAccess = lwc.canAdminProtection(p, protection);
-			if (canAccess)
-				return;
-			e.setCancelled(true);
-		}
-	}
+    @EventHandler
+    public void onMinecartBreak(VehicleDestroyEvent e) {
+        Entity entity = e.getVehicle();
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection != null) {
+            if (e.getAttacker() instanceof Projectile) {
+                e.setCancelled(true);
+            }
+            Player p = (Player) e.getAttacker();
+            if (!e.isCancelled() && !lwc.canAdminProtection(p, protection)) {
+                e.setCancelled(true);
+            }
+        }
+    }
 
-	@EventHandler
-	public void hangingBreak(HangingBreakEvent event) {
-		Entity entity = event.getEntity();
-		int A = 50000 + entity.getUniqueId().hashCode();
+    @EventHandler
+    public void onHangingBreak(HangingBreakEvent event) {
+        if (event instanceof HangingBreakByEntityEvent) {
+            return;
+        }
+        Entity entity = event.getEntity();
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
 
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		if (protection != null) {
-			if (event.getCause() == RemoveCause.PHYSICS
-					|| event.getCause() == RemoveCause.EXPLOSION) {
-				event.setCancelled(true);
-			}
-		}
-	}
+    @EventHandler
+    public void onProtectedEntityDamage(EntityDamageEvent e) {
+        Entity entity = e.getEntity();
+        if (entity instanceof Player || e instanceof EntityDamageByEntityEvent) {
+            return;
+        }
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection != null) {
+            e.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	public void itemFrameItemRemoval(EntityDamageByEntityEvent e) {
-		Entity entity = e.getEntity();
-		int A = 50000 + entity.getUniqueId().hashCode();
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		if (entity instanceof Player) {
-			return;
-		}
-		if (e.getDamager() instanceof Projectile) {
-			if (protection != null) {
-				e.setCancelled(true);
-			}
-			if ((((entity instanceof StorageMinecart)) || ((entity instanceof HopperMinecart)))
-					&& (protection != null)) {
-				e.setCancelled(true);
-			}
-		}
-		if (e.getDamager() instanceof Player) {
-			Player p = (Player) e.getDamager();
-			if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
-				e.setCancelled(true);
-			}
-			if (protection != null) {
-				boolean canAccess = lwc.canAdminProtection(p, protection);
-				if (canAccess)
-					return;
-				e.setCancelled(true);
+    @EventHandler
+    public void onProtectedEntityDamageByEntity(EntityDamageByEntityEvent e) {
+        Entity entity = e.getEntity();
+        if (entity instanceof Player) {
+            return;
+        }
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection == null) {
+            return;
+        }
+        if (e.getDamager() instanceof Player) {
+            Player p = (Player) e.getDamager();
+            if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+                e.setCancelled(true);
+            }
+            if (!e.isCancelled() && !lwc.canAdminProtection(p, protection)) {
+                e.setCancelled(true);
+            }
+        } else {
+            e.setCancelled(true);
+        }
+    }
 
-			}
-			if ((((entity instanceof StorageMinecart)) || ((entity instanceof HopperMinecart)))
-					&& (protection != null)) {
-				e.setCancelled(true);
-			}
-		}
-	}
+    @EventHandler
+    public void onDeath(EntityDeathEvent e) {
+        Entity entity = e.getEntity();
+        int A = 50000 + entity.getUniqueId().hashCode();
 
-	@EventHandler
-	public void onDeath(EntityDeathEvent e) {
-		Entity entity = e.getEntity();
-		int A = 50000 + entity.getUniqueId().hashCode();
-
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		if (protection != null) {
-			protection.remove();
-		}
-	}
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection != null) {
+            protection.remove();
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
@@ -211,42 +207,39 @@ public class LWCPlayerListener implements Listener {
         int A = 50000 + entity.getUniqueId().hashCode();
 
         LWC lwc = LWC.getInstance();
-        Protection protection = lwc.getPhysicalDatabase().loadProtection(
-                entity.getWorld().getName(), A, A, A);
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection == null) {
+            return;
+        }
         Player p = e.getPlayer();
-        boolean canAccess = lwc.canAccessProtection(p, protection);
         if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
             e.setCancelled(true);
         }
-        if (protection != null) {
-            if (canAccess)
-                return;
+        if (!e.isCancelled() && !lwc.canAccessProtection(p, protection)) {
             e.setCancelled(true);
         }
     }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onEntityInteract(PlayerInteractEntityEvent e) {
-		Entity entity = e.getRightClicked();
-		int A = 50000 + entity.getUniqueId().hashCode();
-
-		LWC lwc = LWC.getInstance();
-		Protection protection = lwc.getPhysicalDatabase().loadProtection(
-				entity.getWorld().getName(), A, A, A);
-		Player p = e.getPlayer();
-		boolean canAccess = lwc.canAccessProtection(p, protection);
-		if (entity instanceof Player) {
-			return;
-		}
-		if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
-			e.setCancelled(true);
-		}
-		if (protection != null) {
-			if (canAccess)
-				return;
-			e.setCancelled(true);
-		}
-	}
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityInteract(PlayerInteractEntityEvent e) {
+        Entity entity = e.getRightClicked();
+        if (entity instanceof Player) {
+            return;
+        }
+        int A = 50000 + entity.getUniqueId().hashCode();
+        LWC lwc = LWC.getInstance();
+        Protection protection = lwc.getPhysicalDatabase().loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection == null) {
+            return;
+        }
+        Player p = e.getPlayer();
+        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+            e.setCancelled(true);
+        }
+        if (!lwc.canAccessProtection(p, protection)) {
+            e.setCancelled(true);
+        }
+    }
 
 	@EventHandler
 	public void storageMinecraftInventoryOpen(InventoryOpenEvent event) {
@@ -262,7 +255,7 @@ public class LWCPlayerListener implements Listener {
 		}
 	}
 
-	public static boolean onPlayerEntityInteract(Player player, Entity entity,
+	private boolean onPlayerEntityInteract(Player player, Entity entity,
 			boolean cancelled) {
 		String p = plugin.getServer().getClass().getPackage().getName();
 		p.substring(p.lastIndexOf('.') + 1);

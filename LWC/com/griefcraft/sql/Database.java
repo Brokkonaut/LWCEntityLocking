@@ -29,19 +29,8 @@
 package com.griefcraft.sql;
 
 
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.scripting.ModuleException;
-import com.griefcraft.util.Statistics;
-import com.griefcraft.util.Updater;
-import com.griefcraft.util.config.Configuration;
-
-import org.bukkit.Bukkit;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -49,22 +38,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.griefcraft.lwc.LWC;
+import com.griefcraft.scripting.ModuleException;
+import com.griefcraft.util.Statistics;
+import com.griefcraft.util.config.Configuration;
+
 public abstract class Database {
 
     public enum Type {
-        MySQL("mysql.jar"), //
-        SQLite("sqlite.jar"), //
-        NONE("nil"); //
-
-        private String driver;
-
-        Type(String driver) {
-            this.driver = driver;
-        }
-
-        public String getDriver() {
-            return driver;
-        }
+        MySQL, //
+        SQLite, //
+        NONE; //
 
         /**
          * Match the given string to a database type
@@ -216,25 +200,12 @@ public abstract class Database {
             return false;
         }
 
-        // load the database jar
-        ClassLoader classLoader;
-
-        if (currentType == Type.SQLite) {
-            classLoader = new URLClassLoader(new URL[]{new URL("jar:file:" + new File(Updater.DEST_LIBRARY_FOLDER + currentType.getDriver()).getPath() + "!/")});
-        } else {
-            classLoader = Bukkit.getServer().getClass().getClassLoader();
-        }
-
-        // What class should we try to load?
-        String className = "";
-        if (currentType == Type.MySQL) {
-            className = "com.mysql.jdbc.Driver";
-        } else {
-            className = "org.sqlite.JDBC";
-        }
-
         // Load the driver class
-        Driver driver = (Driver) classLoader.loadClass(className).newInstance();
+        if (currentType == Type.MySQL) {
+            Class.forName("com.mysql.jdbc.Driver");
+        } else {
+            Class.forName("org.sqlite.JDBC");
+        }
 
         // Create the properties to pass to the driver
         Properties properties = new Properties();
@@ -249,7 +220,7 @@ public abstract class Database {
 
         // Connect to the database
         try {
-            connection = driver.connect("jdbc:" + currentType.toString().toLowerCase() + ":" + getDatabasePath(), properties);
+            connection = DriverManager.getConnection("jdbc:" + currentType.toString().toLowerCase() + ":" + getDatabasePath(), properties);
             connected = true;
             return true;
         } catch (SQLException e) {

@@ -56,7 +56,7 @@ public class DatabaseThread implements Runnable {
     /**
      * If the database thread is active and running
      */
-    private boolean running = false;
+    private volatile boolean running = false;
 
     /**
      * The last time the queue was flushed to the database
