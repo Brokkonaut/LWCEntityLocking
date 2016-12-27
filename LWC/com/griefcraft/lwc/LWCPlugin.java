@@ -35,7 +35,6 @@ import com.griefcraft.listeners.LWCServerListener;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.sql.Database;
 import com.griefcraft.util.StringUtil;
-import com.griefcraft.util.Updater;
 import com.griefcraft.util.locale.LWCResourceBundle;
 import com.griefcraft.util.locale.LocaleClassLoader;
 import com.griefcraft.util.locale.UTF8Control;
@@ -67,11 +66,6 @@ public class LWCPlugin extends JavaPlugin {
 	 * The message parser to parse messages with
 	 */
 	private MessageParser messageParser;
-
-	/**
-	 * LWC updater
-	 */
-	private Updater updater;
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command,
@@ -205,7 +199,6 @@ public class LWCPlugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		preload();
 		lwc = new LWC(this);
 
 		LWCInfo.setVersion(getDescription().getVersion());
@@ -300,19 +293,6 @@ public class LWCPlugin extends JavaPlugin {
 	}
 
 	/**
-	 * Load shared libraries and other misc things
-	 */
-	private void preload() {
-		updater = new Updater();
-		// Set the SQLite native library path
-		String nativeLibraryFolder = updater.getOSSpecificFolder();
-
-		if (nativeLibraryFolder != null) {
-			System.setProperty("org.sqlite.lib.path", nativeLibraryFolder);
-		}
-	}
-
-	/**
 	 * Log a string to the console
 	 *
 	 * @param str
@@ -353,13 +333,6 @@ public class LWCPlugin extends JavaPlugin {
 	 */
 	public MessageParser getMessageParser() {
 		return messageParser;
-	}
-
-	/**
-	 * @return the Updater instance
-	 */
-	public Updater getUpdater() {
-		return updater;
 	}
 
 	@Override

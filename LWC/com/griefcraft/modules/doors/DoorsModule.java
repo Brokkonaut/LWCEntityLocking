@@ -28,6 +28,9 @@
 
 package com.griefcraft.modules.doors;
 
+import java.util.HashSet;
+import java.util.UUID;
+
 import com.griefcraft.bukkit.StorageNMS;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Flag;
@@ -38,7 +41,6 @@ import com.griefcraft.util.config.Configuration;
 import com.griefcraft.util.matchers.DoorMatcher;
 import com.griefcraft.util.matchers.WallMatcher;
 
-import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -83,17 +85,29 @@ public class DoorsModule extends JavaModule {
      * The current action to use, default to toggling the door open and closed
      */
     private Action action = Action.TOGGLE;
+    
+    private HashSet<UUID> hasInteractedThisTick;
 
     @Override
     public void load(LWC lwc) {
         this.lwc = lwc;
+        this.hasInteractedThisTick = new HashSet<UUID>();
+        lwc.getPlugin().getServer().getScheduler().scheduleSyncRepeatingTask(lwc.getPlugin(), new Runnable() {
+            
+            @Override
+            public void run() {
+                if(!hasInteractedThisTick.isEmpty()) {
+                    hasInteractedThisTick.clear();
+                }
+            }
+        }, 1, 1);
         loadAction();
     }
 
     @SuppressWarnings("deprecation")
 	@Override
     public void onProtectionInteract(LWCProtectionInteractEvent event) {
-        if (event.getResult() == Result.CANCEL || !isEnabled()) {
+        if (event.getResult() == Result.CANCEL || !isEnabled() || event.getEvent().getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
@@ -139,9 +153,13 @@ public class DoorsModule extends JavaModule {
                 }
             }
         }
+        
+        if(!hasInteractedThisTick.add(event.getPlayer().getUniqueId())) {
+            return;
+        }
 
         // toggle the other side of the door open
-        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || DoorMatcher.TRAP_DOORS.contains(block.getType()));
+        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || block.getType().equals(Material.TRAP_DOOR));
         changeDoorStates(true, (opensWhenClicked ? null : block) /* opens when clicked */, doubleDoorBlock);
 
         if (action == Action.OPEN_AND_CLOSE || protection.hasFlag(Flag.Type.AUTOCLOSE)) {
@@ -186,8 +204,9 @@ public class DoorsModule extends JavaModule {
                 continue;
             }
 
+            boolean wasClosed = (door.getData() & 0x4) == 0;
             // If we aren't allowing the door to open, check if it's already closed
-            if (!allowDoorToOpen && (door.getData() & 0x4) == 0) {
+            if (!allowDoorToOpen && wasClosed) {
                 // The door is already closed and we don't want to open it
                 // the bit 0x4 is set when the door is open
                 continue;
@@ -202,17 +221,17 @@ public class DoorsModule extends JavaModule {
             // Play the door open/close sound
             // door.getWorld().playEffect(door.getLocation(), Effect.DOOR_TOGGLE, 0);
             Sound s = null;
-            System.out.println(door.getType());
-            switch (door.getType()) {
-                case IRON_DOOR_BLOCK:
-                    s = Sound.BLOCK_IRON_DOOR_OPEN;
-                    break;
-                case IRON_TRAPDOOR:
-                    s = Sound.BLOCK_IRON_TRAPDOOR_OPEN;
-                    break;
-                default:
-                    s = Sound.BLOCK_WOODEN_DOOR_OPEN;
-
+            Material type = door.getType();
+            if (DoorMatcher.WOODEN_DOORS.contains(type)) {
+                s = wasClosed ? Sound.BLOCK_WOODEN_DOOR_OPEN : Sound.BLOCK_WOODEN_DOOR_CLOSE;
+            } else if (DoorMatcher.PROTECTABLES_DOORS.contains(type)) {
+                s = wasClosed ? Sound.BLOCK_IRON_DOOR_OPEN : Sound.BLOCK_IRON_DOOR_CLOSE;
+            } else if (DoorMatcher.FENCE_GATES.contains(type)) {
+                s = wasClosed ? Sound.BLOCK_FENCE_GATE_OPEN : Sound.BLOCK_FENCE_GATE_CLOSE;
+            } else if (type == Material.IRON_TRAPDOOR) {
+                s = wasClosed ? Sound.BLOCK_IRON_TRAPDOOR_OPEN : Sound.BLOCK_IRON_TRAPDOOR_CLOSE;
+            } else if (DoorMatcher.TRAP_DOORS.contains(type)) {
+                s = wasClosed ? Sound.BLOCK_WOODEN_TRAPDOOR_OPEN : Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE;
             }
             if (s != null) {
                 door.getWorld().playSound(door.getLocation(), s, 1, 1);
