@@ -1236,7 +1236,7 @@ public class PhysDB extends Database {
 			protection.removeCache();
 
 			// if history logging is enabled, create it
-			if (LWC.getInstance().isHistoryEnabled() && protection != null) {
+			if (LWC.getInstance().isHistoryEnabled()) {
 				History transaction = protection.createHistoryObject();
 
 				transaction.setPlayer(player);
@@ -1251,10 +1251,8 @@ public class PhysDB extends Database {
 			}
 
 			// Cache it
-			if (protection != null) {
-				cache.addProtection(protection);
-				protectionCount++;
-			}
+			cache.addProtection(protection);
+			protectionCount++;
 
 			// return the newly created protection
 			return protection;
