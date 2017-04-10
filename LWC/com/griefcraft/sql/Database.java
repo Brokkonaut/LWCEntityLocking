@@ -189,7 +189,6 @@ public abstract class Database {
      *
      * @return if the connection was succesful
      */
-    @SuppressWarnings("resource")
 	public boolean connect() throws Exception {
         if (connection != null) {
             return true;

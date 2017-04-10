@@ -81,7 +81,7 @@ public class ConfigUpdater {
         // Begin loading the files
         Enumeration<? extends ZipEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
-            ZipEntry file = (ZipEntry) entries.nextElement();
+            ZipEntry file = entries.nextElement();
             String name = file.getName();
 
             // We only want config dir

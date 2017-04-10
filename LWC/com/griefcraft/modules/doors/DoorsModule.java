@@ -155,6 +155,7 @@ public class DoorsModule extends JavaModule {
         }
         
         if(!hasInteractedThisTick.add(event.getPlayer().getUniqueId())) {
+            event.getEvent().setCancelled(true);
             return;
         }
 
