@@ -40,14 +40,12 @@ import com.griefcraft.util.Colors;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -57,7 +55,7 @@ public class AdminCleanup extends JavaModule {
     /**
      * The amount of protection block gets to batch at once
      */
-    private static int BATCH_SIZE = 250;
+    private static int BATCH_SIZE = 100;
 
     @SuppressWarnings("deprecation")
 	@Override
@@ -153,12 +151,9 @@ public class AdminCleanup extends JavaModule {
         }
 
         public void run() {
-            List<Integer> toRemove = new LinkedList<Integer>();
+            List<Integer> toRemove = new ArrayList<Integer>();
             int removed = 0;
             int percentChecked = 0;
-
-            // the bukkit scheduler
-            BukkitScheduler scheduler = Bukkit.getScheduler();
 
             try {
                 sender.sendMessage(Colors.Red + "Processing cleanup request now in a separate thread");
@@ -179,92 +174,64 @@ public class AdminCleanup extends JavaModule {
                 Statement resultStatement = database.getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
                 if (lwc.getPhysicalDatabase().getType() == Database.Type.MySQL) {
-                    resultStatement.setFetchSize(Integer.MIN_VALUE);
+                    resultStatement.setFetchSize(BATCH_SIZE);
                 }
 
                 String prefix = lwc.getPhysicalDatabase().getPrefix();
-                ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections");
+                ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed, x>>4 AS xshift4,z>>4 AS zshift4 FROM " + prefix + "protections ORDER BY xshift4,zshift4");
                 int checked = 0;
 
                 while (result.next()) {
                     final Protection tprotection = database.resolveProtection(result);
 
-                    if (protections.size() != BATCH_SIZE) {
-                        // Wait until we have BATCH_SIZE protections
-                        protections.add(tprotection);
-
-                        if (protections.size() != totalProtections) {
-                            continue;
-                        }
+                    protections.add(tprotection);
+                    // Wait until we have BATCH_SIZE protections
+                    if (protections.size() < BATCH_SIZE && !result.isLast()) {
+                        continue;
                     }
 
-                    // Get all of the blocks in the world
-                    Future<Void> getBlocks = scheduler.callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
-                        public Void call() throws Exception {
+                    // Check the blocks
+                    Future<ArrayList<Integer>> getBlocks = Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<ArrayList<Integer>>() {
+                        public ArrayList<Integer> call() throws Exception {
+                            ArrayList<Integer> toRemove = null;
                             for (Protection protection : protections) {
-                                protection.getBlock(); // this will cache it also :D
+                                Block block = protection.getBlock(); // load the block
+
+                                if (protection.getBlockId() >= NMS.ENTITY_BLOCK_ID) {
+                                    // entity cleanup?
+                                } else {
+                                    // remove protections not found in the world
+                                    if (block == null || !lwc.isProtectable(block)) {
+                                        if (toRemove == null) {
+                                            toRemove = new ArrayList<Integer>();
+                                        }
+                                        toRemove.add(protection.getId());
+
+                                        if (!silent) {
+                                            lwc.sendLocale(sender, "protection.admin.cleanup.removednoexist", "protection", protection.toString());
+                                        }
+                                    }
+                                }
                             }
 
-                            return null;
+                            return toRemove;
                         }
                     });
 
                     // Get all of the blocks
-                    getBlocks.get();
-
-                    for (final Protection protection : protections) {
-                        if (protection.getBlockId() >= NMS.ENTITY_BLOCK_ID) {
-//							final int fakeId = protection.getX()
-//									- NMS.POSITION_OFFSET;
-//
-//                            // checks if the entity exists
-//                            Future<Boolean> entityExists = scheduler.callSyncMethod(lwc.getPlugin(), new Callable<Boolean>() {
-//                                public Boolean call() throws Exception {
-//                                    for (Entity entity : protection.getBlock().getWorld().getEntities()) {
-//                                        if (entity.getUniqueId().hashCode() == fakeId) {
-//                                            return true;
-//                                        }
-//                                    }
-//
-//                                    return false;
-//                                }
-//                            });
-//
-//                            try {
-//                                boolean exists = entityExists.get();
-//
-//                                if (!exists) {
-//                                    toRemove.add(protection.getId());
-//                                    removed ++;
-//
-//                                    if (!silent) {
-//                                        lwc.sendLocale(sender, "protection.admin.cleanup.removednoexist", "protection", protection.toString());
-//                                    }
-//                                }
-//                            } catch (InterruptedException e) { }
-                        } else {
-                            Block block = protection.getBlock();
-
-                            // remove protections not found in the world
-                            if (block == null || !lwc.isProtectable(block)) {
-                                toRemove.add(protection.getId());
-                                removed ++;
-
-                                if (!silent) {
-                                    lwc.sendLocale(sender, "protection.admin.cleanup.removednoexist", "protection", protection.toString());
-                                }
-                            }
-                        }
-
-                        checked ++;
+                    ArrayList<Integer> newToRemove = getBlocks.get();
+                    if (newToRemove != null) {
+                        toRemove.addAll(newToRemove);
+                        removed += toRemove.size();
                     }
+                    checked += protections.size();
 
                     // percentage dump
-                    int percent = (int) ((((double) checked) / totalProtections) * 100);
+                    int percent = (int) ((((double) checked) / totalProtections) * 20);
 
-                    if (percent % 5 == 0 && percentChecked != percent) {
+                    if (percentChecked != percent) {
                         percentChecked = percent;
-                        sender.sendMessage(Colors.Red + "Cleanup @ " + percent + "% [ " + checked + "/" + totalProtections + " protections ] [ removed " + removed + " protections ]");
+                        sender.sendMessage(Colors.Red + "Cleanup @ " + (percent * 5) + "% [ " + checked + "/" + totalProtections + " protections ] [ removed " + removed + " protections ]");
                     }
 
                     // Clear the protection set, we are done with them
