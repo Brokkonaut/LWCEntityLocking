@@ -107,7 +107,7 @@ public class DoorsModule extends JavaModule {
     @SuppressWarnings("deprecation")
 	@Override
     public void onProtectionInteract(LWCProtectionInteractEvent event) {
-        if (event.getResult() == Result.CANCEL || !isEnabled() || event.getEvent().getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+        if (event.getResult() == Result.CANCEL || !isEnabled() || event.getEvent().getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK || event.getPlayer().isSneaking()) {
             return;
         }
 
@@ -155,6 +155,7 @@ public class DoorsModule extends JavaModule {
         }
         
         if(!hasInteractedThisTick.add(event.getPlayer().getUniqueId())) {
+            event.setResult(CANCEL);
             event.getEvent().setCancelled(true);
             return;
         }
@@ -162,6 +163,9 @@ public class DoorsModule extends JavaModule {
         // toggle the other side of the door open
         boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || block.getType().equals(Material.TRAP_DOOR));
         changeDoorStates(true, (opensWhenClicked ? null : block) /* opens when clicked */, doubleDoorBlock);
+        if(!opensWhenClicked && ! event.getPlayer().isSneaking()) {
+            event.getEvent().setCancelled(true); // cancel to avoid things like block placing
+        }
 
         if (action == Action.OPEN_AND_CLOSE || protection.hasFlag(Flag.Type.AUTOCLOSE)) {
             // Abuse the fact that we still use final variables inside the task

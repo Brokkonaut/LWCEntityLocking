@@ -45,6 +45,7 @@ import com.griefcraft.model.History;
 import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Permission;
 import com.griefcraft.model.Protection;
+import com.griefcraft.model.Protection.Type;
 import com.griefcraft.modules.admin.AdminBackup;
 import com.griefcraft.modules.admin.AdminCache;
 import com.griefcraft.modules.admin.AdminCleanup;
@@ -676,7 +677,7 @@ public class LWC {
 			protection.setWorld(block.getWorld().getName());
 			protection.save();
 		}
-
+		boolean messageInActionBar = protection.getType() == Type.PUBLIC;
 		// update timestamp
 		if (hasAccess) {
 			long timestamp = System.currentTimeMillis() / 1000L;
@@ -684,14 +685,16 @@ public class LWC {
 			// check that they aren't an admin and if they are, they need to be
 			// the owner of the protection or have access through /cmodify
 			if (protection.isRealOwner(player)
-					|| protection.getAccess(player.getName(),
+					|| protection.getAccess(player.getUniqueId().toString(),
 							Permission.Type.PLAYER) != Permission.Access.NONE) {
 				protection.setLastAccessed(timestamp);
 				protection.save();
+				messageInActionBar = true;
 			}
 		}
 
 		boolean permShowNotices = hasPermission(player, "lwc.shownotices");
+		boolean messageSent = false;
 		if ((permShowNotices && configuration.getBoolean("core.showNotices",
 				true))
 				&& !Boolean.parseBoolean(resolveProtectionConfiguration(block,
@@ -716,19 +719,22 @@ public class LWC {
 
 				if (protectionTypeToString == null) {
 					protectionTypeToString = "Unknown";
-				}
+                }
 
-				if (parser.parseMessage("protection." + blockName.toLowerCase()
-						+ ".notice.protected") != null) {
-					sendLocale(player, "protection." + blockName.toLowerCase()
-							+ ".notice.protected", "type",
-							protectionTypeToString, "block", blockName,
-							"owner", owner);
-				} else {
-					sendLocale(player, "protection.general.notice.protected",
-							"type", protectionTypeToString, "block", blockName,
-							"owner", owner);
-				}
+                if (parser.parseMessage("protection." + blockName.toLowerCase() + ".notice.protected") != null) {
+                    if (messageInActionBar) {
+                        sendLocaleToActionBar(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                    } else {
+                        sendLocale(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                    }
+                } else {
+                    if (messageInActionBar) {
+                        sendLocaleToActionBar(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                    } else {
+                        sendLocale(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                    }
+                }
+                messageSent = true;
 			}
 		}
 
@@ -736,12 +742,12 @@ public class LWC {
 			Protection.Type type = protection.getType();
 
 			if (type == Protection.Type.PASSWORD) {
-				sendLocale(player, "protection.general.locked.password",
+			    sendLocale(player, "protection.general.locked.password",
 						"block", materialToString(block), "owner",
 						protection.getOwner());
-			} else if (type == Protection.Type.PRIVATE
-					|| type == Protection.Type.DONATION) {
-				sendLocale(player, "protection.general.locked.private",
+			} else if ((type == Protection.Type.PRIVATE
+					|| type == Protection.Type.DONATION) && !messageSent) {
+			    sendLocale(player, "protection.general.locked.private",
 						"block", materialToString(block), "owner",
 						protection.getOwner());
 			}
@@ -937,6 +943,61 @@ public class LWC {
 		return null;
 	}
 
+    /**
+     * Send a locale to a player or console
+     *
+     * @param sender
+     * @param key
+     * @param args
+     */
+    public void sendLocaleToActionBar(CommandSender sender, String key, Object... args) {
+        String[] message; // The message to send to the player
+        MessageParser parser = plugin.getMessageParser();
+        String parsed = parser.parseMessage(key, args);
+
+        if (parsed == null) {
+            return; // Nothing to send
+        }
+
+        // message = parsed.split("\\n");
+        message = StringUtils.split(parsed, '\n');
+
+        // broadcast an event if they are a player
+        if (sender instanceof Player) {
+            LWCSendLocaleEvent evt = new LWCSendLocaleEvent((Player) sender,
+                    key);
+            moduleLoader.dispatchEvent(evt);
+
+            // did they cancel it?
+            if (evt.isCancelled()) {
+                return;
+            }
+        }
+
+        if (message == null) {
+            sender.sendMessage(Colors.Red + "LWC: " + Colors.White
+                    + "Undefined locale: \"" + Colors.Gray + key + Colors.White
+                    + "\"");
+            return;
+        }
+
+        if (message.length > 0 && message[0].equalsIgnoreCase("null")) {
+            return;
+        }
+
+        // Send the message!
+        // sender.sendMessage(message);
+        boolean firstLine = true;
+        for (String line : message) {
+            if (firstLine && (sender instanceof Player)) {
+                ((Player) sender).sendActionBar(line);
+            } else {
+                sender.sendMessage(line);
+            }
+            firstLine = false;
+        }
+    }
+    
 	/**
 	 * Send a locale to a player or console
 	 *

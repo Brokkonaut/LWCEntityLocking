@@ -180,14 +180,18 @@ public class AdminCleanup extends JavaModule {
                 String prefix = lwc.getPhysicalDatabase().getPrefix();
                 ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed, x>>4 AS xshift4,z>>4 AS zshift4 FROM " + prefix + "protections ORDER BY xshift4,zshift4");
                 int checked = 0;
-
-                while (result.next()) {
-                    final Protection tprotection = database.resolveProtection(result);
-
-                    protections.add(tprotection);
-                    // Wait until we have BATCH_SIZE protections
-                    if (protections.size() < BATCH_SIZE && !result.isLast()) {
-                        continue;
+                boolean hasMore = true;
+                while (hasMore) {
+                    while (hasMore && protections.size() < BATCH_SIZE) {
+                        // Wait until we have BATCH_SIZE protections
+                        if (result.next()) {
+                            Protection tprotection = database.resolveProtection(result);
+                            if (tprotection != null) {
+                                protections.add(tprotection);
+                            }
+                        } else {
+                            hasMore = false;
+                        }
                     }
 
                     // Check the blocks
