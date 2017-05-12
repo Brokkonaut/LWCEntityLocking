@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
-public class EntityBlock implements Block, NMS {
+public class EntityBlock implements Block {
 	public static final int ENTITY_BLOCK_ID = 5000;
 	public static final int POSITION_OFFSET = 50000;
 	private Entity entity;
@@ -47,7 +47,7 @@ public class EntityBlock implements Block, NMS {
 	public World getWorld() {
 		return this.entity.getWorld();
 	}
-	@Override
+	
 	public Entity getEntity() {
 		return this.entity;
 	}

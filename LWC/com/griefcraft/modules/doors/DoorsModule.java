@@ -31,7 +31,7 @@ package com.griefcraft.modules.doors;
 import java.util.HashSet;
 import java.util.UUID;
 
-import com.griefcraft.bukkit.StorageNMS;
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Flag;
 import com.griefcraft.model.Protection;
@@ -120,10 +120,10 @@ public class DoorsModule extends JavaModule {
         Block block = event.getEvent().getClickedBlock(); // The block they actually clicked :)
         Player player = event.getPlayer();
 
-		if (block instanceof StorageNMS) {
-			return;
-                }
-        
+        if (block instanceof EntityBlock) {
+            return;
+        }
+
         // Check if the block is even something that should be opened
         if (!isValid(block.getType())) {
             return;

@@ -28,7 +28,7 @@
 
 package com.griefcraft.model;
 
-import com.griefcraft.bukkit.NMS;
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
@@ -934,7 +934,7 @@ public class Protection {
         if (cachedBlock != null) {
             return cachedBlock;
         }
-        if(getBlockId() >= NMS.ENTITY_BLOCK_ID){
+        if(getBlockId() >= EntityBlock.ENTITY_BLOCK_ID){
             return null;
         }
 

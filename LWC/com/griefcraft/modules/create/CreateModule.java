@@ -28,7 +28,7 @@
 
 package com.griefcraft.modules.create;
 
-import com.griefcraft.bukkit.NMS;
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Action;
 import com.griefcraft.model.LWCPlayer;
@@ -113,11 +113,11 @@ public class CreateModule extends JavaModule {
         int blockY;
         int blockZ;
         
-        if (block instanceof NMS) {
-            Entity entity = ((NMS) block).getEntity();
-            blockX = NMS.POSITION_OFFSET + entity.getUniqueId().hashCode();
-            blockY = NMS.POSITION_OFFSET + entity.getUniqueId().hashCode();
-            blockZ = NMS.POSITION_OFFSET + entity.getUniqueId().hashCode();
+        if (block instanceof EntityBlock) {
+            Entity entity = ((EntityBlock) block).getEntity();
+            blockX = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
+            blockY = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
+            blockZ = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
         } else {
             blockX = block.getX();
             blockY = block.getY();

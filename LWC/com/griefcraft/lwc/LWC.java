@@ -28,7 +28,7 @@
 
 package com.griefcraft.lwc;
 
-import com.griefcraft.bukkit.NMS;
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.integration.ICurrency;
 import com.griefcraft.integration.IPermissions;
@@ -1054,8 +1054,8 @@ public class LWC {
 	 * @return
 	 */
 	public static String materialToString(Block block) {
-		if (block instanceof NMS) {
-			return ((NMS) block).getEntity().getClass().getSimpleName(); // TODO
+		if (block instanceof EntityBlock) {
+			return ((EntityBlock) block).getEntity().getClass().getSimpleName(); // TODO
 		}
 		return materialToString(block.getType());
 	}
@@ -1364,7 +1364,7 @@ public class LWC {
 		// is an eir block even though the client and server sees it differently
 		// (ie a chest).
 		// This was of course very problematic!
-		if (block.getType() == Material.AIR || block instanceof NMS) {
+		if (block.getType() == Material.AIR || block instanceof EntityBlock) {
 			// We won't be able to match any other blocks anyway, so the least
 			// we can do is attempt to load a protection
 			return physicalDatabase.loadProtection(block.getWorld().getName(),
@@ -1600,8 +1600,8 @@ public class LWC {
 	 */
 	public boolean isProtectable(Block block) {
 		Material material = block.getType();
-        if (block instanceof NMS) {
-            return Boolean.parseBoolean(resolveProtectionConfiguration(((NMS) block).getEntity().getType(), "enabled"));
+        if (block instanceof EntityBlock) {
+            return Boolean.parseBoolean(resolveProtectionConfiguration(((EntityBlock) block).getEntity().getType(), "enabled"));
         }
 
 		if (material == null) {

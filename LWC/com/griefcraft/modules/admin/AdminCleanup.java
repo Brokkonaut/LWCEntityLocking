@@ -28,7 +28,7 @@
 
 package com.griefcraft.modules.admin;
 
-import com.griefcraft.bukkit.NMS;
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.JavaModule;
@@ -201,7 +201,7 @@ public class AdminCleanup extends JavaModule {
                             for (Protection protection : protections) {
                                 Block block = protection.getBlock(); // load the block
 
-                                if (protection.getBlockId() >= NMS.ENTITY_BLOCK_ID) {
+                                if (protection.getBlockId() >= EntityBlock.ENTITY_BLOCK_ID) {
                                     // entity cleanup?
                                 } else {
                                     // remove protections not found in the world
