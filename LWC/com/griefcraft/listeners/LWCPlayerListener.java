@@ -29,7 +29,6 @@
 package com.griefcraft.listeners;
 
 import com.griefcraft.bukkit.EntityBlock;
-import com.griefcraft.bukkit.NMS;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
 import com.griefcraft.model.Flag;
@@ -284,7 +283,7 @@ public class LWCPlayerListener implements Listener {
 			boolean cancelled) {
 		String p = plugin.getServer().getClass().getPackage().getName();
 		p.substring(p.lastIndexOf('.') + 1);
-		int A = NMS.POSITION_OFFSET + entity.getUniqueId().hashCode();
+		int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
 
 		// attempt to load the protection for this cart
 		LWC lwc = LWC.getInstance();
