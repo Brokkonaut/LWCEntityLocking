@@ -926,6 +926,10 @@ public class Protection {
     public Player getBukkitOwner() {
         return Bukkit.getServer().getPlayer(owner);
     }
+    
+    public void uncacheBlock() {
+        cachedBlock = null;
+    }
 
     /**
      * @return the block representing the protection in the world
