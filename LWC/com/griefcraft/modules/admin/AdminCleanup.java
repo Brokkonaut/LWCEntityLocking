@@ -199,6 +199,7 @@ public class AdminCleanup extends JavaModule {
                         public ArrayList<Integer> call() throws Exception {
                             ArrayList<Integer> toRemove = null;
                             for (Protection protection : protections) {
+                                protection.uncacheBlock();
                                 Block block = protection.getBlock(); // load the block
 
                                 if (protection.getBlockId() >= EntityBlock.ENTITY_BLOCK_ID) {
@@ -226,7 +227,7 @@ public class AdminCleanup extends JavaModule {
                     ArrayList<Integer> newToRemove = getBlocks.get();
                     if (newToRemove != null) {
                         toRemove.addAll(newToRemove);
-                        removed += toRemove.size();
+                        removed += newToRemove.size();
                     }
                     checked += protections.size();
 
