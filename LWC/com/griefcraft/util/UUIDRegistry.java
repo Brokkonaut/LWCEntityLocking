@@ -55,7 +55,7 @@ public class UUIDRegistry {
      * @return true if the string is a valid UUID
      */
     public static boolean isValidUUID(String uuid) {
-        return uuid.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+        return uuid.length() == 36 && uuid.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     }
 
     /**
@@ -69,8 +69,12 @@ public class UUIDRegistry {
             return null;
         }
 
-        if (UUIDToNameCache.containsKey(uuid)) {
-            return UUIDToNameCache.get(uuid).getName();
+        boolean foundInCache = UUIDToNameCache.containsKey(uuid); 
+        if (foundInCache) {
+            PlayerInfo cacheEntry = UUIDToNameCache.get(uuid);
+            if (cacheEntry != null) {
+                return cacheEntry.getName();
+            }
         }
 
         // First way: if they're on the server already
@@ -88,6 +92,11 @@ public class UUIDRegistry {
             updateCache(uuid, offlinePlayer.getName());
             return offlinePlayer.getName();
         }
+        
+        // Don't query mojang if a uuid is cached as not mapped 
+        if (foundInCache) {
+            return null; 
+        }
 
         // Third way: use the web API
         try {
@@ -97,9 +106,11 @@ public class UUIDRegistry {
                 updateCache(uuid, results.get(uuid));
                 return results.get(uuid);
             } else {
+                UUIDToNameCache.put(uuid, null);
                 return null;
             }
         } catch (Exception e) {
+            UUIDToNameCache.put(uuid, null);
             return null;
         }
     }
@@ -112,16 +123,32 @@ public class UUIDRegistry {
      * @throws Exception
      */
     @SuppressWarnings("deprecation")
-	public static UUID getUUID(String name) {
+    public static UUID getUUID(String name) {
         String nameLower = name.toLowerCase();
 
         try {
-            if (nameToUUIDCache.containsKey(nameLower)) {
-                return nameToUUIDCache.get(nameLower).getUUID();
+            boolean foundInCache = nameToUUIDCache.containsKey(nameLower);
+            if (foundInCache) {
+                PlayerInfo cacheEntry = nameToUUIDCache.get(nameLower);
+                if (cacheEntry != null) {
+                    return cacheEntry.getUUID();
+                }
             }
 
             if (isValidUUID(name)) {
                 return UUID.fromString(name);
+            }
+            
+            // First way: if they're on the server already
+            Player player = Bukkit.getPlayerExact(name);
+            if (player != null) {
+                updateCache(player.getUniqueId(), player.getName());
+                return player.getUniqueId();
+            }
+            
+            // Don't query mojang or do expensive lookups if a name is cached as not mapped 
+            if (foundInCache) {
+                return null;
             }
 
             if (Bukkit.getOnlineMode()) {
