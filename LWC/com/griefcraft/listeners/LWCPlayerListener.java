@@ -28,6 +28,7 @@
 
 package com.griefcraft.listeners;
 
+import com.google.common.base.Objects;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
@@ -77,6 +78,7 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 import java.util.Set;
@@ -88,9 +90,15 @@ public class LWCPlayerListener implements Listener {
 	 */
 	private LWCPlugin plugin;
 
-	public LWCPlayerListener(LWCPlugin plugin) {
-		this.plugin = plugin;
-	}
+    public LWCPlayerListener(LWCPlugin plugin) {
+        this.plugin = plugin;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                lastHopper = null;
+            }
+        }.runTaskTimer(plugin, 1, 1);
+    }
 
     @EventHandler
     public void hangingBreakByEvent(HangingBreakByEntityEvent event) {
@@ -397,20 +405,42 @@ public class LWCPlayerListener implements Listener {
 		Player player = event.getPlayer();
 		UUIDRegistry.updateCache(player.getUniqueId(), player.getName());
 	}
+	
+	private Inventory lastHopper;
+	private boolean lastHopperWasSource;
+	private boolean lastHopperResult;
 
 	@EventHandler(ignoreCancelled = true)
 	public void onMoveItem(InventoryMoveItemEvent event) {
 		boolean result;
 
-		// if the initiator is the same as the source it is a dropper i.e.
-		// depositing items
-		if (event.getInitiator() == event.getSource()) {
-			result = handleMoveItemEvent(event.getInitiator(),
-					event.getDestination());
-		} else {
-			result = handleMoveItemEvent(event.getInitiator(),
-					event.getSource());
-		}
+        // if the initiator is the same as the source it is a dropper i.e.
+        // depositing items
+        if (event.getInitiator() == event.getSource()) {
+            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource == true) {
+                result = lastHopperResult;
+                // plugin.getLogger().info("Hopper == lasthopper");
+            } else {
+                result = handleMoveItemEvent(event.getInitiator(), event.getDestination());
+
+                lastHopper = event.getInitiator();
+                lastHopperWasSource = true;
+                lastHopperResult = result;
+                // plugin.getLogger().info("Hopper != lasthopper");
+            }
+        } else {
+            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource == false) {
+                result = lastHopperResult;
+                // plugin.getLogger().info("Hopper == lasthopper");
+            } else {
+                result = handleMoveItemEvent(event.getInitiator(), event.getSource());
+
+                lastHopper = event.getInitiator();
+                lastHopperWasSource = false;
+                lastHopperResult = result;
+                // plugin.getLogger().info("Hopper != lasthopper");
+            }
+        }
 
 		if (result) {
 			event.setCancelled(true);
