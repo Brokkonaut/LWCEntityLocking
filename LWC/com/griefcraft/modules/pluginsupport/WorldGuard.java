@@ -243,8 +243,6 @@ public class WorldGuard extends JavaModule {
 		}
 
 		Protection protection = event.getProtection();
-		GlobalRegionManager globalRegionManager = worldGuard
-				.getGlobalRegionManager();
 		LocalPlayer wgPlayer = worldGuard.wrapPlayer(event.getPlayer());
 		for (Permission permission : protection.getPermissions()) {
 			if (permission.getType() != Permission.Type.REGION) {
@@ -258,7 +256,7 @@ public class WorldGuard extends JavaModule {
 				// may be in multiple
 				// regions or none; we don't care here. That's WorldGuard's
 				// domain.
-				if (!globalRegionManager.canBuild(event.getPlayer(),
+				if (!worldGuard.canBuild(event.getPlayer(),
 						protection.getBlock())) {
 					continue;
 				}
@@ -290,7 +288,7 @@ public class WorldGuard extends JavaModule {
 				if (world == null) {
 					continue;
 				}
-				RegionManager regionManager = globalRegionManager.get(world);
+				RegionManager regionManager = worldGuard.getRegionManager(world);
 				if (regionManager == null) {
 					continue;
 				}
@@ -337,13 +335,11 @@ public class WorldGuard extends JavaModule {
 		Block block = event.getBlock();
 
 		// Load the region manager for the world
-		GlobalRegionManager globalRegionManager = worldGuard
-				.getGlobalRegionManager();
-		RegionManager regionManager = globalRegionManager.get(block.getWorld());
+		RegionManager regionManager = worldGuard.getRegionManager(block.getWorld());
 
 		// Are we enforcing building?
 		if (configuration.getBoolean("worldguard.requireBuildRights", true)) {
-			if (!globalRegionManager.canBuild(player, block)) {
+			if (!worldGuard.canBuild(player, block)) {
 				lwc.sendLocale(player, "lwc.worldguard.needbuildrights");
 				event.setCancelled(true);
 				return;
