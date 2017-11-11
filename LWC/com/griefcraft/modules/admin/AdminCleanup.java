@@ -250,6 +250,8 @@ public class AdminCleanup extends JavaModule {
                 // flush all of the queries
                 push(toRemove);
 
+                // clear cache because we removed protections directly from the database
+                lwc.getProtectionCache().clear();
                 sender.sendMessage("Cleanup completed. Removed " + removed + " protections out of " + checked + " checked protections.");
             } catch (Exception e) { // database.connect() throws Exception
                 System.out.println("Exception caught during cleanup: " + e.getMessage());
