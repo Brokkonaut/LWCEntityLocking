@@ -402,21 +402,7 @@ public class LWC {
 
         switch (protection.getType()) {
         case PUBLIC:
-            if (protection.isOwner(player)) {
-                return true;
-            }
-
-            break;
-
         case PASSWORD:
-            if (protection.isOwner(player)
-                    && wrapPlayer(player).getAccessibleProtections().contains(
-                            protection)) {
-                return true;
-            }
-
-            break;
-
         case PRIVATE:
         case DONATION:
             if (protection.isOwner(player)) {
@@ -798,9 +784,7 @@ public class LWC {
                     protection)) {
                 return true;
             }
-
-            break;
-
+            // fallthrough intended!
         case PRIVATE:
             if (protection.isOwner(player)) {
                 return true;
