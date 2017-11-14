@@ -61,7 +61,7 @@ public class LWCPlayer implements CommandSender {
     /**
      * Cache of LWCPlayer objects
      */
-    private final static Map<Player, LWCPlayer> playerCache = new HashMap<Player, LWCPlayer>();
+    private final static Map<UUID, LWCPlayer> playerCache = new HashMap<UUID, LWCPlayer>();
 
     /**
      * The map of actions the player has
@@ -90,11 +90,12 @@ public class LWCPlayer implements CommandSender {
      * @return
      */
     public static LWCPlayer getPlayer(Player player) {
-        if (!playerCache.containsKey(player)) {
-            playerCache.put(player, new LWCPlayer(LWC.getInstance(), player));
+        LWCPlayer lwcPlayer = playerCache.get(player.getUniqueId());
+        if (lwcPlayer == null) {
+            lwcPlayer = new LWCPlayer(LWC.getInstance(), player);
+            playerCache.put(player.getUniqueId(), lwcPlayer);
         }
-
-        return playerCache.get(player);
+        return lwcPlayer;
     }
 
     /**
@@ -103,10 +104,8 @@ public class LWCPlayer implements CommandSender {
      * @param player
      */
     public static void removePlayer(Player player) {
-        getPlayer(player);
-
         // uncache them
-        playerCache.remove(player);
+        playerCache.remove(player.getUniqueId());
     }
 
     /**
