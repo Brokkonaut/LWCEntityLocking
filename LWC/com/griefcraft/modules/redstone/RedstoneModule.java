@@ -60,7 +60,7 @@ public class RedstoneModule extends JavaModule {
                     int x = found.getX();
                     int y = found.getY();
                     int z = found.getZ();
-                    Player player = lwc.findPlayer(x - 1, x + 1, y, y + 1, z - 1, z + 1);
+                    Player player = lwc.findPlayer(found.getWorld(), x - 1, x + 1, y, y + 1, z - 1, z + 1);
 
                     if (player != null) {
                         if (!lwc.canAccessProtection(player, protection)) {

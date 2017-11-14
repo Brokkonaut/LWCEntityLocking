@@ -909,7 +909,7 @@ public class LWC {
      * @param maxZ
      * @return
      */
-    public Player findPlayer(int minX, int maxX, int minY, int maxY, int minZ,
+    public Player findPlayer(World world, int minX, int maxX, int minY, int maxY, int minZ,
             int maxZ) {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             Location location = player.getLocation();
@@ -918,7 +918,7 @@ public class LWC {
             int plrZ = location.getBlockZ();
 
             // simple check of the ranges
-            if (plrX >= minX && plrX <= maxX && plrY >= plrY && plrY <= maxY
+            if (location.getWorld() == world && plrX >= minX && plrX <= maxX && plrY >= plrY && plrY <= maxY
                     && plrZ >= minZ && plrZ <= maxZ) {
                 return player;
             }
