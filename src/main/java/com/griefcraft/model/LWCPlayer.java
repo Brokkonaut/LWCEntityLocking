@@ -416,4 +416,9 @@ public class LWCPlayer implements CommandSender {
     public void setOp(boolean b) {
         player.setOp(b);
     }
+
+    @Override
+    public Spigot spigot() {
+        return null;
+    }
 }

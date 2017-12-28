@@ -84,7 +84,6 @@ import com.griefcraft.modules.modes.NoSpamModule;
 import com.griefcraft.modules.modes.PersistModule;
 import com.griefcraft.modules.modify.ModifyModule;
 import com.griefcraft.modules.owners.OwnersModule;
-import com.griefcraft.modules.pluginsupport.Towny;
 import com.griefcraft.modules.pluginsupport.WorldGuard;
 import com.griefcraft.modules.redstone.RedstoneModule;
 import com.griefcraft.modules.setup.BaseSetupModule;
@@ -1814,10 +1813,6 @@ public class LWC {
         // non-core modules but are included with LWC anyway
         if (resolvePlugin("WorldGuard") != null) {
             registerModule(new WorldGuard());
-        }
-
-        if (resolvePlugin("Towny") != null) {
-            registerModule(new Towny());
         }
     }
 

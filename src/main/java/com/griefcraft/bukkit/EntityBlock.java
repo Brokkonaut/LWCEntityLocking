@@ -145,6 +145,10 @@ public class EntityBlock implements Block {
         return null;
     }
     @Override
+    public BlockState getState(boolean create) {
+        return null;
+    }
+    @Override
     public Biome getBiome() {
         return null;
     }
