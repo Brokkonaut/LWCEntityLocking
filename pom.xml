@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.iani.cubeside</groupId>
 	<artifactId>LWC</artifactId>
-	<version>5.0.10-SNAPSHOT</version>
+	<version>5.0.11-SNAPSHOT</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<build.number>DEV</build.number>

@@ -85,7 +85,7 @@ public class LWCEntityListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onCreateSpawn(CreatureSpawnEvent e) {
+    public void onCreatureSpawn(CreatureSpawnEvent e) {
         if (placedArmorStandPlayer != null) {
             Player player = plugin.getServer().getPlayer(placedArmorStandPlayer);
             Entity block = e.getEntity();
@@ -102,10 +102,12 @@ public class LWCEntityListener implements Listener {
         if (!LWC.ENABLED) {
             return;
         }
-
         LWC lwc = plugin.getLWC();
-
-        int A = 50000 + block.getUniqueId().hashCode();
+        if (!lwc.isProtectable(block.getType())) {
+            return;
+        }
+        
+        int A = EntityBlock.POSITION_OFFSET + block.getUniqueId().hashCode();
 
         // Update the cache if a protection is matched here
         Protection current = lwc.findProtection(block.getLocation());
@@ -124,9 +126,6 @@ public class LWCEntityListener implements Listener {
             }
         }
 
-        if (!lwc.isProtectable(block.getType())) {
-            return;
-        }
 
         String autoRegisterType = lwc.resolveProtectionConfiguration(
                 block.getType(), "autoRegister");

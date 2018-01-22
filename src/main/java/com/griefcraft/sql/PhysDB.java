@@ -939,7 +939,7 @@ public class PhysDB extends Database {
 	private Protection loadProtection(String worldName, int x, int y, int z,
 			boolean ignoreProtectionCount) {
 		// the unique key to use in the cache
-		String cacheKey = worldName + ":" + x + ":" + y + ":" + z;
+		String cacheKey = ProtectionCache.cacheKey(worldName, x, y, z);
 
 		// the protection cache
 		ProtectionCache cache = LWC.getInstance().getProtectionCache();
@@ -950,6 +950,9 @@ public class PhysDB extends Database {
 			// System.out.println("loadProtection() => CACHE HIT");
 			return cached;
 		}
+        if (cache.isKnownNull(cacheKey)) {
+            return null;
+        }
 
 		// Is it possible that there are protections in the cache?
 		if (!ignoreProtectionCount && hasAllProtectionsCached()) {
@@ -973,7 +976,7 @@ public class PhysDB extends Database {
 			if (protection != null) {
 				// cache the protection
 				cache.addProtection(protection);
-			}
+            }
 
 			return protection;
 		} catch (SQLException e) {
@@ -1232,6 +1235,9 @@ public class PhysDB extends Database {
 			// We need to create the initial transaction for this protection
 			// this transaction is viewable and modifiable during
 			// POST_REGISTRATION
+			
+	        cache.remove(ProtectionCache.cacheKey(world, x, y, z));
+	        
 			Protection protection = loadProtection(world, x, y, z, true);
 			protection.removeCache();
 

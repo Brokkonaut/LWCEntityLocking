@@ -115,6 +115,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -127,6 +128,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -190,6 +192,10 @@ public class LWC {
      * The currency handler
      */
     private ICurrency currency;
+    
+    private EnumSet<EntityType> protectableEntites = EnumSet.noneOf(EntityType.class);
+    
+    private EnumSet<Material> protectableBlocks = EnumSet.noneOf(Material.class);
 
     /**
      * Protection configuration cache
@@ -265,7 +271,7 @@ public class LWC {
 
         // some name normalizations
         if (name.contains("sign")) {
-            name = "Sign";
+            name = "sign";
         }
 
         if (name.contains("furnace")) {
@@ -1309,13 +1315,33 @@ public class LWC {
     }
 
     /**
+     * Find a protection for an entity
+     * 
+     * @param entity
+     *            the maybe protected entity
+     * @return
+     */
+    public Protection findProtection(Entity entity) {
+        int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
+        String cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
+        if (protectionCache.isKnownNull(cacheKey)) {
+            return null;
+        }
+        Protection protection = physicalDatabase.loadProtection(entity.getWorld().getName(), A, A, A);
+        if (protection == null) {
+            protectionCache.addKnownNull(cacheKey);
+        }
+        return protection;
+    }
+
+    /**
      * Find a protection linked to the location
      *
      * @param location
      * @return
      */
     public Protection findProtection(Location location) {
-        String cacheKey = protectionCache.cacheKey(location);
+        String cacheKey = ProtectionCache.cacheKey(location);
 
         if (protectionCache.isKnownNull(cacheKey)) {
             return null;
@@ -1368,7 +1394,7 @@ public class LWC {
         }
 
         if (found == null) {
-            protectionCache.addKnownNull(protectionCache.cacheKey(block
+            protectionCache.addKnownNull(ProtectionCache.cacheKey(block
                     .getLocation()));
         }
 
@@ -1423,67 +1449,30 @@ public class LWC {
             return false;
         }
 
-        return Boolean.parseBoolean(resolveProtectionConfiguration(state,
-                "enabled"));
+        return protectableBlocks.contains(state.getType());
     }
 
     public boolean isProtectable(EntityType state) {
 
-        return Boolean.parseBoolean(resolveProtectionConfiguration(state,
-                "enabled"));
-    }
-
-    @SuppressWarnings("deprecation")
-    public String resolveProtectionConfiguration(BlockState state, String node) {
-        Material material = state.getType();
-        String cacheKey = state.getRawData() + "-" + material.toString() + "-"
-                + node;
-        if (protectionConfigurationCache.containsKey(cacheKey)) {
-            return protectionConfigurationCache.get(cacheKey);
-        }
-
-        List<String> names = new ArrayList<String>();
-
-        String materialName = normalizeMaterialName(material);
-
-        // add the name & the block id
-        names.add(materialName);
-        names.add(state.getTypeId() + "");
-        names.add(state.getTypeId() + ":" + state.getRawData());
-        names.add(materialName + ":" + state.getRawData());
-
-        if (!materialName.equals(material.toString().toLowerCase())) {
-            names.add(material.toString().toLowerCase());
-        }
-
-        // Add the wildcards last so it can be overriden
-        names.add("*");
-        names.add(state.getTypeId() + ":*");
-
-        String value = configuration.getString("protections." + node);
-
-        for (String name : names) {
-            String temp = configuration.getString("protections.blocks." + name
-                    + "." + node);
-
-            if (temp != null && !temp.isEmpty()) {
-                value = temp;
-            }
-        }
-
-        protectionConfigurationCache.put(cacheKey, value);
-        return value;
+        return protectableEntites.contains(state);
     }
 
     public String resolveProtectionConfiguration(EntityType state, String node) {
-        String cacheKey = state + "-" + state + "-" + node;
+        String cacheKey = "e-" + state.name() + "-" + node;
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
 
         String value = configuration.getString("protections." + node);
 
-        String temp = configuration.getString("protections.blocks." + state
+        String temp = configuration.getString("protections.blocks." + state.name()
+                + "." + node);
+
+        if (temp != null && !temp.isEmpty()) {
+            value = temp;
+        }
+        
+        temp = configuration.getString("protections.entities." + state.name()
                 + "." + node);
 
         if (temp != null && !temp.isEmpty()) {
@@ -1584,15 +1573,14 @@ public class LWC {
     public boolean isProtectable(Block block) {
         Material material = block.getType();
         if (block instanceof EntityBlock) {
-            return Boolean.parseBoolean(resolveProtectionConfiguration(((EntityBlock) block).getEntity().getType(), "enabled"));
+            return isProtectable(((EntityBlock) block).getEntity().getType());
         }
 
         if (material == null) {
             return false;
         }
 
-        return Boolean.parseBoolean(resolveProtectionConfiguration(block,
-                "enabled"));
+        return protectableBlocks.contains(block.getType());
     }
 
     /**
@@ -1611,8 +1599,7 @@ public class LWC {
         if (material == null) {
             return null;
         }
-        String cacheKey = block.getData() + "-" + material.toString() + "-"
-                + node;
+        String cacheKey = "b-" + material.name() + "-" + node;
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
@@ -1624,8 +1611,6 @@ public class LWC {
         // add the name & the block id
         names.add(materialName);
         names.add(material.getId() + "");
-        names.add(material.getId() + ":" + block.getData());
-        names.add(materialName + ":" + block.getData());
 
         if (!materialName.equals(material.toString().toLowerCase())) {
             names.add(material.toString().toLowerCase());
@@ -1633,7 +1618,6 @@ public class LWC {
 
         // Add the wildcards last so it can be overriden
         names.add("*");
-        names.add(material.getId() + ":*");
 
         String value = configuration.getString("protections." + node);
 
@@ -1662,7 +1646,7 @@ public class LWC {
         if (material == null) {
             return null;
         }
-        String cacheKey = "00-" + material.toString() + "-" + node;
+        String cacheKey = "b-" + material.name() + "-" + node;
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
@@ -1681,7 +1665,6 @@ public class LWC {
 
         // Add the wildcards last so it can be overriden
         names.add("*");
-        names.add(material.getId() + ":*");
 
         String value = configuration.getString("protections." + node);
 
@@ -1743,6 +1726,8 @@ public class LWC {
         // check any major conversions
         new MySQLPost200().run();
 
+        preloadProtectables();
+        
         // precache protections
         physicalDatabase.precache();
 
@@ -2021,6 +2006,21 @@ public class LWC {
             }
         }
     }
+    
+    private void preloadProtectables() {
+        protectableBlocks.clear();
+        protectableEntites.clear();
+        for (Material t : Material.values()) {
+            if (Boolean.parseBoolean(resolveProtectionConfiguration(t, "enabled"))) {
+                protectableBlocks.add(t);
+            }
+        }
+        for (EntityType t : EntityType.values()) {
+            if (Boolean.parseBoolean(resolveProtectionConfiguration(t, "enabled"))) {
+                protectableEntites.add(t);
+            }
+        }
+    }
 
     /**
      * Reload internal data structures
@@ -2029,6 +2029,7 @@ public class LWC {
         plugin.loadLocales();
         protectionConfigurationCache.clear();
         Configuration.reload();
+        preloadProtectables();
         moduleLoader.dispatchEvent(new LWCReloadEvent());
     }
 
