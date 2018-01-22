@@ -186,7 +186,7 @@ public class LWCBlockListener implements Listener {
 		}
 
 		ProtectionCache cache = lwc.getProtectionCache();
-		String cacheKey = cache.cacheKey(block.getLocation());
+		String cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
 		// In the event they place a block, remove any known nulls there
 		if (cache.isKnownNull(cacheKey)) {
@@ -387,7 +387,7 @@ public class LWCBlockListener implements Listener {
 		Block block = event.getBlockPlaced();
 
 		ProtectionCache cache = lwc.getProtectionCache();
-		String cacheKey = cache.cacheKey(block.getLocation());
+		String cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
 		// In the event they place a block, remove any known nulls there
 		if (cache.isKnownNull(cacheKey)) {

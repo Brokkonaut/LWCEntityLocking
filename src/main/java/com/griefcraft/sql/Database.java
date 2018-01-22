@@ -216,6 +216,8 @@ public abstract class Database {
             properties.put("user", lwc.getConfiguration().getString("database.username"));
             properties.put("password", lwc.getConfiguration().getString("database.password"));
         }
+        
+        statementCache.clear();
 
         // Connect to the database
         try {

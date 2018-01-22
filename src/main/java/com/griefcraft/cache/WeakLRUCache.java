@@ -70,10 +70,10 @@ public class WeakLRUCache<K, V> implements Map<K, V> {
     public WeakLRUCache(int capacity) {
         this.maxCapacity = capacity;
 
-        this.weakCache = new LinkedHashMap<K, WeakValue<V, K>>(maxCapacity) {
+        this.weakCache = new LinkedHashMap<K, WeakValue<V, K>>(maxCapacity, 0.75f, true) {
             /**
-			 * 
-			 */
+             * 
+             */
 			private static final long serialVersionUID = 1L;
 
 			@Override

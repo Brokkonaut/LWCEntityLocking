@@ -35,6 +35,7 @@ import com.griefcraft.sql.Database;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 
 public class DatabaseThread implements Runnable {
 
@@ -162,27 +163,29 @@ public class DatabaseThread implements Runnable {
 
     public void run() {
         while (running) {
-            // how many seconds between each flush
-            int interval = lwc.getConfiguration().getInt("core.flushInterval", 5);
-
-            if (interval > 120) {
-                interval = 120;
-            }
-
-            long currentTime = System.currentTimeMillis();
-            long intervalMilliseconds = interval * 1000L;
-
-            // compare the current time to the last flush
-            if (currentTime - lastFlush > intervalMilliseconds) {
-                flushDatabase();
-            }
-
             try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                running = false;
+                // how many seconds between each flush
+                int interval = lwc.getConfiguration().getInt("core.flushInterval", 5);
+
+                if (interval > 120) {
+                    interval = 120;
+                }
+
+                long currentTime = System.currentTimeMillis();
+                long intervalMilliseconds = interval * 1000L;
+
+                // compare the current time to the last flush
+                if (currentTime - lastFlush > intervalMilliseconds) {
+                    flushDatabase();
+                }
+
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                }
+            } catch (Throwable t) {
+                lwc.getPlugin().getLogger().log(Level.SEVERE, "Exception in Database Thread", t);
             }
         }
     }
-
 }
