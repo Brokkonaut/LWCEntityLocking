@@ -29,6 +29,7 @@
 package com.griefcraft.model;
 
 import com.griefcraft.bukkit.EntityBlock;
+import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
@@ -218,6 +219,8 @@ public class Protection {
      * The block the protection is at. Saves world calls and allows better concurrency
      */
     private Block cachedBlock;
+
+    private CacheKey cacheKey;
 
     @Override
     public boolean equals(Object object) {
@@ -726,6 +729,7 @@ public class Protection {
 
         this.world = world;
         this.modified = true;
+        this.cacheKey = null;
     }
 
     public void setX(int x) {
@@ -735,6 +739,7 @@ public class Protection {
 
         this.x = x;
         this.modified = true;
+        this.cacheKey = null;
     }
 
     public void setY(int y) {
@@ -744,6 +749,7 @@ public class Protection {
 
         this.y = y;
         this.modified = true;
+        this.cacheKey = null;
     }
 
     public void setZ(int z) {
@@ -753,6 +759,7 @@ public class Protection {
 
         this.z = z;
         this.modified = true;
+        this.cacheKey = null;
     }
 
     public void setLastAccessed(long lastAccessed) {
@@ -840,7 +847,7 @@ public class Protection {
         for (int x = -3; x <= 3; x++) {
             for (int y = -3; y <= 3; y++) {
                 for (int z = -3; z <= 3; z++) {
-                    String cacheKey = world + ":" + (this.x + x) + ":" + (this.y + y) + ":" + (this.z + z);
+                    CacheKey cacheKey = ProtectionCache.cacheKey(world, this.x + x, this.y + y, this.z + z);
 
                     // get the protection for that entry
                     Protection protection = cache.getProtection(cacheKey);
@@ -905,8 +912,13 @@ public class Protection {
     /**
      * @return the key used for the protection cache
      */
-    public String getCacheKey() {
-        return world + ":" + x + ":" + y + ":" + z;
+    public CacheKey getCacheKey() {
+        CacheKey cc = cacheKey;
+        if (cc == null) {
+            cc = ProtectionCache.cacheKey(world, x, y, z);
+            cacheKey = cc;
+        }
+        return cc;
     }
 
     /**

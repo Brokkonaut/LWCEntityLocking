@@ -106,26 +106,6 @@ public class LWCEntityListener implements Listener {
         if (!lwc.isProtectable(block.getType())) {
             return;
         }
-        
-        int A = EntityBlock.POSITION_OFFSET + block.getUniqueId().hashCode();
-
-        // Update the cache if a protection is matched here
-        Protection current = lwc.findProtection(block.getLocation());
-        if (current != null) {
-            if (!current.isBlockInWorld()) {
-                // Corrupted protection
-                lwc.log("Removing corrupted protection: " + current);
-                current.remove();
-            } else {
-                if (current.getProtectionFinder() != null) {
-                    current.getProtectionFinder().fullMatchBlocks();
-                    lwc.getProtectionCache().addProtection(current);
-                }
-
-                return;
-            }
-        }
-
 
         String autoRegisterType = lwc.resolveProtectionConfiguration(
                 block.getType(), "autoRegister");
@@ -158,8 +138,10 @@ public class LWCEntityListener implements Listener {
         }
 
         try {
+            Block entityBlock = EntityBlock.getEntityBlock(block);
+                    
             LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(
-                    player, EntityBlock.getEntityBlock(block));
+                    player, entityBlock);
             lwc.getModuleLoader().dispatchEvent(evt);
 
             // something cancelled registration
@@ -171,15 +153,14 @@ public class LWCEntityListener implements Listener {
             Protection protection = lwc.getPhysicalDatabase()
                     .registerProtection(EntityBlock.ENTITY_BLOCK_ID, type,
                             block.getWorld().getName(),
-                            player.getUniqueId().toString(), "", A, A, A);
+                            player.getUniqueId().toString(), "", entityBlock.getX(), entityBlock.getY(), entityBlock.getZ());
 
             if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(
-                    EntityBlock.getEntityBlock(block), "quiet"))) {
+                    entityBlock, "quiet"))) {
                 lwc.sendLocale(player, "protection.onplace.create.finalize",
                         "type", lwc.getPlugin().getMessageParser()
                                 .parseMessage(autoRegisterType.toLowerCase()),
-                        "block", LWC.materialToString(EntityBlock
-                                .getEntityBlock(block)));
+                        "block", LWC.materialToString(entityBlock));
             }
 
             if (protection != null) {
