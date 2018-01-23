@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 
 public class AdminCleanup extends JavaModule {
 
@@ -57,8 +58,7 @@ public class AdminCleanup extends JavaModule {
      */
     private static int BATCH_SIZE = 100;
 
-    @SuppressWarnings("deprecation")
-	@Override
+    @Override
     public void onCommand(LWCCommandEvent event) {
         if (event.isCancelled()) {
             return;
@@ -90,7 +90,7 @@ public class AdminCleanup extends JavaModule {
 
         // do the work in a separate thread so we don't fully lock the server
         // new Thread(new Admin_Cleanup_Thread(lwc, sender)).start();
-        Bukkit.getScheduler().scheduleAsyncDelayedTask(lwc.getPlugin(), new Admin_Cleanup_Thread(lwc, sender, silent));
+        Bukkit.getScheduler().runTaskAsynchronously(lwc.getPlugin(), new Admin_Cleanup_Thread(lwc, sender, silent));
     }
 
     /**
@@ -113,7 +113,7 @@ public class AdminCleanup extends JavaModule {
          *
          * @param toRemove
          */
-        public void push(List<Integer> toRemove) throws SQLException {
+        private void push(PhysDB database, List<Integer> toRemove) throws SQLException {
             final StringBuilder builder = new StringBuilder();
             final int total = toRemove.size();
             int count = 0;
@@ -125,7 +125,7 @@ public class AdminCleanup extends JavaModule {
             String prefix = lwc.getPhysicalDatabase().getPrefix();
 
             // create the statement to use
-            Statement statement = lwc.getPhysicalDatabase().getConnection().createStatement();
+            Statement statement = database.getConnection().createStatement();
 
             while (iter.hasNext()) {
                 int protectionId = iter.next();
@@ -162,18 +162,18 @@ public class AdminCleanup extends JavaModule {
                 // so we can more than 20 results/second.
                 final List<Protection> protections = new ArrayList<Protection>(BATCH_SIZE);
 
-                // amount of protections
-                int totalProtections = lwc.getPhysicalDatabase().getProtectionCount();
-
                 // TODO separate stream logic to somewhere else :)
                 // Create a new database connection, we are just reading
                 PhysDB database = new PhysDB();
                 database.connect();
                 database.load();
 
+                // amount of protections
+                int totalProtections = database.getProtectionCount();
+
                 Statement resultStatement = database.getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-                if (lwc.getPhysicalDatabase().getType() == Database.Type.MySQL) {
+                if (database.getType() == Database.Type.MySQL) {
                     resultStatement.setFetchSize(BATCH_SIZE);
                 }
 
@@ -248,13 +248,27 @@ public class AdminCleanup extends JavaModule {
                 resultStatement.close();
 
                 // flush all of the queries
-                push(toRemove);
+                push(database, toRemove);
 
-                // clear cache because we removed protections directly from the database
-                lwc.getProtectionCache().clear();
-                sender.sendMessage("Cleanup completed. Removed " + removed + " protections out of " + checked + " checked protections.");
+                database.dispose();
+
+                final int totalChecked = checked;
+                final int totalRemoved = removed;
+
+                Bukkit.getScheduler().runTask(lwc.getPlugin(), new Runnable() {
+                    @Override
+                    public void run() {
+                        // clear cache because we removed protections directly from the database
+                        sender.sendMessage("Resetting cache...");
+                        lwc.getPhysicalDatabase().precache();
+
+                        sender.sendMessage("Cleanup completed. Removed " + totalRemoved + " protections out of " + totalChecked + " checked protections.");
+                    }
+                });
+
             } catch (Exception e) { // database.connect() throws Exception
-                System.out.println("Exception caught during cleanup: " + e.getMessage());
+                sender.sendMessage("Exception caught during cleanup: " + e.getMessage());
+                lwc.getPlugin().getLogger().log(Level.SEVERE, "Exception caught during cleanup", e);
             }
         }
 
