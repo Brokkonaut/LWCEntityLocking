@@ -271,7 +271,5 @@ public class AdminCleanup extends JavaModule {
                 lwc.getPlugin().getLogger().log(Level.SEVERE, "Exception caught during cleanup", e);
             }
         }
-
     }
-
 }
