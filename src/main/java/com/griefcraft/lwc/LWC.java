@@ -665,8 +665,10 @@ public class LWC {
             if (protection.isRealOwner(player)
                     || protection.getAccess(player.getUniqueId().toString(),
                             Permission.Type.PLAYER) != Permission.Access.NONE) {
-                protection.setLastAccessed(timestamp);
-                protection.saveLastAccessed();
+                if (Math.abs(protection.getLastAccessed() - timestamp) > 5) {
+                    protection.setLastAccessed(timestamp);
+                    protection.saveLastAccessed();
+                }
                 messageInActionBar = true;
             }
         }
