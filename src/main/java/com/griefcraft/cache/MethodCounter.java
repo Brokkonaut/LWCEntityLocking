@@ -1,19 +1,19 @@
 package com.griefcraft.cache;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class MethodCounter {
 
     /**
      * A map of the counts
      */
-    private final Map<String, Integer> counts = new HashMap<String, Integer>();
+    private final Map<String, VariableInteger> counts = new HashMap<String, VariableInteger>();
 
     /**
      * Increment a method in the counts
@@ -40,7 +40,7 @@ public class MethodCounter {
      * @return
      */
     public int get(String method) {
-        return counts.containsKey(method) ? counts.get(method) : 0;
+        return counts.containsKey(method) ? counts.get(method).value : 0;
     }
 
     /**
@@ -49,7 +49,11 @@ public class MethodCounter {
      * @return
      */
     public Map<String, Integer> sortByValue() {
-        return Collections.unmodifiableMap(sortByComparator(counts, false));
+        HashMap<String, Integer> out = new HashMap<>();
+        for (Entry<String, VariableInteger> e : counts.entrySet()) {
+            out.put(e.getKey(), e.getValue().value);
+        }
+        return Collections.unmodifiableMap(sortByComparator(out, false));
     }
 
     /**
@@ -59,12 +63,13 @@ public class MethodCounter {
      * @param delta
      */
     private void deltaMethod(String method, int delta) {
-        if (!counts.containsKey(method)) {
-            counts.put(method, delta);
+        VariableInteger value = counts.get(method);
+        if (value == null) {
+            counts.put(method, new VariableInteger(delta));
             return;
         }
 
-        counts.put(method, counts.get(method) + delta);
+        value.value = value.value + delta;
     }
 
     /**
@@ -77,7 +82,7 @@ public class MethodCounter {
      * @return
      */
     private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order) {
-        List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+        ArrayList<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(unsortMap.entrySet());
 
         // Sorting the list based on values
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
@@ -101,4 +106,11 @@ public class MethodCounter {
         return sortedMap;
     }
 
+    private class VariableInteger {
+        public int value;
+
+        public VariableInteger(int value) {
+            this.value = value;
+        }
+    }
 }

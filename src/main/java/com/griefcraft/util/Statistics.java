@@ -148,7 +148,6 @@ public class Statistics {
         sender.sendMessage("  Engine: " + Colors.Green + Database.DefaultType);
         sender.sendMessage("  Protections: " + Colors.Green + formatNumber(lwc.getPhysicalDatabase().getProtectionCount()));
         sender.sendMessage("  Queries: " + Colors.Green + formatNumber(queries) + " | " + String.format("%.2f", getAverage(queries)) + " / second");
-        sender.sendMessage("  Database Update Queue: " + Colors.Green + formatNumber(LWC.getInstance().getDatabaseThread().size()));
         sender.sendMessage(" ");
 
         sender.sendMessage(Colors.Red + " ==== Cache ==== ");
