@@ -1733,6 +1733,20 @@ public class PhysDB extends Database {
         }
     }
 
+
+    public void saveProtectionLastAccessed(Protection protection) {
+        try {
+            PreparedStatement statement = prepare("UPDATE " + prefix + "protections SET last_accessed = ? WHERE id = ?");
+
+            statement.setLong(1, protection.getLastAccessed());
+            statement.setInt(2, protection.getId());
+            
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        }
+    }
+    
     /**
      * Free a chest from protection
      *
@@ -2144,5 +2158,4 @@ public class PhysDB extends Database {
             }
         }
     }
-
 }

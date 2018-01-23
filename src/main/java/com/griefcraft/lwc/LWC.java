@@ -54,7 +54,6 @@ import com.griefcraft.modules.admin.AdminClear;
 import com.griefcraft.modules.admin.AdminDump;
 import com.griefcraft.modules.admin.AdminExpire;
 import com.griefcraft.modules.admin.AdminFind;
-import com.griefcraft.modules.admin.AdminFlush;
 import com.griefcraft.modules.admin.AdminForceOwner;
 import com.griefcraft.modules.admin.AdminLocale;
 import com.griefcraft.modules.admin.AdminPurge;
@@ -99,7 +98,6 @@ import com.griefcraft.scripting.event.LWCSendLocaleEvent;
 import com.griefcraft.sql.Database;
 import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.Colors;
-import com.griefcraft.util.DatabaseThread;
 import com.griefcraft.util.ProtectionFinder;
 import com.griefcraft.util.Statistics;
 import com.griefcraft.util.StringUtil;
@@ -178,11 +176,6 @@ public class LWC {
      * Plugin instance
      */
     private LWCPlugin plugin;
-
-    /**
-     * Updates to the database that can be ran on a seperate thread
-     */
-    private DatabaseThread databaseThread;
 
     /**
      * The permissions handler
@@ -606,13 +599,6 @@ public class LWC {
         // destroy the modules
         moduleLoader.shutdown();
 
-        log("Flushing protection updates (" + databaseThread.size() + ")");
-
-        if (databaseThread != null) {
-            databaseThread.stop();
-            databaseThread = null;
-        }
-
         if (physicalDatabase != null) {
             physicalDatabase.dispose();
         }
@@ -680,7 +666,7 @@ public class LWC {
                     || protection.getAccess(player.getUniqueId().toString(),
                             Permission.Type.PLAYER) != Permission.Access.NONE) {
                 protection.setLastAccessed(timestamp);
-                protection.save();
+                protection.saveLastAccessed();
                 messageInActionBar = true;
             }
         }
@@ -1097,9 +1083,6 @@ public class LWC {
         int totalProtections = physicalDatabase.getProtectionCount();
         int completed = 0;
         int count = 0;
-
-        // flush all changes to the database before working on the live database
-        databaseThread.flush();
 
         if (shouldRemoveBlocks) {
             removeBlocks = new LinkedList<Block>();
@@ -1697,7 +1680,6 @@ public class LWC {
         Statistics.init();
 
         physicalDatabase = new PhysDB();
-        databaseThread = new DatabaseThread(this);
 
         // Permissions init
         permissions = new SuperPermsPermissions();
@@ -1766,7 +1748,6 @@ public class LWC {
         registerModule(new AdminCleanup());
         registerModule(new AdminClear());
         registerModule(new AdminFind());
-        registerModule(new AdminFlush());
         registerModule(new AdminForceOwner());
         registerModule(new AdminLocale());
         registerModule(new AdminPurge());
@@ -2039,12 +2020,9 @@ public class LWC {
      */
     public void reloadDatabase() {
         try {
-            databaseThread.flush();
-            databaseThread.stop();
             physicalDatabase = new PhysDB();
             physicalDatabase.connect();
             physicalDatabase.load();
-            databaseThread = new DatabaseThread(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2158,13 +2136,6 @@ public class LWC {
      */
     public ProtectionCache getProtectionCache() {
         return protectionCache;
-    }
-
-    /**
-     * @return the update thread
-     */
-    public DatabaseThread getDatabaseThread() {
-        return databaseThread;
     }
 
     /**

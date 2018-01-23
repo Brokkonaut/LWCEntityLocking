@@ -824,7 +824,6 @@ public class Protection {
         removed = true;
 
         // and now finally remove it from the database
-        lwc.getDatabaseThread().removeProtection(this);
         lwc.getPhysicalDatabase().removeProtection(id);
         removeCache();
     }
@@ -869,7 +868,15 @@ public class Protection {
             return;
         }
 
-        LWC.getInstance().getDatabaseThread().addProtection(this);
+        saveNow(); // LWC.getInstance().getDatabaseThread().addProtection(this);
+    }
+    
+    public void saveLastAccessed() {
+        if (removed) {
+            return;
+        }
+        
+        LWC.getInstance().getPhysicalDatabase().saveProtectionLastAccessed(this);
     }
 
     /**
