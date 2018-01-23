@@ -62,7 +62,7 @@ public class ProtectionCache {
 	 * Weak references to protections and their cache key
 	 * (protection.getCacheKey())
 	 */
-	private final WeakLRUCache<String, Protection> byCacheKey;
+	private final WeakLRUCache<CacheKey, Protection> byCacheKey;
 
 	/**
 	 * Weak references to protections and their protection id
@@ -73,12 +73,14 @@ public class ProtectionCache {
 	 * A block that isn't the protected block itself but matches it in a
 	 * protection matcher
 	 */
-	private final WeakLRUCache<String, Protection> byKnownBlock;
+	private final WeakLRUCache<CacheKey, Protection> byKnownBlock;
 
 	/**
 	 * A cache of blocks that are known to not have a protection
 	 */
-	private final LRUCache<String, Object> byKnownNulls;
+	private final LRUCache<CacheKey, Object> byKnownNulls;
+	
+	private final LRUCache<CacheKey, Object> directByKnownNulls;
 
 	/**
 	 * The capacity of the cache
@@ -105,11 +107,13 @@ public class ProtectionCache {
 		this.capacity = lwc.getConfiguration().getInt("core.cacheSize", 10000);
 
 		this.references = new LRUCache<Protection, Object>(capacity);
-		this.byCacheKey = new WeakLRUCache<String, Protection>(capacity);
+		this.byCacheKey = new WeakLRUCache<CacheKey, Protection>(capacity);
 		this.byId = new WeakLRUCache<Integer, Protection>(capacity);
-		this.byKnownBlock = new WeakLRUCache<String, Protection>(capacity);
-		this.byKnownNulls = new LRUCache<String, Object>(Math.min(10000,
+		this.byKnownBlock = new WeakLRUCache<CacheKey, Protection>(capacity);
+		this.byKnownNulls = new LRUCache<CacheKey, Object>(Math.min(10000,
 				capacity)); // enforce a min size so we have a known buffer
+		this.directByKnownNulls = new LRUCache<CacheKey, Object>(Math.min(10000,
+                capacity));
 	}
 
 	/**
@@ -181,6 +185,7 @@ public class ProtectionCache {
 		byId.clear();
 		byKnownBlock.clear();
 		byKnownNulls.clear();
+		directByKnownNulls.clear();
 	}
 
 	/**
@@ -214,7 +219,7 @@ public class ProtectionCache {
 		counter.increment("addProtection");
 		
 		byKnownNulls.remove(protection.getCacheKey());
-
+		directByKnownNulls.remove(protection.getCacheKey());
 		// Add the hard reference
 		references.put(protection, null);
 
@@ -229,7 +234,7 @@ public class ProtectionCache {
 			for (BlockState state : protection.getProtectionFinder()
 					.getBlocks()) {
 				if (!protectedBlock.equals(state.getBlock())) {
-					String cacheKey = cacheKey(state.getLocation());
+				    CacheKey cacheKey = cacheKey(state.getLocation());
 					byKnownBlock.put(cacheKey, protection);
 				}
 			}
@@ -265,10 +270,11 @@ public class ProtectionCache {
 	 *
 	 * @param cacheKey
 	 */
-	public void remove(String cacheKey) {
+	public void remove(CacheKey cacheKey) {
 		byCacheKey.remove(cacheKey);
 		byKnownBlock.remove(cacheKey);
 		byKnownNulls.remove(cacheKey);
+		directByKnownNulls.remove(cacheKey);
 	}
 
 	/**
@@ -276,7 +282,7 @@ public class ProtectionCache {
 	 *
 	 * @param cacheKey
 	 */
-	public void addKnownNull(String cacheKey) {
+	public void addKnownNull(CacheKey cacheKey) {
 		counter.increment("addKnownNull");
 		byKnownNulls.put(cacheKey, FAKE_VALUE);
 	}
@@ -287,10 +293,31 @@ public class ProtectionCache {
 	 * @param cacheKey
 	 * @return
 	 */
-	public boolean isKnownNull(String cacheKey) {
+	public boolean isKnownNull(CacheKey cacheKey) {
 		counter.increment("isKnownNull");
 		return byKnownNulls.containsKey(cacheKey);
 	}
+
+    /**
+     * Make a cache key known as null in the cache
+     *
+     * @param cacheKey
+     */
+    public void addDirectKnownNull(CacheKey cacheKey) {
+        counter.increment("addDirectKnownNull");
+        directByKnownNulls.put(cacheKey, FAKE_VALUE);
+    }
+
+    /**
+     * Check if a cache key is known to not exist in the database
+     *
+     * @param cacheKey
+     * @return
+     */
+    public boolean isDirectKnownNull(CacheKey cacheKey) {
+        counter.increment("isDirectKnownNull");
+        return directByKnownNulls.containsKey(cacheKey);
+    }
 
 	/**
 	 * Get a protection in the cache via its cache key
@@ -298,7 +325,7 @@ public class ProtectionCache {
 	 * @param cacheKey
 	 * @return
 	 */
-	public Protection getProtection(String cacheKey) {
+	public Protection getProtection(CacheKey cacheKey) {
 		counter.increment("getProtection");
 
 		Protection protection;
@@ -352,7 +379,7 @@ public class ProtectionCache {
 	 * @param location
 	 * @return
 	 */
-	public static String cacheKey(Location location) {
+	public static CacheKey cacheKey(Location location) {
 		return cacheKey(location.getWorld().getName(), location.getBlockX(),
 				location.getBlockY(), location.getBlockZ());
 	}
@@ -366,9 +393,9 @@ public class ProtectionCache {
 	 * @param z
 	 * @return
 	 */
-	public static String cacheKey(String world, int x, int y, int z) {
-		return world + ":" + x + ":" + y + ":" + z;
-	}
+    public static CacheKey cacheKey(String world, int x, int y, int z) {
+        return new CacheKey(world, x, y, z);
+    }
 
 	/**
 	 * Fixes the internal caches and adjusts them to the new cache total
@@ -380,6 +407,7 @@ public class ProtectionCache {
 		byId.maxCapacity = totalCapacity();
 		byKnownBlock.maxCapacity = totalCapacity();
 		byKnownNulls.maxCapacity = totalCapacity();
+		directByKnownNulls.maxCapacity = totalCapacity();
 	}
 
 	public LWC getLwc() {

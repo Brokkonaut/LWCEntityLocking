@@ -28,6 +28,7 @@
 
 package com.griefcraft.listeners;
 
+import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
@@ -84,7 +85,7 @@ public class LWCBlockListener implements Listener {
 			BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP,
 			BlockFace.DOWN };
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		if (!LWC.ENABLED) {
 			return;
@@ -111,8 +112,8 @@ public class LWCBlockListener implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void onStructureGrow(StructureGrowEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onStructureGrow(StructureGrowEvent event) {
 		if (!LWC.ENABLED) {
 			return;
 		}
@@ -139,7 +140,7 @@ public class LWCBlockListener implements Listener {
 		}
 	}
 
-	@EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent event) {
 		if (!LWC.ENABLED || event.isCancelled()) {
 			return;
@@ -167,7 +168,7 @@ public class LWCBlockListener implements Listener {
 	}
 
 	@SuppressWarnings("deprecation")
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent event) {
 		if (!LWC.ENABLED || event.isCancelled()) {
 			return;
@@ -186,7 +187,7 @@ public class LWCBlockListener implements Listener {
 		}
 
 		ProtectionCache cache = lwc.getProtectionCache();
-		String cacheKey = ProtectionCache.cacheKey(block.getLocation());
+		CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
 		// In the event they place a block, remove any known nulls there
 		if (cache.isKnownNull(cacheKey)) {
@@ -256,7 +257,7 @@ public class LWCBlockListener implements Listener {
 		}
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
 		LWC lwc = plugin.getLWC();
 		Block block = event.getBlock();
@@ -274,7 +275,7 @@ public class LWCBlockListener implements Listener {
 	}
 
 	@SuppressWarnings("deprecation")
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockPistonRetract(BlockPistonRetractEvent event) {
 		if ((!LWC.ENABLED) || (event.isCancelled())) {
 			return;
@@ -316,7 +317,7 @@ public class LWCBlockListener implements Listener {
 	}
 
 	@SuppressWarnings("deprecation")
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockPistonExtend(BlockPistonExtendEvent event) {
 		if (!LWC.ENABLED || event.isCancelled()) {
 			return;
@@ -376,7 +377,7 @@ public class LWCBlockListener implements Listener {
 	}
 
 	@SuppressWarnings("deprecation")
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockPlace(BlockPlaceEvent event) {
 		if (!LWC.ENABLED) {
 			return;
@@ -387,7 +388,7 @@ public class LWCBlockListener implements Listener {
 		Block block = event.getBlockPlaced();
 
 		ProtectionCache cache = lwc.getProtectionCache();
-		String cacheKey = ProtectionCache.cacheKey(block.getLocation());
+		CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
 		// In the event they place a block, remove any known nulls there
 		if (cache.isKnownNull(cacheKey)) {

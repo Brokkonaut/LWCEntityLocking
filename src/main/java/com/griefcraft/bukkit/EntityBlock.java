@@ -29,15 +29,15 @@ public class EntityBlock implements Block {
 	}
 	@Override
 	public int getX() {
-		return 50000 + this.entity.getUniqueId().hashCode();
+		return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
 	}
 	@Override
 	public int getY() {
-		return 50000 + this.entity.getUniqueId().hashCode();
+		return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
 	}
 	@Override
 	public int getZ() {
-		return 50000 + this.entity.getUniqueId().hashCode();
+		return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
 	}
 	@Override
 	public int getTypeId() {

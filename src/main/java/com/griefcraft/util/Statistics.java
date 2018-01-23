@@ -58,6 +58,22 @@ public class Statistics {
      */
     private static long startTime = 0L;
 
+    private static long entityCacheHit;
+
+    private static long entityCacheHitNull;
+
+    private static long entityCacheMiss;
+
+    private static long entityCacheMissNull;
+
+    private static long blockCacheHit;
+
+    private static long blockCacheHitNull;
+
+    private static long blockCacheMiss;
+
+    private static long blockCacheMissNull;
+
     /**
      * Add a query
      */
@@ -132,6 +148,7 @@ public class Statistics {
         sender.sendMessage("  Engine: " + Colors.Green + Database.DefaultType);
         sender.sendMessage("  Protections: " + Colors.Green + formatNumber(lwc.getPhysicalDatabase().getProtectionCount()));
         sender.sendMessage("  Queries: " + Colors.Green + formatNumber(queries) + " | " + String.format("%.2f", getAverage(queries)) + " / second");
+        sender.sendMessage("  Database Update Queue: " + Colors.Green + formatNumber(LWC.getInstance().getDatabaseThread().size()));
         sender.sendMessage(" ");
 
         sender.sendMessage(Colors.Red + " ==== Cache ==== ");
@@ -150,6 +167,8 @@ public class Statistics {
         }
 
         sender.sendMessage("  Usage: " + cacheColour + String.format("%.2f", cachePercentFilled) + "% " + Colors.White + " ( " + cache.size() + "/" + cache.totalCapacity() + " [" + cache.capacity() + "+" + cache.adaptiveCapacity() + "] )");
+        sender.sendMessage("  Blocks: " + Colors.Green + "Hit: " + formatNumber(blockCacheHit) + " + " + formatNumber(blockCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(blockCacheMiss) + " + " + formatNumber(blockCacheMissNull));
+        sender.sendMessage("  Entities: " + Colors.Green + "Hit: " + formatNumber(entityCacheHit) + " + " + formatNumber(entityCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(entityCacheMiss) + " + " + formatNumber(entityCacheMissNull));
         sender.sendMessage("  Profile: ");
         sendMethodCounter(sender, cache.getMethodCounter());
         // sender.sendMessage("  Reads: " + formatNumber(cache.getReads()) + " | " + String.format("%.2f", getAverage(cache.getReads())) + " / second");
@@ -193,4 +212,68 @@ public class Statistics {
         startTime = System.currentTimeMillis();
     }
 
+    public static void addEntityCacheHit() {
+        entityCacheHit++;
+    }
+
+    public static void addEntityCacheHitNull() {
+        entityCacheHitNull++;
+    }
+
+    public static void addEntityCacheMiss() {
+        entityCacheMiss++;
+    }
+
+    public static void addEntityCacheMissNull() {
+        entityCacheMissNull++;
+    }
+
+    public static long getEntityCacheHit() {
+        return entityCacheHit;
+    }
+
+    public static long getEntityCacheHitNull() {
+        return entityCacheHitNull;
+    }
+
+    public static long getEntityCacheMiss() {
+        return entityCacheMiss;
+    }
+
+    public static long getEntityCacheMissNull() {
+        return entityCacheMissNull;
+    }
+
+
+    public static void addBlockCacheHit() {
+        blockCacheHit++;
+    }
+
+    public static void addBlockCacheHitNull() {
+        blockCacheHitNull++;
+    }
+
+    public static void addBlockCacheMiss() {
+        blockCacheMiss++;
+    }
+
+    public static void addBlockCacheMissNull() {
+        blockCacheMissNull++;
+    }
+
+    public static long getBlockCacheHit() {
+        return blockCacheHit;
+    }
+
+    public static long getBlockCacheHitNull() {
+        return blockCacheHitNull;
+    }
+
+    public static long getBlockCacheMiss() {
+        return blockCacheMiss;
+    }
+
+    public static long getBlockCacheMissNull() {
+        return blockCacheMissNull;
+    }
 }

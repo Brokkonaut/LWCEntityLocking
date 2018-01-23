@@ -29,6 +29,7 @@
 package com.griefcraft.lwc;
 
 import com.griefcraft.bukkit.EntityBlock;
+import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.integration.ICurrency;
 import com.griefcraft.integration.IPermissions;
@@ -1323,7 +1324,7 @@ public class LWC {
      */
     public Protection findProtection(Entity entity) {
         int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
-        String cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
+        CacheKey cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
         if (protectionCache.isKnownNull(cacheKey)) {
             return null;
         }
@@ -1341,7 +1342,7 @@ public class LWC {
      * @return
      */
     public Protection findProtection(Location location) {
-        String cacheKey = ProtectionCache.cacheKey(location);
+        CacheKey cacheKey = ProtectionCache.cacheKey(location);
 
         if (protectionCache.isKnownNull(cacheKey)) {
             return null;
@@ -1379,7 +1380,7 @@ public class LWC {
             return physicalDatabase.loadProtection(block.getWorld().getName(),
                     block.getX(), block.getY(), block.getZ());
         }
-
+        
         // Create a protection finder
         ProtectionFinder finder = new ProtectionFinder(this);
 
