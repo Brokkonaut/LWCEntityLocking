@@ -824,19 +824,10 @@ public class LWCPlayerListener implements Listener {
 			}
 
 			// Are they inserting a stack?
-			if (cursor != null && item.getType() == cursor.getType()) {
-				boolean enchantmentsEqual = areEnchantmentsEqual(item, cursor);
-
+			if (cursor != null && item.isSimilar(cursor)) {
 				// If they are clicking an item of the stack type, they are
-				// inserting it into the inventory,
-				// not switching it
-				// As long as the item isn't a degradable item, we can
-				// explicitly allow it if they have the same durability
-				if (item.getDurability() == cursor.getDurability()
-						&& item.getAmount() == cursor.getAmount()
-						&& enchantmentsEqual) {
-					return;
-				}
+				// inserting it into the inventory, not switching it
+			    return;
 			}
 		}
 
@@ -861,48 +852,4 @@ public class LWCPlayerListener implements Listener {
 			event.setCancelled(true);
 		}
 	}
-
-	/**
-	 * Compares the enchantments on two item stacks and checks that they are
-	 * equal (identical)
-	 *
-	 * @param stack1
-	 * @param stack2
-	 * @return
-	 */
-	private boolean areEnchantmentsEqual(ItemStack stack1, ItemStack stack2) {
-		if (stack1 == null || stack2 == null) {
-			return false;
-		}
-
-		Map<Enchantment, Integer> enchantments1 = stack1.getEnchantments();
-		Map<Enchantment, Integer> enchantments2 = stack2.getEnchantments();
-
-		if (enchantments1.size() != enchantments2.size()) {
-			return false;
-		}
-
-		// Enchanted Books use ItemMeta
-		if (stack1.getItemMeta() != null && stack2.getItemMeta() != null) {
-			if (!stack1.getItemMeta().equals(stack2.getItemMeta())) {
-				return false;
-			}
-		}
-
-		for (Enchantment enchantment : enchantments1.keySet()) {
-			if (!enchantments2.containsKey(enchantment)) {
-				return false;
-			}
-
-			int level1 = enchantments1.get(enchantment);
-			int level2 = enchantments2.get(enchantment);
-
-			if (level1 != level2) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
 }
