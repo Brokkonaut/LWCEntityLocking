@@ -33,6 +33,7 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.sql.PhysDB;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 public class DatabaseMigrator {
@@ -67,6 +68,11 @@ public class DatabaseMigrator {
                 if (expectedProtections != (protectionCount = fromDatabase.getProtectionCount())) {
                     logger.info("Weird, only " + protectionCount + " protections are in the database? Continuing...");
                 }
+            }
+
+            // convert block mappings
+            for (Entry<Integer, String> e : fromDatabase.loadBlockMappings().entrySet()) {
+                toDatabase.addBlockMapping(e.getKey(), e.getValue());
             }
 
             if (historyCount > 0) {
