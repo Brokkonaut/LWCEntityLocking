@@ -48,7 +48,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("deprecation")
 public class LimitsV2 extends JavaModule {
 
     /**
@@ -80,26 +79,6 @@ public class LimitsV2 extends JavaModule {
      * A map of all of the group limits - downcasted to lowercase to simplify comparisons
      */
     private final Map<String, List<Limit>> groupLimits = new HashMap<String, List<Limit>>();
-
-    /**
-     * A map mapping string representations of materials to their Material counterpart
-     */
-    private final Map<String, Material> materialCache = new HashMap<String, Material>();
-
-    {
-        for (Material material : Material.values()) {
-            String materialName = LWC.normalizeMaterialName(material);
-
-            // add the name & the block id
-            materialCache.put(materialName, material);
-            materialCache.put(material.getId() + "", material);
-            materialCache.put(materialName, material);
-
-            if (!materialName.equals(material.toString().toLowerCase())) {
-                materialCache.put(material.toString().toLowerCase(), material);
-            }
-        }
-    }
 
     public abstract class Limit {
 
@@ -156,7 +135,7 @@ public class LimitsV2 extends JavaModule {
 
         @Override
         public int getProtectionCount(Player player, Material material) {
-            return LWC.getInstance().getPhysicalDatabase().getProtectionCount(player.getName(), material.getId());
+            return LWC.getInstance().getPhysicalDatabase().getProtectionCount(player.getName(), material);
         }
 
         /**
@@ -177,8 +156,8 @@ public class LimitsV2 extends JavaModule {
         @Override
         public int getProtectionCount(Player player, Material material) {
             LWC lwc = LWC.getInstance();
-            return lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.SIGN_POST.getId())
-                    + lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.WALL_SIGN.getId());
+            return lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.SIGN_POST)
+                    + lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.WALL_SIGN);
         }
 
     }
@@ -383,7 +362,7 @@ public class LimitsV2 extends JavaModule {
             } else if (matchName.equals("sign")) {
                 limits.add(new SignLimit(count));
             } else {
-                Material material = materialCache.get(matchName);
+                Material material = Material.matchMaterial(matchName);
 
                 if (material == null) {
                     continue;
@@ -614,21 +593,8 @@ public class LimitsV2 extends JavaModule {
             } else if (key.equalsIgnoreCase("sign")) {
                 limits.add(new SignLimit(limit));
             } else {
-                // attempt to resolve it as a block id
-                int blockId = -1;
-
-                try {
-                    blockId = Integer.parseInt(key);
-                } catch (NumberFormatException e) { }
-
                 // resolve the material
-                Material material;
-
-                if (blockId >= 0) {
-                    material = Material.getMaterial(blockId);
-                } else {
-                    material = Material.getMaterial(key.toUpperCase());
-                }
+                Material material = Material.matchMaterial(key);
 
                 if (material != null) {
                     limits.add(new BlockLimit(material, limit));

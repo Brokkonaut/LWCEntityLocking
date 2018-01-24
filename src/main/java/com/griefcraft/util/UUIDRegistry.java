@@ -122,7 +122,6 @@ public class UUIDRegistry {
      * @return
      * @throws Exception
      */
-    @SuppressWarnings("deprecation")
     public static UUID getUUID(String name) {
         String nameLower = name.toLowerCase();
 

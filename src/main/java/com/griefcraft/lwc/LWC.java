@@ -189,7 +189,7 @@ public class LWC {
     private EnumSet<EntityType> protectableEntites = EnumSet.noneOf(EntityType.class);
     
     private EnumSet<Material> protectableBlocks = EnumSet.noneOf(Material.class);
-
+    
     /**
      * Protection configuration cache
      */
@@ -211,17 +211,6 @@ public class LWC {
      */
     public static LWC getInstance() {
         return instance;
-    }
-
-    /**
-     * Get a string representation of a block type
-     *
-     * @param id
-     * @return
-     */
-    @SuppressWarnings("deprecation")
-    public static String materialToString(int id) {
-        return materialToString(Material.getMaterial(id));
     }
 
     /**
@@ -283,7 +272,6 @@ public class LWC {
      *
      * @param block
      */
-    @SuppressWarnings("deprecation")
     public void adjustChestDirection(Block block, BlockFace face) {
         if (block.getType() != Material.CHEST) {
             return;
@@ -441,7 +429,6 @@ public class LWC {
      * @param itemStack
      * @return remaining items (if any)
      */
-    @SuppressWarnings("deprecation")
     public Map<Integer, ItemStack> depositItems(Block block, ItemStack itemStack) {
         BlockState blockState;
 
@@ -632,7 +619,6 @@ public class LWC {
      * @param block
      * @return true if the player was granted access
      */
-    @SuppressWarnings("deprecation")
     public boolean enforceAccess(Player player, Protection protection,
             Block block, boolean hasAccess) {
         MessageParser parser = plugin.getMessageParser();
@@ -642,9 +628,8 @@ public class LWC {
         }
 
         // support for old protection dbs that do not contain the block id
-        if ((protection.getBlockId() <= 0 && block.getTypeId() != protection
-                        .getBlockId())) {
-            protection.setBlockId(block.getTypeId());
+        if ((protection.getBlockId() <= 0 && block.getType() != protection.getBlockMaterial())) {
+            protection.setBlockMaterial(block.getType());
             protection.save();
         }
 
@@ -742,7 +727,6 @@ public class LWC {
      * @param protection
      * @return
      */
-    @SuppressWarnings("deprecation")
     public boolean canAccessProtection(Player player, Protection protection) {
         if (protection == null || player == null) {
             return true;
@@ -801,10 +785,9 @@ public class LWC {
                 }
 
                 // Get the item they need to have
-                int item = Integer.parseInt(permission.getName());
 
                 // Are they wielding it?
-                if (player.getItemInHand().getTypeId() == item) {
+                if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
                     return true;
                 }
             }
@@ -1058,9 +1041,8 @@ public class LWC {
         return ret;
     }
 
-    @SuppressWarnings("deprecation")
     public static UUID convert(String uuid) {
-        if (Bukkit.getOfflinePlayer(uuid).isOnline() == true) {
+        if (Bukkit.getPlayer(uuid) != null) {
             return Bukkit.getPlayer(uuid).getUniqueId();
         } else {
             return Bukkit.getOfflinePlayer(uuid).getUniqueId();
@@ -1290,7 +1272,6 @@ public class LWC {
      * @param block2
      * @return
      */
-    @SuppressWarnings("deprecation")
     public boolean blockEquals(Block block, Block block2) {
         return block.getType() == block2.getType()
                 && block.getX() == block2.getX()
@@ -1396,7 +1377,6 @@ public class LWC {
      * @return
      */
 
-    @SuppressWarnings("deprecation")
     public boolean blockEquals(BlockState block, BlockState block2) {
         return block.getType() == block2.getType()
                 && block.getX() == block2.getX()
@@ -1575,7 +1555,6 @@ public class LWC {
      * @param node
      * @return
      */
-    @SuppressWarnings("deprecation")
     public String resolveProtectionConfiguration(Block block, String node) {
         if(block == null) {
             return null;
@@ -1595,7 +1574,6 @@ public class LWC {
 
         // add the name & the block id
         names.add(materialName);
-        names.add(material.getId() + "");
 
         if (!materialName.equals(material.toString().toLowerCase())) {
             names.add(material.toString().toLowerCase());
@@ -1626,7 +1604,6 @@ public class LWC {
      * @param node
      * @return
      */
-    @SuppressWarnings("deprecation")
     public String resolveProtectionConfiguration(Material material, String node) {
         if (material == null) {
             return null;
@@ -1642,7 +1619,6 @@ public class LWC {
 
         // add the name & the block id
         names.add(materialName);
-        names.add(material.getId() + "");
 
         if (!materialName.equals(material.toString().toLowerCase())) {
             names.add(material.toString().toLowerCase());
@@ -1710,7 +1686,8 @@ public class LWC {
         // check any major conversions
         new MySQLPost200().run();
 
-        preloadProtectables();
+        preloadProtectables();        
+        BlockMap.instance().init();
         
         // precache protections
         physicalDatabase.precache();
@@ -2149,5 +2126,4 @@ public class LWC {
     public boolean isHistoryEnabled() {
         return !configuration.getBoolean("core.disableHistory", false);
     }
-
 }

@@ -38,7 +38,6 @@ import org.bukkit.command.CommandSender;
 
 public class AdminBackup extends JavaModule {
 
-    @SuppressWarnings("deprecation")
 	@Override
     public void onCommand(LWCCommandEvent event) {
         if (event.isCancelled()) {
@@ -80,7 +79,7 @@ public class AdminBackup extends JavaModule {
             final String backupName = StringUtil.join(args, 2);
             sender.sendMessage("Restoring backup " + backupName);
 
-            lwc.getPlugin().getServer().getScheduler().scheduleAsyncDelayedTask(lwc.getPlugin(), new Runnable() {
+            lwc.getPlugin().getServer().getScheduler().runTaskAsynchronously(lwc.getPlugin(), new Runnable() {
                 public void run() {
                     BackupManager.Result result = lwc.getBackupManager().restoreBackup(backupName);
                     sender.sendMessage("Result: " + result);

@@ -28,9 +28,11 @@
 
 package com.griefcraft.io;
 
+import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -87,7 +89,6 @@ public class RestorableBlock implements Restorable {
         LWC lwc = LWC.getInstance();
 
         lwc.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(lwc.getPlugin(), new Runnable() {
-            @SuppressWarnings("deprecation")
 			public void run() {
                 Server server = Bukkit.getServer();
 
@@ -103,8 +104,11 @@ public class RestorableBlock implements Restorable {
                 Block block = bworld.getBlockAt(x, y, z);
 
                 // Begin screwing with shit :p
-                block.setTypeId(id);
-                block.setData((byte) data);
+                Material mat = BlockMap.instance().getMaterial(id);
+                if (mat != null) {
+                    block.setType(mat);
+                    block.setData((byte) data);
+                }
 
                 if (items.size() > 0) {
                     if (!(block.getState() instanceof InventoryHolder)) {
@@ -137,14 +141,13 @@ public class RestorableBlock implements Restorable {
      * @param block
      * @return
      */
-    @SuppressWarnings("deprecation")
 	public static RestorableBlock wrapBlock(Block block) {
         if (block == null) {
             return null;
         }
 
         RestorableBlock rblock = new RestorableBlock();
-        rblock.id = block.getTypeId();
+        rblock.id = BlockMap.instance().registerOrGetId(block.getType());
         rblock.world = block.getWorld().getName();
         rblock.x = block.getX();
         rblock.y = block.getY();

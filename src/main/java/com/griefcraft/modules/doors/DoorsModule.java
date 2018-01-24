@@ -104,7 +104,6 @@ public class DoorsModule extends JavaModule {
         loadAction();
     }
 
-    @SuppressWarnings("deprecation")
 	@Override
     public void onProtectionInteract(LWCProtectionInteractEvent event) {
         if (event.getResult() == Result.CANCEL || !isEnabled() || event.getEvent().getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK || event.getPlayer().isSneaking()) {
@@ -202,7 +201,6 @@ public class DoorsModule extends JavaModule {
      * @param allowDoorToOpen If FALSE, and the door is currently CLOSED, it will NOT be opened!
      * @param doors Blocks given must be the bottom block of the door
      */
-    @SuppressWarnings("deprecation")
 	private void changeDoorStates(boolean allowDoorToOpen, Block... doors) {
         for (Block door : doors) {
             if (door == null) {

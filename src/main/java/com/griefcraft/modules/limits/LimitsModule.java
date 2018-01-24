@@ -122,14 +122,13 @@ public class LimitsModule extends JavaModule {
      * @param block
      * @return true if the player reached their limit
      */
-    @SuppressWarnings("deprecation")
 	public boolean hasReachedLimit(Player player, Block block) {
         if (configuration == null) {
             return false;
         }
 
         LWC lwc = LWC.getInstance();
-        int limit = mapProtectionLimit(player, block.getTypeId());
+        int limit = mapProtectionLimit(player, block.getType());
 
         // if they're limit is unlimited, how could they get above it? :)
         if (limit == UNLIMITED) {
@@ -141,7 +140,7 @@ public class LimitsModule extends JavaModule {
 
         switch (type) {
             case CUSTOM:
-                protections = lwc.getPhysicalDatabase().getProtectionCount(player.getName(), block.getTypeId());
+                protections = lwc.getPhysicalDatabase().getProtectionCount(player.getName(), block.getType());
                 break;
 
             case DEFAULT:
@@ -203,8 +202,7 @@ public class LimitsModule extends JavaModule {
      * @param blockId
      * @return
      */
-    @SuppressWarnings("deprecation")
-	public int mapProtectionLimit(Player player, int blockId) {
+	public int mapProtectionLimit(Player player, Material block) {
         if (configuration == null) {
             return 0;
         }
@@ -221,7 +219,7 @@ public class LimitsModule extends JavaModule {
         }
 
         // Try the block id now
-        int blockLimit = searchPermissionsForInteger(player, PERMISSION_NODE_BLOCK + blockId + ".");
+        int blockLimit = searchPermissionsForInteger(player, PERMISSION_NODE_BLOCK + block.name() + ".");
 
         if (blockLimit != -1) {
             return blockLimit;
@@ -235,11 +233,11 @@ public class LimitsModule extends JavaModule {
 
             case CUSTOM:
                 // first try the block id
-                limit = resolveInteger(player, blockId + "");
+                // limit = resolveInteger(player, blockId + "");
 
                 // and now try the name
-                if (limit == -1 && blockId > 0) {
-                    String name = StringUtils.replace(Material.getMaterial(blockId).toString().toLowerCase(), "block", "");
+                if (limit == -1) {
+                    String name = StringUtils.replace(block.name().toLowerCase(), "block", "");
 
                     if (name.endsWith("_")) {
                         name = name.substring(0, name.length() - 1);

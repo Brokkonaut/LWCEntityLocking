@@ -64,16 +64,15 @@ public class CreateModule extends JavaModule {
         Player player = event.getPlayer();
 
         if (protection.isOwner(player)) {
-            lwc.sendLocale(player, "protection.interact.error.alreadyregistered", "block", LWC.materialToString(protection.getBlockId()));
+            lwc.sendLocale(player, "protection.interact.error.alreadyregistered", "block", LWC.materialToString(protection.getBlockMaterial()));
         } else {
-            lwc.sendLocale(player, "protection.interact.error.notowner", "block", LWC.materialToString(protection.getBlockId()));
+            lwc.sendLocale(player, "protection.interact.error.notowner", "block", LWC.materialToString(protection.getBlockMaterial()));
         }
 
         lwc.removeModes(player);
         event.setResult(Result.CANCEL);
     }
 
-    @SuppressWarnings("deprecation")
 	@Override
     public void onBlockInteract(LWCBlockInteractEvent event) {
         if (event.getResult() != Result.DEFAULT) {
@@ -137,12 +136,12 @@ public class CreateModule extends JavaModule {
         Protection protection = null;
 
         if (protectionType.equals("public")) {
-            protection = physDb.registerProtection(block.getTypeId(), Protection.Type.PUBLIC, worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            protection = physDb.registerProtection(block.getType(), Protection.Type.PUBLIC, worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
             lwc.sendLocale(player, "protection.interact.create.finalize");
         } else if (protectionType.equals("password")) {
             String password = lwc.encrypt(protectionData);
 
-            protection = physDb.registerProtection(block.getTypeId(), Protection.Type.PASSWORD, worldName, player.getUniqueId().toString(), password, blockX, blockY, blockZ);
+            protection = physDb.registerProtection(block.getType(), Protection.Type.PASSWORD, worldName, player.getUniqueId().toString(), password, blockX, blockY, blockZ);
             player.addAccessibleProtection(protection);
 
             lwc.sendLocale(player, "protection.interact.create.finalize");
@@ -150,7 +149,7 @@ public class CreateModule extends JavaModule {
         } else if (protectionType.equals("private") || protectionType.equals("donation")) {
             String[] rights = protectionData.split(" ");
 
-            protection = physDb.registerProtection(block.getTypeId(), Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            protection = physDb.registerProtection(block.getType(), Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
 
             lwc.sendLocale(player, "protection.interact.create.finalize");
             lwc.processRightsModifications(player, protection, rights);

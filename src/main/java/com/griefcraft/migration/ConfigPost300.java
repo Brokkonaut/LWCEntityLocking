@@ -31,8 +31,6 @@ package com.griefcraft.migration;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.modules.pluginsupport.WorldGuard;
 
-import org.bukkit.Material;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -50,7 +48,6 @@ public class ConfigPost300 implements MigrationUtility {
     // e.g locale->core.locale
     private static Map<String, String> mappings = null;
 
-    @SuppressWarnings("deprecation")
 	public void run() {
         LWC lwc = LWC.getInstance();
         File configFile = new File("plugins/LWC/lwc.properties");
@@ -107,22 +104,6 @@ public class ConfigPost300 implements MigrationUtility {
             String[] split = protectionBlacklist.replaceAll(" ", "_").split(",");
 
             for (String protection : split) {
-                int blockId = 0;
-
-                try {
-                    blockId = Integer.parseInt(protection);
-                } catch (NumberFormatException e) {
-                }
-
-                // if it's an int, convert it
-                if (blockId > 0) {
-                    protection = Material.getMaterial(blockId).toString().toLowerCase().replaceAll("block", "");
-
-                    if (protection.endsWith("_")) {
-                        protection = protection.substring(0, protection.length() - 1);
-                    }
-                }
-
                 lwc.getConfiguration().setProperty("protections.blocks." + protection + ".enabled", false);
             }
         }

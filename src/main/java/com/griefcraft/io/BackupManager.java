@@ -217,7 +217,6 @@ public class BackupManager {
      * @param flags
      * @return
      */
-    @SuppressWarnings("deprecation")
 	public Backup createBackup(String name, final EnumSet<Flag> flags) {
         final LWC lwc = LWC.getInstance();
         final Plugin plugin = lwc.getPlugin();
@@ -230,7 +229,7 @@ public class BackupManager {
         try {
             final Backup backup = new Backup(backupFile, Backup.OperationMode.WRITE, flags);
 
-            scheduler.scheduleAsyncDelayedTask(plugin, new Runnable() {
+            scheduler.runTaskAsynchronously(plugin, new Runnable() {
                 public void run() {
                     try {
                         System.out.println("Processing backup request now in a separate thread");
