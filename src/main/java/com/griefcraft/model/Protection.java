@@ -31,6 +31,7 @@ package com.griefcraft.model;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
+import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
 import com.griefcraft.util.Colors;
@@ -221,6 +222,10 @@ public class Protection {
     private Block cachedBlock;
 
     private CacheKey cacheKey;
+
+    private Material blockMaterial;
+
+    private boolean isEntity;
 
     @Override
     public boolean equals(Object object) {
@@ -601,22 +606,21 @@ public class Protection {
      *
      * @return
      */
-    @SuppressWarnings("deprecation")
 	public boolean isBlockInWorld() {
-        int storedBlockId = getBlockId();
+        Material storedBlockId = getBlockMaterial();
         Block block = getBlock();
 
         switch (block.getType()) {
             case FURNACE:
             case BURNING_FURNACE:
-                return storedBlockId == Material.FURNACE.getId() || storedBlockId == Material.BURNING_FURNACE.getId();
+                return storedBlockId == Material.FURNACE || storedBlockId == Material.BURNING_FURNACE;
 
             case STEP:
             case DOUBLE_STEP:
-                    return storedBlockId == Material.STEP.getId() || storedBlockId == Material.DOUBLE_STEP.getId();
+                    return storedBlockId == Material.STEP || storedBlockId == Material.DOUBLE_STEP;
 
             default:
-                return storedBlockId == block.getTypeId();
+                return storedBlockId == block.getType();
         }
     }
 
@@ -626,6 +630,10 @@ public class Protection {
 
     public int getBlockId() {
         return blockId;
+    }
+    
+    public Material getBlockMaterial() {
+        return blockMaterial;
     }
 
     public String getPassword() {
@@ -668,12 +676,14 @@ public class Protection {
         return lastAccessed;
     }
 
-    public void setBlockId(int blockId) {
+    public void setBlockMaterial(Material material) {
         if (removed) {
             return;
         }
 
-        this.blockId = blockId;
+        this.blockId = material == null ? -1 : BlockMap.instance().registerOrGetId(material);
+        this.blockMaterial = material;
+        // this.blockId = blockId;
         this.modified = true;
     }
 
@@ -994,7 +1004,7 @@ public class Protection {
             lastAccessed += " ago";
         }
 
-        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockId)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
+        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockMaterial)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
     }
     
     public String toShortString() {
@@ -1015,12 +1025,12 @@ public class Protection {
         return StringUtil.capitalizeFirstLetter(type.toString());
     }
 
-    /**
-     * Updates the protection in the protection cache
-     */
-    @Deprecated
-    public void update() {
-        throw new UnsupportedOperationException("Protection.update() is no longer necessary!");
+    public void setIsEntity(boolean isEntity) {
+        this.isEntity = isEntity;
+        this.blockId = EntityBlock.ENTITY_BLOCK_ID;
     }
 
+    public boolean isEntity() {
+        return isEntity;
+    }
 }

@@ -81,29 +81,25 @@ public class VaultCurrency implements ICurrency {
         return economy.currencyNameSingular();
     }
 
-    @SuppressWarnings("deprecation")
 	public double getBalance(Player player) {
-        return economy.getBalance(player.getName());
+        return economy.getBalance(player);
     }
 
-    @SuppressWarnings("deprecation")
 	public boolean canAfford(Player player, double money) {
-        return economy.has(player.getName(), money);
+        return economy.has(player, money);
     }
 
     public boolean canCentralBankAfford(double money) {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
 	public double addMoney(Player player, double money) {
-        economy.depositPlayer(player.getName(), money);
+        economy.depositPlayer(player, money);
         return getBalance(player);
     }
 
-    @SuppressWarnings("deprecation")
 	public double removeMoney(Player player, double money) {
-        economy.withdrawPlayer(player.getName(), money);
+        economy.withdrawPlayer(player, money);
         return getBalance(player);
     }
 }

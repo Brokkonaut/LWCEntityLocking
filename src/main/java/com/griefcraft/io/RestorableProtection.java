@@ -28,11 +28,14 @@
 
 package com.griefcraft.io;
 
+import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import org.bukkit.Material;
 
 public class RestorableProtection implements Restorable {
 
@@ -98,9 +101,10 @@ public class RestorableProtection implements Restorable {
     @SuppressWarnings("unused")
 	public void restore() {
         LWC lwc = LWC.getInstance();
-        Protection protection = lwc.getPhysicalDatabase().registerProtection(blockId, Protection.Type.values()[protectionType],
-                world, owner, data, x, y, z);
-        // TODO fix the ID?
+        Material mat = BlockMap.instance().getMaterial(blockId); // TODO fix the ID?
+        if (mat != null) {
+            Protection protection = lwc.getPhysicalDatabase().registerProtection(mat, Protection.Type.values()[protectionType], world, owner, data, x, y, z);
+        }
     }
 
     /**

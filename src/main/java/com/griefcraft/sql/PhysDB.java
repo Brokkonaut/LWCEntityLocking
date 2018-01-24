@@ -28,9 +28,11 @@
 
 package com.griefcraft.sql;
 
+import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.LRUCache;
 import com.griefcraft.cache.ProtectionCache;
+import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Flag;
 import com.griefcraft.model.History;
@@ -44,6 +46,7 @@ import com.griefcraft.util.config.Configuration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -56,6 +59,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -222,14 +226,14 @@ public class PhysDB extends Database {
      * @param player
      * @return the amount of protections they have of blockId
      */
-    public int getProtectionCount(String player, int blockId) {
+    public int getProtectionCount(String player, Material block) {
         int count = 0;
 
         try {
             PreparedStatement statement = prepare("SELECT COUNT(*) AS count FROM " + prefix + "protections WHERE owner = ? AND blockId = ?");
             UUID uuid = UUIDRegistry.getUUID(player);
             statement.setString(1, uuid != null ? uuid.toString() : player);
-            statement.setInt(2, blockId);
+            statement.setInt(2, BlockMap.instance().getId(block));
 
             ResultSet set = statement.executeQuery();
 
@@ -276,6 +280,7 @@ public class PhysDB extends Database {
         doUpdate400_4();
         doUpdate400_5();
         doUpdate400_6();
+        doUpdate5_0_12();
 
         Column column;
 
@@ -392,9 +397,23 @@ public class PhysDB extends Database {
             internal.add(column);
         }
 
+        Table blockMappings = new Table(this, "blocks");
+        {
+            column = new Column("id");
+            column.setType("INTEGER");
+            column.setPrimary(true);
+            column.setAutoIncrement(false);
+            blockMappings.add(column);
+
+            column = new Column("name");
+            column.setType("VARCHAR(40)");
+            blockMappings.add(column);
+        }
+
         protections.execute();
         history.execute();
         internal.execute();
+        blockMappings.execute();
 
         // Load the database version
         loadDatabaseVersion();
@@ -411,7 +430,6 @@ public class PhysDB extends Database {
     /**
      * Perform any database updates
      */
-    @SuppressWarnings("deprecation")
     public void performDatabaseUpdates() {
         LWC lwc = LWC.getInstance();
 
@@ -460,15 +478,15 @@ public class PhysDB extends Database {
         if (databaseVersion == 4) {
             List<String> blacklistedBlocks = lwc.getConfiguration().getStringList("optional.blacklistedBlocks", new ArrayList<String>());
 
-            if (!blacklistedBlocks.contains("154")) {
-                blacklistedBlocks.add(Integer.toString(Material.HOPPER.getId()));
+            if (!blacklistedBlocks.contains(Material.HOPPER.name())) {
+                blacklistedBlocks.add(Material.HOPPER.name());
                 lwc.getConfiguration().setProperty("optional.blacklistedBlocks", blacklistedBlocks);
                 lwc.getConfiguration().save();
                 Configuration.reload();
 
                 lwc.log("Added Hoppers to Blacklisted Blocks in core.yml (optional.blacklistedBlocks)");
                 lwc.log("This means that Hoppers CANNOT be placed around protections a player does not have access to");
-                lwc.log("If you DO NOT want this feature, simply remove " + Material.HOPPER.getId() + " (Hoppers) from blacklistedBlocks :-)");
+                lwc.log("If you DO NOT want this feature, simply remove " + Material.HOPPER.name() + " (Hoppers) from blacklistedBlocks :-)");
             }
 
             incrementDatabaseVersion();
@@ -478,7 +496,7 @@ public class PhysDB extends Database {
             boolean foundTrappedChest = false;
 
             for (String key : lwc.getConfiguration().getNode("protections.blocks").getKeys(null)) {
-                if (key.equalsIgnoreCase("trapped_chest") || key.equals(Integer.toString(Material.TRAPPED_CHEST.getId()))) {
+                if (key.equalsIgnoreCase("trapped_chest")) {
                     foundTrappedChest = true;
                     break;
                 }
@@ -698,7 +716,11 @@ public class PhysDB extends Database {
             protection.setX(x);
             protection.setY(y);
             protection.setZ(z);
-            protection.setBlockId(blockId);
+            if (blockId == EntityBlock.ENTITY_BLOCK_ID) {
+                protection.setIsEntity(true);
+            } else {
+                protection.setBlockMaterial(BlockMap.instance().getMaterial(blockId));
+            }
             protection.setType(Protection.Type.values()[type]);
             protection.setWorld(world);
             protection.setOwner(owner);
@@ -1153,7 +1175,7 @@ public class PhysDB extends Database {
     /**
      * Register a protection
      *
-     * @param blockId
+     * @param block
      * @param type
      * @param world
      * @param player
@@ -1163,25 +1185,16 @@ public class PhysDB extends Database {
      * @param z
      * @return
      */
-    @Deprecated
-    public Protection registerProtection(int blockId, int type, String world, String player, String data, int x, int y, int z) {
-        return registerProtection(blockId, Protection.Type.values()[type], world, player, data, x, y, z);
+    public Protection registerEntityProtection(Entity entity, Protection.Type type, String world, String player, String data, int x, int y, int z) {
+        return registerProtection(EntityBlock.ENTITY_BLOCK_ID, type, world, player, data, x, y, z);
     }
 
-    /**
-     * Register a protection
-     *
-     * @param blockId
-     * @param type
-     * @param world
-     * @param player
-     * @param data
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     */
-    public Protection registerProtection(int blockId, Protection.Type type, String world, String player, String data, int x, int y, int z) {
+    public Protection registerProtection(Material block, Protection.Type type, String world, String player, String data, int x, int y, int z) {
+        int blockId = BlockMap.instance().registerOrGetId(block);
+        return registerProtection(blockId, type, world, player, data, x, y, z);
+    }
+    
+    private Protection registerProtection(int blockId, Protection.Type type, String world, String player, String data, int x, int y, int z) {
         ProtectionCache cache = LWC.getInstance().getProtectionCache();
 
         try {
@@ -1295,9 +1308,9 @@ public class PhysDB extends Database {
     public void invalidateHistory(String player) {
         UUID uuid = convert(player);
         try {
-            PreparedStatement statement = prepare("UPDATE " + prefix + "history SET status = ? WHERE Lower(player) = Lower(?)");
+            PreparedStatement statement = prepare("UPDATE " + prefix + "history SET status = ? WHERE player = ?");
             statement.setInt(1, History.Status.INACTIVE.ordinal());
-            statement.setObject(2, uuid);
+            statement.setString(2, uuid.toString());
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -1305,12 +1318,11 @@ public class PhysDB extends Database {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public static UUID convert(String uuid) {
-        if (Bukkit.getOfflinePlayer(uuid).isOnline() == true) {
-            return Bukkit.getPlayer(uuid).getUniqueId();
+    public static UUID convert(String name) {
+        if (Bukkit.getPlayer(name) != null) {
+            return Bukkit.getPlayer(name).getUniqueId();
         } else {
-            return Bukkit.getOfflinePlayer(uuid).getUniqueId();
+            return Bukkit.getOfflinePlayer(name).getUniqueId();
         }
     }
 
@@ -1733,20 +1745,19 @@ public class PhysDB extends Database {
         }
     }
 
-
     public void saveProtectionLastAccessed(Protection protection) {
         try {
             PreparedStatement statement = prepare("UPDATE " + prefix + "protections SET last_accessed = ? WHERE id = ?");
 
             statement.setLong(1, protection.getLastAccessed());
             statement.setInt(2, protection.getId());
-            
+
             statement.executeUpdate();
         } catch (SQLException e) {
             printException(e);
         }
     }
-    
+
     /**
      * Free a chest from protection
      *
@@ -2143,7 +2154,8 @@ public class PhysDB extends Database {
         Statement statement = null;
         try {
             statement = connection.createStatement();
-            statement.executeQuery("SELECT x FROM " + prefix + "history LIMIT 1");
+            ResultSet rs = statement.executeQuery("SELECT x FROM " + prefix + "history LIMIT 1");
+            rs.close();
         } catch (SQLException e) {
             // add x, y, z
             addColumn(prefix + "history", "x", "INTEGER");
@@ -2156,6 +2168,90 @@ public class PhysDB extends Database {
                 } catch (SQLException e) {
                 }
             }
+        }
+    }
+
+    /**
+     * 5.0.12
+     */
+    private void doUpdate5_0_12() {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT id FROM " + prefix + "blocks LIMIT 1");
+            rs.close();
+        } catch (SQLException e) {
+            // create and initialize table
+            LWC.getInstance().getPlugin().getLogger().info("Creating block mappings table");
+            Table blockMappings = new Table(this, "blocks");
+            {
+                Column column = new Column("id");
+                column.setType("INTEGER");
+                column.setPrimary(true);
+                column.setAutoIncrement(false);
+                blockMappings.add(column);
+
+                column = new Column("name");
+                column.setType("VARCHAR(40)");
+                blockMappings.add(column);
+            }
+            blockMappings.execute();
+            try {
+                ResultSet rs = statement.executeQuery("SELECT DISTINCT blockId FROM " + prefix + "protections");
+                PreparedStatement insertSmt = prepare("INSERT INTO " + prefix + "blocks (`id`,`name`) VALUES (?, ?)");
+                while (rs.next()) {
+                    int id = rs.getInt("blockId");
+                    Material mat = Material.matchMaterial(Integer.toString(id));
+                    if (mat != null) {
+                        insertSmt.setInt(1, id);
+                        insertSmt.setString(2, mat.name());
+                        insertSmt.executeUpdate();
+                    }
+                }
+                rs.close();
+            } catch (SQLException e2) {
+                printException(e2);
+            }
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
+    }
+
+    public HashMap<Integer, String> loadBlockMappings() {
+        HashMap<Integer, String> rv = new HashMap<>();
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT `id`,`name` FROM " + prefix + "blocks");
+            while (rs.next()) {
+                rv.put(rs.getInt(1), rs.getString(2));
+            }
+        } catch (SQLException e) {
+            printException(e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
+        return rv;
+    }
+
+    public void addBlockMapping(int id, String name) {
+        try {
+            PreparedStatement insertSmt = prepare("INSERT INTO " + prefix + "blocks (`id`,`name`) VALUES (?, ?)");
+            insertSmt.setInt(1, id);
+            insertSmt.setString(2, name);
+            insertSmt.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
         }
     }
 }

@@ -42,7 +42,6 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.GlobalRegionManager;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
@@ -55,7 +54,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("deprecation")
+
 public class WorldGuard extends JavaModule {
 
 	/**
@@ -140,10 +139,8 @@ public class WorldGuard extends JavaModule {
 			return;
 		}
 
-		GlobalRegionManager regions = worldGuard.getGlobalRegionManager();
-
 		// get the region manager for the world
-		RegionManager regionManager = regions.get(world);
+		RegionManager regionManager = worldGuard.getRegionManager(world);
 
 		// try and get the region
 		ProtectedRegion region = regionManager.getRegion(regionName);
@@ -206,7 +203,7 @@ public class WorldGuard extends JavaModule {
 
 						// Protect it!
 						lwc.getPhysicalDatabase().registerProtection(
-								block.getTypeId(), Protection.Type.PRIVATE,
+								block.getType(), Protection.Type.PRIVATE,
 								world.getName(), ownerName, "", x, y, z);
 						registered++;
 					}

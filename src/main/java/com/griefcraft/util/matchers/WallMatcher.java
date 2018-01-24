@@ -29,7 +29,6 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-import com.griefcraft.util.SetUtil;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -42,14 +41,13 @@ import java.util.Set;
  * Matches wall entities
  * TODO fix buttons and levers
  */
-@SuppressWarnings("deprecation")
 public class WallMatcher implements ProtectionFinder.Matcher {
 
     /**
      * Blocks that can be attached to the wall and be protected.
      * This assumes that the block is DESTROYED if the wall they are attached to is broken.
      */
-    public static final Set<Material> PROTECTABLES_WALL = EnumSet.of(Material.WALL_SIGN);
+    public static final Set<Material> PROTECTABLES_WALL = EnumSet.of(Material.WALL_SIGN, Material.WALL_BANNER);
 
     /**
      * Those evil levers and buttons have all different bits for directions. Gah!
@@ -60,17 +58,12 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * Same as PROTECTABLE_WALL, except the facing direction is reversed,
      * such as trap doors
      */
-    public static final Set<Material> PROTECTABLES_TRAP_DOORS = EnumSet.of(Material.TRAP_DOOR);
+    public static final Set<Material> PROTECTABLES_TRAP_DOORS = EnumSet.of(Material.TRAP_DOOR, Material.IRON_TRAPDOOR);
 
     /**
      * Possible faces around the base block that protections could be at
      */
     public static final BlockFace[] POSSIBLE_FACES = new BlockFace[]{ BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
-
-    static {
-        SetUtil.addToSetWithoutNull(PROTECTABLES_WALL, Material.getMaterial(177)); // Wall banner
-        SetUtil.addToSetWithoutNull(PROTECTABLES_TRAP_DOORS, Material.getMaterial(167)); // Iron trap door
-    }
 
     public boolean matches(ProtectionFinder finder) {
         // The block we are working on
@@ -102,6 +95,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * @param matchingFace
      * @return
      */
+    @SuppressWarnings("deprecation")
     private Block tryMatchBlock(Block block, BlockFace matchingFace) {
         byte direction = block.getData();
 

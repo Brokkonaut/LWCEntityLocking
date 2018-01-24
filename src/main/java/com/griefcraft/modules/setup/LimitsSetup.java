@@ -43,7 +43,6 @@ import java.util.List;
 
 public class LimitsSetup extends JavaModule {
 
-    @SuppressWarnings("deprecation")
 	@Override
     public void onCommand(LWCCommandEvent event) {
         if (event.isCancelled()) {
@@ -165,14 +164,7 @@ public class LimitsSetup extends JavaModule {
                             modified = true;
                         } else {
                             // it should be a material
-                            Material material = Material.getMaterial(key.toUpperCase());
-
-                            // if it's null, try to parse it as a block value
-                            if (material == null) {
-                                try {
-                                    material = Material.getMaterial(Integer.parseInt(key));
-                                } catch (NumberFormatException e) { }
-                            }
+                            Material material = Material.matchMaterial(key);
 
                             if (material == null) {
                                 sender.sendMessage(Colors.Red + "Invalid material/block: \"" + value + "\"!");

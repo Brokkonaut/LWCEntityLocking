@@ -29,7 +29,6 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-import com.griefcraft.util.SetUtil;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -40,20 +39,12 @@ import java.util.Set;
 /**
  * Matches blocks such as the sign post
  */
-@SuppressWarnings("deprecation")
 public class GravityMatcher implements ProtectionFinder.Matcher {
 
 	public static final Set<Material> PROTECTABLES_POSTS = EnumSet.of(
 			Material.SIGN_POST, Material.RAILS, Material.POWERED_RAIL,
 			Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON,
-			Material.WOOD_BUTTON);
-
-	static {
-		SetUtil.addToSetWithoutNull(PROTECTABLES_POSTS,
-				Material.getMaterial(416));
-		SetUtil.addToSetWithoutNull(PROTECTABLES_POSTS,
-				Material.getMaterial(176)); // Standing banner
-	}
+			Material.WOOD_BUTTON,Material.STANDING_BANNER);
 
 	public boolean matches(ProtectionFinder finder) {
 		Block block = finder.getBaseBlock().getBlock();

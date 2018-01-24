@@ -28,6 +28,7 @@
 
 package com.griefcraft.io;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.DataInputStream;
@@ -115,7 +116,6 @@ public class Backup {
      *
      * @return
      */
-    @SuppressWarnings("deprecation")
 	protected Restorable readRestorable() throws IOException {
         if (operationMode != OperationMode.READ) {
             throw new UnsupportedOperationException("READ is not allowed on this backup.");
@@ -158,15 +158,17 @@ public class Backup {
             for (int i = 0; i < itemCount; i++) {
                 // Read in us some RestorableItems
                 int slot = inputStream.readShort();
-                int itemId = inputStream.readShort();
+                Material itemId = Material.matchMaterial(inputStream.readUTF());
                 int amount = inputStream.readShort();
                 short damage = inputStream.readShort();
 
-                // Create the stack
-                ItemStack itemStack = new ItemStack(itemId, amount, damage);
+                if (itemId != null) {
+                    // Create the stack
+                    ItemStack itemStack = new ItemStack(itemId, amount, damage);
 
-                // add it to the block
-                rblock.setSlot(slot, itemStack);
+                    // add it to the block
+                    rblock.setSlot(slot, itemStack);
+                }
             }
 
             // Woo!
@@ -181,7 +183,6 @@ public class Backup {
      *
      * @param restorable
      */
-    @SuppressWarnings("deprecation")
 	protected void writeRestorable(Restorable restorable) throws IOException {
         if (operationMode != OperationMode.WRITE) {
             throw new UnsupportedOperationException("WRITE is not allowed on this backup.");
@@ -222,7 +223,7 @@ public class Backup {
                 ItemStack stack = entry.getValue();
 
                 outputStream.writeShort(slot);
-                outputStream.writeShort(stack.getTypeId());
+                outputStream.writeUTF(stack.getType().name());
                 outputStream.writeShort(stack.getAmount());
                 outputStream.writeShort(stack.getDurability());
             }

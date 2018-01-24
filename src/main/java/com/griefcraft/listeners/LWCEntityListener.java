@@ -151,8 +151,7 @@ public class LWCEntityListener implements Listener {
 
             // All good!
             Protection protection = lwc.getPhysicalDatabase()
-                    .registerProtection(EntityBlock.ENTITY_BLOCK_ID, type,
-                            block.getWorld().getName(),
+                    .registerEntityProtection(block, type, block.getWorld().getName(),
                             player.getUniqueId().toString(), "", entityBlock.getX(), entityBlock.getY(), entityBlock.getZ());
 
             if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(

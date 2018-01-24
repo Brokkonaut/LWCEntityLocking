@@ -30,6 +30,7 @@ package com.griefcraft.listeners;
 
 import com.google.common.base.Objects;
 import com.griefcraft.bukkit.EntityBlock;
+import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
 import com.griefcraft.model.Flag;
@@ -50,7 +51,6 @@ import org.bukkit.block.Hopper;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
@@ -100,9 +100,9 @@ public class LWCPlayerListener implements Listener {
         }.runTaskTimer(plugin, 1, 1);
     }
 
-    @EventHandler
-    public void hangingBreakByEvent(HangingBreakByEntityEvent event) {
-        Entity entity = event.getEntity();
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onHangingBreakByEntity(HangingBreakByEntityEvent e) {
+        Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
         if (!lwc.isProtectable(entity.getType())) {
             return;
@@ -111,25 +111,19 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (event.getRemover() instanceof Player) {
-            Player p = (Player) event.getRemover();
-            if (onPlayerEntityInteract(p, entity, event.isCancelled())) {
-                event.setCancelled(true);
-            }
-            if (!event.isCancelled()) {
-                boolean canAccess = lwc.canAdminProtection(p, protection);
-                if (canAccess) {
-                    protection.remove();
-                    return;
-                }
-                event.setCancelled(true);
-            }
+        Player remover = (e.getRemover() instanceof Player) ? (Player) e.getRemover() : null;
+        if (remover == null) {
+            e.setCancelled(true);
         } else {
-            event.setCancelled(true);
+            if (onPlayerEntityInteract(remover, entity, e.isCancelled())) {
+                e.setCancelled(true);
+            } else if (lwc.canAdminProtection(remover, protection)) {
+                protection.remove();
+            }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMinecartBreak(VehicleDestroyEvent e) {
         Entity entity = e.getVehicle();
         LWC lwc = LWC.getInstance();
@@ -137,18 +131,18 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         Protection protection = lwc.findProtection(entity);
-        if (protection != null) {
-            if (e.getAttacker() instanceof Projectile) {
-                e.setCancelled(true);
-            }
-            Player p = (Player) e.getAttacker();
-            if (!e.isCancelled() && !lwc.canAdminProtection(p, protection)) {
-                e.setCancelled(true);
-            }
+        if (protection == null) {
+            return;
+        }
+        Player attacker = (e.getAttacker() instanceof Player) ? (Player) e.getAttacker() : null;
+        if (attacker == null || !lwc.canAdminProtection(attacker, protection)) {
+            e.setCancelled(true);
+        } else {
+            protection.remove();
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent event) {
         if (event instanceof HangingBreakByEntityEvent) {
             return;
@@ -164,7 +158,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onProtectedEntityDamage(EntityDamageEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
@@ -177,7 +171,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onProtectedEntityDamageByEntity(EntityDamageByEntityEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
@@ -460,7 +454,6 @@ public class LWCPlayerListener implements Listener {
 	 *
 	 * @param inventory
 	 */
-	@SuppressWarnings("deprecation")
 	private boolean handleMoveItemEvent(Inventory initiator, Inventory inventory) {
 		LWC lwc = LWC.getInstance();
 
@@ -525,7 +518,7 @@ public class LWCPlayerListener implements Listener {
 
 		boolean denyHoppers = Boolean.parseBoolean(lwc
 				.resolveProtectionConfiguration(
-						Material.getMaterial(protection.getBlockId()),
+						BlockMap.instance().getMaterial(protection.getBlockId()),
 						"denyHoppers"));
 
 		// xor = (a && !b) || (!a && b)
@@ -737,7 +730,6 @@ public class LWCPlayerListener implements Listener {
 		LWCPlayer.removePlayer(event.getPlayer());
 	}
 
-	@SuppressWarnings("deprecation")
     @EventHandler(ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent event) {
 		LWC lwc = LWC.getInstance();
@@ -826,7 +818,7 @@ public class LWCPlayerListener implements Listener {
 			// click (no shift)
 			// this is for when players are INSERTing items (i.e. item in hand
 			// and left clicking)
-			if (player.getItemInHand() == null
+			if (player.getInventory().getItemInMainHand() == null
 					&& (!event.isRightClick() && !event.isShiftClick())) {
 				return;
 			}
