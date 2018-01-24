@@ -30,6 +30,7 @@ package com.griefcraft.listeners;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -42,6 +43,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
@@ -54,6 +56,7 @@ import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
+import com.griefcraft.model.Flag;
 import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.event.LWCProtectionDestroyEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
@@ -299,6 +302,31 @@ public class LWCBlockListener implements Listener {
             }
         }
 	}
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onBlockExplode(BlockExplodeEvent event) {
+        if (!LWC.ENABLED || event.isCancelled()) {
+            return;
+        }
+
+        LWC lwc = LWC.getInstance();
+        Iterator<Block> it = event.blockList().iterator();
+        while (it.hasNext()) {
+            Block block = it.next();
+            Protection protection = plugin.getLWC().findProtection(block);
+
+            if (protection != null) {
+                boolean ignoreExplosions = Boolean.parseBoolean(lwc
+                        .resolveProtectionConfiguration(protection.getBlock(),
+                                "ignoreExplosions"));
+
+                if (!(ignoreExplosions || protection
+                        .hasFlag(Flag.Type.ALLOWEXPLOSIONS))) {
+                    it.remove();
+                }
+            }
+        }
+    }
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockPlace(BlockPlaceEvent event) {

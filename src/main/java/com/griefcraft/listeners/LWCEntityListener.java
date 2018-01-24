@@ -28,6 +28,7 @@
 
 package com.griefcraft.listeners;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 import com.griefcraft.bukkit.EntityBlock;
@@ -49,6 +50,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -218,10 +220,10 @@ public class LWCEntityListener implements Listener {
 		}
 
 		LWC lwc = LWC.getInstance();
-
-		for (Block block : event.blockList()) {
-			Protection protection = plugin.getLWC().findProtection(
-					block.getLocation());
+		Iterator<Block> it = event.blockList().iterator();
+		while (it.hasNext()) {
+		    Block block = it.next();
+			Protection protection = plugin.getLWC().findProtection(block);
 
 			if (protection != null) {
 				boolean ignoreExplosions = Boolean.parseBoolean(lwc
@@ -230,9 +232,21 @@ public class LWCEntityListener implements Listener {
 
 				if (!(ignoreExplosions || protection
 						.hasFlag(Flag.Type.ALLOWEXPLOSIONS))) {
-					event.setCancelled(true);
+					it.remove();
 				}
 			}
 		}
 	}
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+        LWC lwc = plugin.getLWC();
+        if ((lwc.findProtection(event.getBlock()) != null)) {
+            event.setCancelled(true);
+            return;
+        }
+    }
 }
