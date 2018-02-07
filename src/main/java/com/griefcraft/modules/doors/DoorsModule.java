@@ -215,9 +215,6 @@ public class DoorsModule extends JavaModule {
                 continue;
             }
 
-            // Get the top half of the door
-            Block topHalf = door.getRelative(BlockFace.UP);
-
             // Now xor both data values with 0x4, the flag that states if the door is open
             door.setData((byte) (door.getData() ^ 0x4));
 
@@ -240,9 +237,15 @@ public class DoorsModule extends JavaModule {
                 door.getWorld().playSound(door.getLocation(), s, 1, 1);
             }
 
-            // Only change the block above it if it is something we can open or close
-            if (isValid(topHalf.getType())) {
-                topHalf.setData((byte) (topHalf.getData() ^ 0x4));
+            // Open the upper half of the door
+            if (DoorMatcher.PROTECTABLES_DOORS.contains(type)) {
+                // Get the top half of the door
+                Block topHalf = door.getRelative(BlockFace.UP);
+
+                // Only change the block above it if it is something we can open or close
+                if (isValid(topHalf.getType())) {
+                    topHalf.setData((byte) (topHalf.getData() ^ 0x4));
+                }
             }
         }
     }

@@ -58,12 +58,12 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * Same as PROTECTABLE_WALL, except the facing direction is reversed,
      * such as trap doors
      */
-    public static final Set<Material> PROTECTABLES_TRAP_DOORS = EnumSet.noneOf(Material.class); // Trapdoors no longer need a block nearby .of(Material.TRAP_DOOR, Material.IRON_TRAPDOOR);
+    public static final Set<Material> PROTECTABLES_TRAP_DOORS = EnumSet.of(Material.TRAP_DOOR, Material.IRON_TRAPDOOR);
 
     /**
      * Possible faces around the base block that protections could be at
      */
-    public static final BlockFace[] POSSIBLE_FACES = new BlockFace[]{ BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+    public static final BlockFace[] POSSIBLE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
 
     public boolean matches(ProtectionFinder finder) {
         // The block we are working on
@@ -134,23 +134,23 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             }
         }
 
-        // Blocks such as trap doors
-        else if (PROTECTABLES_TRAP_DOORS.contains(block.getType())) {
-            byte EAST = 0x2;
-            byte WEST = 0x3;
-            byte SOUTH = 0x0;
-            byte NORTH = 0x1;
-
-            if (matchingFace == BlockFace.WEST && (direction & EAST) == EAST) {
-                return block;
-            } else if (matchingFace == BlockFace.EAST && (direction & WEST) == WEST) {
-                return block;
-            } else if (matchingFace == BlockFace.NORTH && (direction & SOUTH) == SOUTH) {
-                return block;
-            } else if (matchingFace == BlockFace.SOUTH && (direction & NORTH) == NORTH) {
-                return block;
-            }
-        }
+        // // Blocks such as trap doors
+        // else if (PROTECTABLES_TRAP_DOORS.contains(block.getType())) {
+        // byte EAST = 0x2;
+        // byte WEST = 0x3;
+        // byte SOUTH = 0x0;
+        // byte NORTH = 0x1;
+        //
+        // if (matchingFace == BlockFace.WEST && (direction & EAST) == EAST) {
+        // return block;
+        // } else if (matchingFace == BlockFace.EAST && (direction & WEST) == WEST) {
+        // return block;
+        // } else if (matchingFace == BlockFace.NORTH && (direction & SOUTH) == SOUTH) {
+        // return block;
+        // } else if (matchingFace == BlockFace.SOUTH && (direction & NORTH) == NORTH) {
+        // return block;
+        // }
+        // }
 
         return null;
     }
