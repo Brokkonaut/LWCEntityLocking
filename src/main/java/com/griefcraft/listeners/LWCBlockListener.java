@@ -50,6 +50,7 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 
 import com.griefcraft.cache.CacheKey;
@@ -121,24 +122,19 @@ public class LWCBlockListener implements Listener {
 
 		LWC lwc = LWC.getInstance();
 		// the blocks that were changed / replaced
-		List<BlockState> blocks = event.getBlocks();
+        List<BlockState> blocks = event.getBlocks();
 
-		for (BlockState block : blocks) {
-			if (!lwc.isProtectable(block.getBlock())) {
-				continue;
-			}
+        for (BlockState newblock : blocks) {
+            Block block = newblock.getBlock();
+            if (!lwc.isProtectable(block)) {
+                continue;
+            }
 
-			// we don't have the block id of the block before it
-			// so we have to do some raw lookups (these are usually cache hits
-			// however, at least!)
-			Protection protection = lwc.getPhysicalDatabase().loadProtection(
-					block.getWorld().getName(), block.getX(), block.getY(),
-					block.getZ());
-
-			if (protection != null) {
-				event.setCancelled(true);
-			}
-		}
+            Protection protection = lwc.findProtection(block);
+            if (protection != null) {
+                event.setCancelled(true);
+            }
+        }
 	}
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -485,6 +481,25 @@ public class LWCBlockListener implements Listener {
 			e.printStackTrace();
 		}
 	}
+	
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        LWC lwc = LWC.getInstance();
+
+        Block block = event.getBlock();
+        if (!lwc.isProtectable(block)) {
+            return;
+        }
+
+        Protection protection = lwc.findProtection(block);
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
 
 	/**
 	 * Load and process the configuration
