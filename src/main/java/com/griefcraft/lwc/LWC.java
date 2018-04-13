@@ -69,7 +69,6 @@ import com.griefcraft.modules.credits.CreditsModule;
 import com.griefcraft.modules.debug.DebugModule;
 import com.griefcraft.modules.destroy.DestroyModule;
 import com.griefcraft.modules.doors.DoorsModule;
-import com.griefcraft.modules.fix.FixModule;
 import com.griefcraft.modules.flag.BaseFlagModule;
 import com.griefcraft.modules.free.FreeModule;
 import com.griefcraft.modules.history.HistoryModule;
@@ -260,50 +259,6 @@ public class LWC {
     }
 
     /**
-     * Restore the direction the block is facing for when 1.8 broke it
-     *
-     * @param block
-     */
-    public void adjustChestDirection(Block block, BlockFace face) {
-        if (block.getType() != Material.CHEST) {
-            return;
-        }
-
-        // Is there a double chest?
-        Block doubleChest = findAdjacentDoubleChest(block);
-
-        // Calculate the data byte to set
-        byte data = 0;
-
-        switch (face) {
-        case NORTH:
-            data = 4;
-            break;
-
-        case SOUTH:
-            data = 5;
-            break;
-
-        case EAST:
-            data = 2;
-            break;
-
-        case WEST:
-            data = 3;
-            break;
-        default:
-            break;
-        }
-
-        // set the data for both sides of the chest
-        block.setData(data);
-
-        if (doubleChest != null) {
-            doubleChest.setData(data);
-        }
-    }
-
-    /**
      * Look for a double chest adjacent to a chest
      *
      * @param block
@@ -412,81 +367,6 @@ public class LWC {
         moduleLoader.dispatchEvent(event);
 
         return event.getAccess() == Permission.Access.ADMIN;
-    }
-
-    /**
-     * Deposit items into an inventory chest Works with double chests.
-     *
-     * @param block
-     * @param itemStack
-     * @return remaining items (if any)
-     */
-    public Map<Integer, ItemStack> depositItems(Block block, ItemStack itemStack) {
-        BlockState blockState;
-
-        if ((blockState = block.getState()) != null
-                && (blockState instanceof InventoryHolder)) {
-            Block doubleChestBlock = null;
-            InventoryHolder holder = (InventoryHolder) blockState;
-
-            if (DoubleChestMatcher.PROTECTABLES_CHESTS
-                    .contains(block.getType())) {
-                doubleChestBlock = findAdjacentDoubleChest(block);
-            } else if (block.getType() == Material.FURNACE
-                    || block.getType() == Material.BURNING_FURNACE) {
-                Inventory inventory = holder.getInventory();
-
-                if (inventory.getItem(0) != null
-                        && inventory.getItem(1) != null) {
-                    if (inventory.getItem(0).getType() == itemStack.getType()
-                            && inventory.getItem(0).getData().getData() == itemStack
-                                    .getData().getData()
-                            && inventory.getItem(0).getMaxStackSize() >= (inventory
-                                    .getItem(0).getAmount() + itemStack
-                                    .getAmount())) {
-                        // ItemStack fits on Slot 0
-                    } else if (inventory.getItem(1).getType() == itemStack
-                            .getType()
-                            && inventory.getItem(1).getData().getData() == itemStack
-                                    .getData().getData()
-                            && inventory.getItem(1).getMaxStackSize() >= (inventory
-                                    .getItem(1).getAmount() + itemStack
-                                    .getAmount())) {
-                        // ItemStack fits on Slot 1
-                    } else {
-                        return null;
-                    }
-                }
-            }
-
-            if (itemStack.getAmount() <= 0) {
-                return new HashMap<Integer, ItemStack>();
-            }
-
-            Map<Integer, ItemStack> remaining = holder.getInventory().addItem(
-                    itemStack);
-
-            // we have remainders, deal with it
-            if (remaining.size() > 0) {
-                int key = remaining.keySet().iterator().next();
-                ItemStack remainingItemStack = remaining.get(key);
-
-                // is it a double chest ?????
-                if (doubleChestBlock != null) {
-                    InventoryHolder holder2 = (InventoryHolder) doubleChestBlock
-                            .getState();
-                    remaining = holder2.getInventory().addItem(
-                            remainingItemStack);
-                }
-
-                // recheck remaining in the event of double chest being used
-                if (remaining.size() > 0) {
-                    return remaining;
-                }
-            }
-        }
-
-        return new HashMap<Integer, ItemStack>();
     }
 
     /**
@@ -1697,7 +1577,6 @@ public class LWC {
         registerModule(new DoorsModule());
         registerModule(new DebugModule());
         registerModule(new CreditsModule());
-        registerModule(new FixModule());
         registerModule(new HistoryModule());
         registerModule(new ConfirmModule());
 
@@ -1765,38 +1644,6 @@ public class LWC {
         }
 
         return temp;
-    }
-
-    /**
-     * Merge inventories into one
-     *
-     * @param blocks
-     * @return
-     */
-    public ItemStack[] mergeInventories(List<Block> blocks) {
-        ItemStack[] stacks = new ItemStack[54];
-        int index = 0;
-
-        try {
-            for (Block block : blocks) {
-                if (!(block.getState() instanceof InventoryHolder)) {
-                    continue;
-                }
-
-                InventoryHolder holder = (InventoryHolder) block.getState();
-                Inventory inventory = holder.getInventory();
-
-                // Add all the items from this inventory
-                for (ItemStack stack : inventory.getContents()) {
-                    stacks[index] = stack;
-                    index++;
-                }
-            }
-        } catch (Exception e) {
-            return mergeInventories(blocks);
-        }
-
-        return stacks;
     }
 
     /**
