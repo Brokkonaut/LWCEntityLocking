@@ -108,19 +108,13 @@ public class CreateModule extends JavaModule {
         }
 
         String worldName = block.getWorld().getName();
-        int blockX;
-        int blockY;
-        int blockZ;
-        
+        int blockX = block.getX();
+        int blockY = block.getY();
+        int blockZ = block.getZ();
+
+        Entity entity = null;
         if (block instanceof EntityBlock) {
-            Entity entity = ((EntityBlock) block).getEntity();
-            blockX = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
-            blockY = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
-            blockZ = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
-        } else {
-            blockX = block.getX();
-            blockY = block.getY();
-            blockZ = block.getZ();
+            entity = ((EntityBlock) block).getEntity();
         }
 
         lwc.removeModes(player);
@@ -136,21 +130,30 @@ public class CreateModule extends JavaModule {
         Protection protection = null;
 
         if (protectionType.equals("public")) {
-            protection = physDb.registerProtection(block.getType(), Protection.Type.PUBLIC, worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            if (entity != null) {
+                protection = physDb.registerEntityProtection(entity, Protection.Type.PUBLIC, worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            } else {
+                protection = physDb.registerProtection(block.getType(), Protection.Type.PUBLIC, worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            }
             lwc.sendLocale(player, "protection.interact.create.finalize");
         } else if (protectionType.equals("password")) {
             String password = lwc.encrypt(protectionData);
-
-            protection = physDb.registerProtection(block.getType(), Protection.Type.PASSWORD, worldName, player.getUniqueId().toString(), password, blockX, blockY, blockZ);
+            if (entity != null) {
+                protection = physDb.registerEntityProtection(entity, Protection.Type.PASSWORD, worldName, player.getUniqueId().toString(), password, blockX, blockY, blockZ);
+            } else {
+                protection = physDb.registerProtection(block.getType(), Protection.Type.PASSWORD, worldName, player.getUniqueId().toString(), password, blockX, blockY, blockZ);
+            }
             player.addAccessibleProtection(protection);
 
             lwc.sendLocale(player, "protection.interact.create.finalize");
             lwc.sendLocale(player, "protection.interact.create.password");
         } else if (protectionType.equals("private") || protectionType.equals("donation")) {
             String[] rights = protectionData.split(" ");
-
-            protection = physDb.registerProtection(block.getType(), Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
-
+            if (entity != null) {
+                protection = physDb.registerEntityProtection(entity, Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            } else {
+                protection = physDb.registerProtection(block.getType(), Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
+            }
             lwc.sendLocale(player, "protection.interact.create.finalize");
             lwc.processRightsModifications(player, protection, rights);
         }
