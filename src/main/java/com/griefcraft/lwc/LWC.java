@@ -1036,17 +1036,9 @@ public class LWC {
                 shouldRemoveBlocks);
 
         // invalid any history objects associated with the player
-        physicalDatabase.invalidateHistory(player);
+        physicalDatabase.invalidateHistory(uuid != null ? uuid.toString() : player);
 
         return ret;
-    }
-
-    public static UUID convert(String uuid) {
-        if (Bukkit.getPlayer(uuid) != null) {
-            return Bukkit.getPlayer(uuid).getUniqueId();
-        } else {
-            return Bukkit.getOfflinePlayer(uuid).getUniqueId();
-        }
     }
 
     /**

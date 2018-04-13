@@ -44,7 +44,6 @@ import com.griefcraft.util.Statistics;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -1306,23 +1305,14 @@ public class PhysDB extends Database {
      * @param player
      */
     public void invalidateHistory(String player) {
-        UUID uuid = convert(player);
         try {
             PreparedStatement statement = prepare("UPDATE " + prefix + "history SET status = ? WHERE player = ?");
             statement.setInt(1, History.Status.INACTIVE.ordinal());
-            statement.setString(2, uuid.toString());
+            statement.setString(2, player);
 
             statement.executeUpdate();
         } catch (SQLException e) {
             printException(e);
-        }
-    }
-
-    public static UUID convert(String name) {
-        if (Bukkit.getPlayer(name) != null) {
-            return Bukkit.getPlayer(name).getUniqueId();
-        } else {
-            return Bukkit.getOfflinePlayer(name).getUniqueId();
         }
     }
 
