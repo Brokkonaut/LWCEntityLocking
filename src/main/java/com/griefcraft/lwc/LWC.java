@@ -37,7 +37,6 @@ import com.griefcraft.integration.currency.NoCurrency;
 import com.griefcraft.integration.currency.VaultCurrency;
 import com.griefcraft.integration.permissions.SuperPermsPermissions;
 import com.griefcraft.integration.permissions.VaultPermissions;
-import com.griefcraft.io.BackupManager;
 import com.griefcraft.migration.ConfigPost300;
 import com.griefcraft.migration.MySQLPost200;
 import com.griefcraft.model.Flag;
@@ -46,7 +45,6 @@ import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Permission;
 import com.griefcraft.model.Protection;
 import com.griefcraft.model.Protection.Type;
-import com.griefcraft.modules.admin.AdminBackup;
 import com.griefcraft.modules.admin.AdminCache;
 import com.griefcraft.modules.admin.AdminCleanup;
 import com.griefcraft.modules.admin.AdminClear;
@@ -157,11 +155,6 @@ public class LWC {
     private final ModuleLoader moduleLoader;
 
     /**
-     * The manager of backups
-     */
-    private final BackupManager backupManager;
-
-    /**
      * The protection cache
      */
     private final ProtectionCache protectionCache;
@@ -200,7 +193,6 @@ public class LWC {
         LWC.instance = this;
         configuration = Configuration.load("core.yml");
         protectionCache = new ProtectionCache(this);
-        backupManager = new BackupManager();
         moduleLoader = new ModuleLoader(this);
     }
 
@@ -1727,7 +1719,6 @@ public class LWC {
         registerModule(new AdminExpire());
         registerModule(new AdminDump());
         registerModule(new AdminRebuild());
-        registerModule(new AdminBackup());
         registerModule(new AdminView());
 
         // /lwc setup
@@ -2061,13 +2052,6 @@ public class LWC {
      */
     public ICurrency getCurrency() {
         return currency;
-    }
-
-    /**
-     * @return the backup manager
-     */
-    public BackupManager getBackupManager() {
-        return backupManager;
     }
 
     /**
