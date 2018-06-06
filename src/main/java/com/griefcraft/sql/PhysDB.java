@@ -61,6 +61,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class PhysDB extends Database {
 
@@ -1123,6 +1124,31 @@ public class PhysDB extends Database {
     }
 
     /**
+     * Load protections by a player if he is the owner of the protection or has expicit permission to it.
+     * This requires a full table scan so can be slow.
+     *
+     * @param player
+     * @return
+     */
+    public List<Protection> loadProtectionsByPlayerAlsoIfNotOwner(String player) {
+        List<Protection> protections = new ArrayList<Protection>();
+
+        try {
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? OR data LIKE ?");
+            UUID uuid = UUIDRegistry.getUUID(player);
+            String playerString = uuid != null ? uuid.toString() : player;
+            statement.setString(1, playerString);
+            statement.setString(2, "%\"" + playerString + "\"%");
+
+            return resolveProtections(statement);
+        } catch (Exception e) {
+            printException(e);
+        }
+
+        return protections;
+    }
+
+    /**
      * Load protections by a player
      *
      * @param player
@@ -1192,7 +1218,7 @@ public class PhysDB extends Database {
         int blockId = BlockMap.instance().registerOrGetId(block);
         return registerProtection(blockId, type, world, player, data, x, y, z);
     }
-    
+
     private Protection registerProtection(int blockId, Protection.Type type, String world, String player, String data, int x, int y, int z) {
         ProtectionCache cache = LWC.getInstance().getProtectionCache();
 

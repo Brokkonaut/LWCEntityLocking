@@ -1033,4 +1033,8 @@ public class Protection {
     public boolean isEntity() {
         return isEntity;
     }
+    
+    public void setModified() {
+        modified = true;
+    }
 }

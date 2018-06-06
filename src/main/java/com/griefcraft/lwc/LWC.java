@@ -60,6 +60,7 @@ import com.griefcraft.modules.admin.AdminRebuild;
 import com.griefcraft.modules.admin.AdminReload;
 import com.griefcraft.modules.admin.AdminRemove;
 import com.griefcraft.modules.admin.AdminReport;
+import com.griefcraft.modules.admin.AdminTransfer;
 import com.griefcraft.modules.admin.AdminVersion;
 import com.griefcraft.modules.admin.AdminView;
 import com.griefcraft.modules.admin.BaseAdminModule;
@@ -911,6 +912,28 @@ public class LWC {
         return ret;
     }
 
+    public int transferProtectionsOfPlayer(CommandSender sender, String oldplayer, UUID newplayerid) {
+        String newplayeridstring = newplayerid.toString();
+        UUID uuid = UUIDRegistry.getUUID(oldplayer);
+        String oldPlayerString = uuid != null ? uuid.toString() : oldplayer;
+
+        List<Protection> protections = physicalDatabase.loadProtectionsByPlayerAlsoIfNotOwner(oldplayer);
+        for (Protection p : protections) {
+            if (p.getOwner() != null && p.getOwner().equalsIgnoreCase(oldPlayerString)) {
+                p.setOwner(newplayeridstring);
+            }
+            for (Permission perm : p.getPermissions()) {
+                if (perm.getType() == Permission.Type.PLAYER && perm.getName() != null && perm.getName().equalsIgnoreCase(oldPlayerString)) {
+                    perm.setName(newplayeridstring);
+                    p.setModified();
+                }
+            }
+            p.save();
+            protectionCache.addProtection(p);
+        }
+        return protections.size();
+    }
+
     /**
      * Remove protections very quickly with raw SQL calls
      *
@@ -1581,6 +1604,7 @@ public class LWC {
         // admin commands
         registerModule(new BaseAdminModule());
         registerModule(new AdminCache());
+        registerModule(new AdminTransfer());
         registerModule(new AdminCleanup());
         registerModule(new AdminClear());
         registerModule(new AdminFind());
