@@ -59,8 +59,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -110,7 +112,7 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         Player remover = (e.getRemover() instanceof Player) ? (Player) e.getRemover() : null;
-        if (remover == null) {
+        if (remover == null || e.getCause() == RemoveCause.EXPLOSION) {
             e.setCancelled(true);
         } else {
             if (onPlayerEntityInteract(remover, entity, e.isCancelled())) {
@@ -184,6 +186,9 @@ public class LWCPlayerListener implements Listener {
             Protection protection = lwc.findProtection(entity);
             if (protection == null) {
                 return;
+            }
+            if(e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.ENTITY_EXPLOSION ) {
+                e.setCancelled(true);
             }
             if (!e.isCancelled() && !lwc.canAdminProtection(p, protection)) {
                 e.setCancelled(true);
@@ -289,9 +294,6 @@ public class LWCPlayerListener implements Listener {
     }
 
     private boolean onPlayerEntityInteract(Player player, Entity entity, boolean cancelled) {
-        String p = plugin.getServer().getClass().getPackage().getName();
-        p.substring(p.lastIndexOf('.') + 1);
-
         // attempt to load the protection for this cart
         LWC lwc = LWC.getInstance();
         Protection protection = lwc.findProtection(entity);
