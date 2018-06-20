@@ -39,6 +39,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -253,7 +254,7 @@ public class LWCPlayer implements CommandSender {
      * @return a Set containing all of the action names
      */
     public Set<String> getActionNames() {
-        return new HashSet<String>(actions.keySet());
+        return Collections.unmodifiableSet(actions.keySet());
     }
 
     /**
@@ -261,6 +262,15 @@ public class LWCPlayer implements CommandSender {
      */
     public Set<Protection> getAccessibleProtections() {
         return new HashSet<Protection>(accessibleProtections);
+    }
+
+    /**
+     * Checks if a protection is accessible
+     * 
+     * @return true if and only if the protection is accessible
+     */
+    public boolean isProtectionAccessible(Protection p) {
+        return accessibleProtections.contains(p);
     }
 
     /**
@@ -419,6 +429,6 @@ public class LWCPlayer implements CommandSender {
 
     @Override
     public Spigot spigot() {
-        return null;
+        return player.spigot();
     }
 }

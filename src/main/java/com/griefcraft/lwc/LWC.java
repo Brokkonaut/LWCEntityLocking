@@ -628,8 +628,7 @@ public class LWC {
             return true;
 
         case PASSWORD:
-            if (wrapPlayer(player).getAccessibleProtections().contains(
-                    protection)) {
+            if (wrapPlayer(player).isProtectionAccessible(protection)) {
                 return true;
             }
             // fallthrough intended!
