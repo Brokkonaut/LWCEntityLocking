@@ -94,13 +94,13 @@ import com.griefcraft.scripting.event.LWCReloadEvent;
 import com.griefcraft.scripting.event.LWCSendLocaleEvent;
 import com.griefcraft.sql.Database;
 import com.griefcraft.sql.PhysDB;
+import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.Colors;
 import com.griefcraft.util.ProtectionFinder;
 import com.griefcraft.util.Statistics;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
-import com.griefcraft.util.matchers.DoubleChestMatcher;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -110,13 +110,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
 
@@ -248,37 +245,6 @@ public class LWC {
         }
 
         return name.toLowerCase();
-    }
-
-    /**
-     * Look for a double chest adjacent to a chest
-     *
-     * @param block
-     * @return
-     */
-    public Block findAdjacentDoubleChest(Block block) {
-        if (!DoubleChestMatcher.PROTECTABLES_CHESTS.contains(block.getType())) {
-            throw new UnsupportedOperationException(
-                    "findAdjacentDoubleChest() cannot be called on a: "
-                            + block.getType());
-        }
-        BlockState state = block.getState();
-        if (state instanceof Chest) {
-            Inventory inventory = ((Chest) state).getInventory();
-            if (inventory instanceof DoubleChestInventory) {
-                DoubleChestInventory dci = (DoubleChestInventory) inventory;
-                Block block2 = dci.getLeftSide().getLocation().getBlock();
-                if (!block.equals(block2)) {
-                    return block2;
-                }
-                block2 = dci.getRightSide().getLocation().getBlock();
-                if (!block.equals(block2)) {
-                    return block2;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -1117,14 +1083,10 @@ public class LWC {
             }
 
             // possibility of a double chest
-            if (DoubleChestMatcher.PROTECTABLES_CHESTS
-                    .contains(block.getType())) {
-                Block doubleChest = findAdjacentDoubleChest(block);
-
-                if (doubleChest != null) {
-                    removeInventory(doubleChest);
-                    doubleChest.setType(Material.AIR);
-                }
+            Block doubleChest = BlockUtil.findAdjacentDoubleChest(block);
+            if (doubleChest != null) {
+                removeInventory(doubleChest);
+                doubleChest.setType(Material.AIR);
             }
 
             // remove the inventory from the block if it has one

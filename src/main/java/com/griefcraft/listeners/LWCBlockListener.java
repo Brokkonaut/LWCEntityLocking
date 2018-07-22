@@ -38,9 +38,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.Chest;
-import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -66,8 +63,8 @@ import com.griefcraft.scripting.event.LWCProtectionDestroyEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.scripting.event.LWCRedstoneEvent;
+import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.Colors;
-import com.griefcraft.util.matchers.DoubleChestMatcher;
 
 public class LWCBlockListener implements Listener {
 
@@ -208,21 +205,16 @@ public class LWCBlockListener implements Listener {
 		// move
 		// the protection to the chest that is not destroyed, if it is not that
 		// one already.
-		if (protection.isOwner(player)
-				&& DoubleChestMatcher.PROTECTABLES_CHESTS.contains(block
-						.getType())) {
-			Block doubleChest = lwc.findAdjacentDoubleChest(block);
+		if (protection.isOwner(player)) {
+			Block doubleChest = BlockUtil.findAdjacentDoubleChest(block);
 
 			if (doubleChest != null) {
 				// if they destroyed the protected block we want to move it aye?
-				if (lwc.blockEquals(protection.getBlock(), block)) {
-					// correct the block
-					protection.setBlockMaterial(doubleChest.getType());
-					protection.setX(doubleChest.getX());
-					protection.setY(doubleChest.getY());
-					protection.setZ(doubleChest.getZ());
-					protection.saveNow();
-				}
+				protection.setBlockMaterial(doubleChest.getType());
+				protection.setX(doubleChest.getX());
+				protection.setY(doubleChest.getY());
+				protection.setZ(doubleChest.getZ());
+				protection.saveNow();
 
 				// Repair the cache
 				protection.radiusRemoveCache();
@@ -427,42 +419,17 @@ public class LWCBlockListener implements Listener {
 			return;
 		}
 
-		// If it's a chest, make sure they aren't placing it connected to
-		// an already registered chest
-		BlockData blockData = block.getBlockData();
-		if (blockData instanceof Chest) {
-            Chest chestData = (Chest) blockData;
-            if (chestData.getType() != Type.SINGLE) {
-                BlockFace chestFace = chestData.getFacing();
-                // we have to rotate is to get the adjacent chest
-                // west, right -> south
-                // west, left -> north
-                if (chestFace == BlockFace.WEST) {
-                    chestFace = BlockFace.NORTH;
-                } else if (chestFace == BlockFace.NORTH) {
-                    chestFace = BlockFace.EAST;
-                } else if (chestFace == BlockFace.EAST) {
-                    chestFace = BlockFace.SOUTH;
-                } else if (chestFace == BlockFace.SOUTH) {
-                    chestFace = BlockFace.WEST;
-                }
-                if (chestData.getType() == Type.RIGHT) {
-                    chestFace = chestFace.getOppositeFace();
-                }
-
-                Block face = block.getRelative(chestFace);
-
-                // They're placing it beside a chest, check if it's already
-                // protected
-                if (face.getType() == block.getType()) {
-                    if (lwc.findProtection(face.getLocation()) != null) {
-                        return;
-                    }
-                }
+        // If it's a chest, make sure they aren't placing it connected to
+        // an already registered chest
+        Block connectedChest = BlockUtil.findAdjacentDoubleChest(block);
+        if (connectedChest != null) {
+            // They're placing it beside a chest, check if it's already protected
+            if (lwc.findProtection(connectedChest.getLocation()) != null) {
+                return;
             }
-		}
+        }
 
-		try {
+        try {
 			LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(
 					player, block);
 			lwc.getModuleLoader().dispatchEvent(evt);
