@@ -38,6 +38,9 @@ import com.griefcraft.util.matchers.WallMatcher;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Chest;
+import org.bukkit.block.data.type.Chest.Type;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -159,17 +162,20 @@ public class ProtectionFinder {
      * @return
      */
     public Matcher[] getProtectionMatchers() {
-        Material material = baseBlock.getType();
+        BlockData data = baseBlock.getBlockData();
+        Material material = data.getMaterial();
 
         if (material == Material.HOPPER) {
             return new Matcher[0];
         }
 
         // Double chests
-        if (DoubleChestMatcher.PROTECTABLES_CHESTS.contains(material)) {
-            return new Matcher[] {
-                    new DoubleChestMatcher()
-            };
+        if (data instanceof Chest) {
+            if (((Chest) data).getType() != Type.SINGLE) {
+                return new Matcher[] { new DoubleChestMatcher() };
+            } else {
+                return new Matcher[0];
+            }
         }
 
         // Gravity

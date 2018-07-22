@@ -28,60 +28,24 @@
 
 package com.griefcraft.util.matchers;
 
-import com.griefcraft.util.ProtectionFinder;
-
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 
-import java.util.EnumSet;
-import java.util.Set;
+import com.griefcraft.util.BlockUtil;
+import com.griefcraft.util.ProtectionFinder;
 
 /**
  * Matches double chests
  */
 public class DoubleChestMatcher implements ProtectionFinder.Matcher {
 
-    /**
-     * Blocks that act like double chests
-     */
-    public static final Set<Material> PROTECTABLES_CHESTS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST);
-
-    /**
-     * Possible faces around the base block that protections could be at
-     */
-    public static final BlockFace[] POSSIBLE_FACES = new BlockFace[]{ BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
-
     public boolean matches(ProtectionFinder finder) {
     	BlockState baseBlockState = finder.getBaseBlock();
-    	Block block = baseBlockState.getBlock();
-        // is the base block not what we want?
-        if (!(baseBlockState instanceof InventoryHolder)) {
-            return false;
-        }
-        BlockState state = block.getState();
-        if (state instanceof Chest) {
-            Inventory inventory = ((Chest) state).getInventory();
-            if (inventory instanceof DoubleChestInventory) {
-                DoubleChestInventory dci = (DoubleChestInventory) inventory;
-                Block block2 = dci.getLeftSide().getLocation().getBlock();
-                if (!block.equals(block2)) {
-                    finder.addBlock(block2);
-                    return true;
-                }
-                block2 = dci.getRightSide().getLocation().getBlock();
-                if (!block.equals(block2)) {
-                    finder.addBlock(block2);
-                    return true;
-                }
-            }
-        }
-
+    	Block otherHalf = BlockUtil.findAdjacentDoubleChest(baseBlockState.getBlock());
+    	if(otherHalf != null) {
+    	    finder.addBlock(otherHalf);
+    	    return true;
+    	}
         return false;
     }
 
