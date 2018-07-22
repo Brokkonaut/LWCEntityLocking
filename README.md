@@ -1,7 +1,7 @@
 Contributors:
 Hidendra - Main Coder, Me_Goes_RAWR - Added entity locking, Brokkonaut - Updates since 1.8
 
-LWC with support for minecraft 1.12 blocks and entities. If you currently use LWC, please see this wiki page: https://github.com/Hidendra/LWC/wiki/Bukkit-1.8
+LWC with support for minecraft 1.13 blocks and entities. If you currently use LWC, please see this wiki page: https://github.com/Hidendra/LWC/wiki/Bukkit-1.8
 
 
 LWC is the longest-lived single block protection plugin that protects both the block itself and contents of Chests, Furnaces, and Dispensers. It can also protect any other blocks, and by default will also protect Doors (Wooden + Iron), Signs and Trap Doors.
