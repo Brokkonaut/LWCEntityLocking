@@ -156,7 +156,7 @@ public class LimitsV2 extends JavaModule {
         @Override
         public int getProtectionCount(Player player, Material material) {
             LWC lwc = LWC.getInstance();
-            return lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.SIGN_POST)
+            return lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.SIGN)
                     + lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.WALL_SIGN);
         }
 
@@ -275,7 +275,7 @@ public class LimitsV2 extends JavaModule {
                 if (limit instanceof BlockLimit) {
                     material = ((BlockLimit) limit).getMaterial();
                 } else if (limit instanceof SignLimit) {
-                    material = Material.SIGN_POST;
+                    material = Material.SIGN;
                 }
 
                 boolean reachedLimit = hasReachedLimit(target, material);
@@ -523,7 +523,7 @@ public class LimitsV2 extends JavaModule {
             if (limit instanceof DefaultLimit) {
                 defaultLimit = limit;
             } else if (limit instanceof SignLimit) {
-                if (material == Material.WALL_SIGN || material == Material.SIGN_POST) {
+                if (material == Material.WALL_SIGN || material == Material.SIGN) {
                     return limit;
                 }
             } else if (limit instanceof BlockLimit) {

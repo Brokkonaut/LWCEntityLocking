@@ -610,18 +610,14 @@ public class Protection {
         Material storedBlockId = getBlockMaterial();
         Block block = getBlock();
 
-        switch (block.getType()) {
-            case FURNACE:
-            case BURNING_FURNACE:
-                return storedBlockId == Material.FURNACE || storedBlockId == Material.BURNING_FURNACE;
+        // switch (block.getType()) {
+        // case STEP:
+        // case DOUBLE_STEP:
+        // return storedBlockId == Material.STEP || storedBlockId == Material.DOUBLE_STEP;
 
-            case STEP:
-            case DOUBLE_STEP:
-                    return storedBlockId == Material.STEP || storedBlockId == Material.DOUBLE_STEP;
-
-            default:
-                return storedBlockId == block.getType();
-        }
+        // default:
+        return storedBlockId == block.getType();
+        // }
     }
 
     public JSONObject getData() {

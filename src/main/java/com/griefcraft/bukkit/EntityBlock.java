@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
@@ -38,10 +39,6 @@ public class EntityBlock implements Block {
 	@Override
 	public int getZ() {
 		return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
-	}
-	@Override
-	public int getTypeId() {
-		return ENTITY_BLOCK_ID;
 	}
 	@Override
 	public World getWorld() {
@@ -113,29 +110,25 @@ public class EntityBlock implements Block {
         return getLocation().getChunk();
     }
     @Override
-    public void setData(byte data) {
-    }
-    @Override
-    public void setData(byte data, boolean applyPhysics) {
-    }
-    @Override
     public void setType(Material type) {
     }
     @Override
     public void setType(Material type, boolean applyPhysics) {
     }
+
     @Override
-    public boolean setTypeId(int type) {
-        return false;
+    public BlockData getBlockData() {
+        return null;
     }
+
     @Override
-    public boolean setTypeId(int type, boolean applyPhysics) {
-        return false;
+    public void setBlockData(BlockData data) {
     }
+
     @Override
-    public boolean setTypeIdAndData(int type, byte data, boolean applyPhysics) {
-        return false;
+    public void setBlockData(BlockData data, boolean applyPhysics) {
     }
+
     @Override
     public BlockFace getFace(Block block) {
         return null;

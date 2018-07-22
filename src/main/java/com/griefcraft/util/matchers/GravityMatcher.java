@@ -33,6 +33,9 @@ import com.griefcraft.util.ProtectionFinder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -41,22 +44,27 @@ import java.util.Set;
  */
 public class GravityMatcher implements ProtectionFinder.Matcher {
 
-	public static final Set<Material> PROTECTABLES_POSTS = EnumSet.of(
-			Material.SIGN_POST, Material.RAILS, Material.POWERED_RAIL,
-			Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON,
-			Material.WOOD_BUTTON,Material.STANDING_BANNER);
+    public static final Set<Material> PROTECTABLES_POSTS = EnumSet.of(Material.SIGN, Material.RAIL, Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON, //
+            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON, Material.ACACIA_BUTTON, //
+            Material.WHITE_BANNER, Material.ORANGE_BANNER, Material.MAGENTA_BANNER, Material.LIGHT_BLUE_BANNER, //
+            Material.YELLOW_BANNER, Material.LIME_BANNER, Material.PINK_BANNER, Material.GRAY_BANNER, //
+            Material.LIGHT_GRAY_BANNER, Material.CYAN_BANNER, Material.PURPLE_BANNER, Material.BLUE_BANNER, //
+            Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER);
 
-	public boolean matches(ProtectionFinder finder) {
-		Block block = finder.getBaseBlock().getBlock();
+    public boolean matches(ProtectionFinder finder) {
+        Block block = finder.getBaseBlock().getBlock();
 
-		// Easy to match, just try to match the block above the base block :P
-		Block up = block.getRelative(BlockFace.UP);
+        // Easy to match, just try to match the block above the base block :P
+        Block up = block.getRelative(BlockFace.UP);
 
-		if (PROTECTABLES_POSTS.contains(up.getType())) {
-			finder.addBlock(up);
-			return true;
-		}
-		return false;
-	}
+        if (PROTECTABLES_POSTS.contains(up.getType())) {
+            BlockData upData = up.getBlockData();
+            if (!(upData instanceof Directional) || ((Directional) upData).getFacing() == BlockFace.DOWN) {
+                finder.addBlock(up);
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

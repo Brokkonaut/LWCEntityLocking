@@ -39,12 +39,14 @@ import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.util.config.Configuration;
 import com.griefcraft.util.matchers.DoorMatcher;
-import com.griefcraft.util.matchers.WallMatcher;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.Bisected.Half;
+import org.bukkit.block.data.Openable;
 import org.bukkit.entity.Player;
 
 public class DoorsModule extends JavaModule {
@@ -130,7 +132,7 @@ public class DoorsModule extends JavaModule {
 
         // Are we looking at the top half?
         // If we are, we need to get the bottom half instead
-        if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType()) && (block.getData() & 0x8) == 0x8) {
+        if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType()) && ((Bisected)block.getBlockData()).getHalf() == Half.TOP) {
             // Inspect the bottom half instead, fool!
             block = block.getRelative(BlockFace.DOWN);
         }
@@ -160,7 +162,7 @@ public class DoorsModule extends JavaModule {
         }
 
         // toggle the other side of the door open
-        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || block.getType().equals(Material.TRAP_DOOR));
+        boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || DoorMatcher.TRAPDOORS.contains(block.getType()));
         changeDoorStates(true, (opensWhenClicked ? null : block) /* opens when clicked */, doubleDoorBlock);
         if(!opensWhenClicked && ! event.getPlayer().isSneaking()) {
             event.getEvent().setCancelled(true); // cancel to avoid things like block placing
@@ -206,8 +208,10 @@ public class DoorsModule extends JavaModule {
             if (door == null) {
                 continue;
             }
+            
+            Openable doorBlock = (Openable) door.getBlockData();
 
-            boolean wasClosed = (door.getData() & 0x4) == 0;
+            boolean wasClosed = !doorBlock.isOpen();
             // If we aren't allowing the door to open, check if it's already closed
             if (!allowDoorToOpen && wasClosed) {
                 // The door is already closed and we don't want to open it
@@ -216,7 +220,8 @@ public class DoorsModule extends JavaModule {
             }
 
             // Now xor both data values with 0x4, the flag that states if the door is open
-            door.setData((byte) (door.getData() ^ 0x4));
+            doorBlock.setOpen(wasClosed);
+            door.setBlockData(doorBlock);
 
             // Play the door open/close sound
             // door.getWorld().playEffect(door.getLocation(), Effect.DOOR_TOGGLE, 0);
@@ -230,7 +235,7 @@ public class DoorsModule extends JavaModule {
                 s = wasClosed ? Sound.BLOCK_FENCE_GATE_OPEN : Sound.BLOCK_FENCE_GATE_CLOSE;
             } else if (type == Material.IRON_TRAPDOOR) {
                 s = wasClosed ? Sound.BLOCK_IRON_TRAPDOOR_OPEN : Sound.BLOCK_IRON_TRAPDOOR_CLOSE;
-            } else if (DoorMatcher.TRAP_DOORS.contains(type)) {
+            } else if (DoorMatcher.TRAPDOORS.contains(type)) {
                 s = wasClosed ? Sound.BLOCK_WOODEN_TRAPDOOR_OPEN : Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE;
             }
             if (s != null) {
@@ -243,8 +248,10 @@ public class DoorsModule extends JavaModule {
                 Block topHalf = door.getRelative(BlockFace.UP);
 
                 // Only change the block above it if it is something we can open or close
-                if (isValid(topHalf.getType())) {
-                    topHalf.setData((byte) (topHalf.getData() ^ 0x4));
+                if (type == topHalf.getType()) {
+                    Openable topHalfData = (Openable)topHalf.getBlockData();
+                    topHalfData.setOpen(doorBlock.isOpen());
+                    topHalf.setBlockData(topHalfData);
                 }
             }
         }
@@ -296,7 +303,7 @@ public class DoorsModule extends JavaModule {
             return true;
         }
 
-        if (WallMatcher.PROTECTABLES_TRAP_DOORS.contains(material)) {
+        if (DoorMatcher.TRAPDOORS.contains(material) || material == Material.IRON_TRAPDOOR) {
             return true;
         }
 

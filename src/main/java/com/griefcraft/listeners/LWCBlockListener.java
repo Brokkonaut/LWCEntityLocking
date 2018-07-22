@@ -38,6 +38,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Chest;
+import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -256,16 +259,13 @@ public class LWCBlockListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
 		LWC lwc = plugin.getLWC();
-		Block block = event.getBlock();
 
-		if (block.getType() == Material.BED_BLOCK) {
-			for (BlockState state : event.getReplacedBlockStates()) {
-				Protection protection = lwc.findProtection(state);
+		for (BlockState state : event.getReplacedBlockStates()) {
+			Protection protection = lwc.findProtection(state);
 
-				if (protection != null) {
-					event.setCancelled(true);
-					return;
-				}
+			if (protection != null && !lwc.canAccessProtection(event.getPlayer(), protection)) {
+				event.setCancelled(true);
+				return;
 			}
 		}
 	}
@@ -427,23 +427,39 @@ public class LWCBlockListener implements Listener {
 			return;
 		}
 
-		// If it's a chest, make sure they aren't placing it beside an already
-		// registered chest
-		if (DoubleChestMatcher.PROTECTABLES_CHESTS.contains(block.getType())) {
-			BlockFace[] faces = new BlockFace[] { BlockFace.NORTH,
-					BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+		// If it's a chest, make sure they aren't placing it connected to
+		// an already registered chest
+		BlockData blockData = block.getBlockData();
+		if (blockData instanceof Chest) {
+            Chest chestData = (Chest) blockData;
+            if (chestData.getType() != Type.SINGLE) {
+                BlockFace chestFace = chestData.getFacing();
+                // we have to rotate is to get the adjacent chest
+                // west, right -> south
+                // west, left -> north
+                if (chestFace == BlockFace.WEST) {
+                    chestFace = BlockFace.NORTH;
+                } else if (chestFace == BlockFace.NORTH) {
+                    chestFace = BlockFace.EAST;
+                } else if (chestFace == BlockFace.EAST) {
+                    chestFace = BlockFace.SOUTH;
+                } else if (chestFace == BlockFace.SOUTH) {
+                    chestFace = BlockFace.WEST;
+                }
+                if (chestData.getType() == Type.RIGHT) {
+                    chestFace = chestFace.getOppositeFace();
+                }
 
-			for (BlockFace blockFace : faces) {
-				Block face = block.getRelative(blockFace);
+                Block face = block.getRelative(chestFace);
 
-				// They're placing it beside a chest, check if it's already
-				// protected
-				if (face.getType() == block.getType()) {
-					if (lwc.findProtection(face.getLocation()) != null) {
-						return;
-					}
-				}
-			}
+                // They're placing it beside a chest, check if it's already
+                // protected
+                if (face.getType() == block.getType()) {
+                    if (lwc.findProtection(face.getLocation()) != null) {
+                        return;
+                    }
+                }
+            }
 		}
 
 		try {

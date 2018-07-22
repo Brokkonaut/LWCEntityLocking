@@ -34,8 +34,8 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCRedstoneEvent;
 import com.griefcraft.util.ProtectionFinder;
+import com.griefcraft.util.matchers.DoorMatcher;
 
-import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 
@@ -55,7 +55,7 @@ public class RedstoneModule extends JavaModule {
 
         if (finder != null) {
             for (BlockState found : finder.getBlocks()) {
-                if (found.getType() == Material.STONE_PLATE || found.getType() == Material.WOOD_PLATE) {
+                if (DoorMatcher.PRESSURE_PLATES.contains(found.getType())) {
                     // find a player that is using it
                     int x = found.getX();
                     int y = found.getY();

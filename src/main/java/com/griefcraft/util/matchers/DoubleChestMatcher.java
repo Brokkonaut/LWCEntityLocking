@@ -34,6 +34,10 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -57,17 +61,24 @@ public class DoubleChestMatcher implements ProtectionFinder.Matcher {
     	BlockState baseBlockState = finder.getBaseBlock();
     	Block block = baseBlockState.getBlock();
         // is the base block not what we want?
-        if (!PROTECTABLES_CHESTS.contains(baseBlockState.getType())) {
+        if (!(baseBlockState instanceof InventoryHolder)) {
             return false;
         }
-
-        for (BlockFace face : POSSIBLE_FACES) {
-            Block relative = block.getRelative(face);
-
-            // we only want chests
-            if (baseBlockState.getType() == relative.getType()) {
-                finder.addBlock(relative);
-                return true;
+        BlockState state = block.getState();
+        if (state instanceof Chest) {
+            Inventory inventory = ((Chest) state).getInventory();
+            if (inventory instanceof DoubleChestInventory) {
+                DoubleChestInventory dci = (DoubleChestInventory) inventory;
+                Block block2 = dci.getLeftSide().getLocation().getBlock();
+                if (!block.equals(block2)) {
+                    finder.addBlock(block2);
+                    return true;
+                }
+                block2 = dci.getRightSide().getLocation().getBlock();
+                if (!block.equals(block2)) {
+                    finder.addBlock(block2);
+                    return true;
+                }
             }
         }
 
