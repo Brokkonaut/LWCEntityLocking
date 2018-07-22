@@ -33,6 +33,8 @@ import com.griefcraft.util.ProtectionFinder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -47,18 +49,13 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * Blocks that can be attached to the wall and be protected.
      * This assumes that the block is DESTROYED if the wall they are attached to is broken.
      */
-    public static final Set<Material> PROTECTABLES_WALL = EnumSet.of(Material.WALL_SIGN, Material.WALL_BANNER);
-
-    /**
-     * Those evil levers and buttons have all different bits for directions. Gah!
-     */
-    public static final Set<Material> PROTECTABLES_LEVERS_ET_AL = EnumSet.of(Material.STONE_BUTTON, Material.LEVER, Material.WOOD_BUTTON);
-
-    /**
-     * Same as PROTECTABLE_WALL, except the facing direction is reversed,
-     * such as trap doors
-     */
-    public static final Set<Material> PROTECTABLES_TRAP_DOORS = EnumSet.of(Material.TRAP_DOOR, Material.IRON_TRAPDOOR);
+    public static final Set<Material> PROTECTABLES_WALL = EnumSet.of(Material.WALL_SIGN, //
+            Material.WHITE_WALL_BANNER, Material.ORANGE_WALL_BANNER, Material.MAGENTA_WALL_BANNER, Material.LIGHT_BLUE_WALL_BANNER, //
+            Material.YELLOW_WALL_BANNER, Material.LIME_WALL_BANNER, Material.PINK_WALL_BANNER, Material.GRAY_WALL_BANNER, //
+            Material.LIGHT_GRAY_WALL_BANNER, Material.CYAN_WALL_BANNER, Material.PURPLE_WALL_BANNER, Material.BLUE_WALL_BANNER, //
+            Material.BROWN_WALL_BANNER, Material.GREEN_WALL_BANNER, Material.RED_WALL_BANNER, Material.BLACK_WALL_BANNER, //
+            Material.STONE_BUTTON, Material.LEVER, //
+            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON, Material.ACACIA_BUTTON);
 
     /**
      * Possible faces around the base block that protections could be at
@@ -96,62 +93,16 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * @return
      */
     private Block tryMatchBlock(Block block, BlockFace matchingFace) {
-        byte direction = block.getData();
-
         // Blocks such as wall signs
         if (PROTECTABLES_WALL.contains(block.getType())) {
-            byte EAST = 0x05;
-            byte WEST = 0x04;
-            byte SOUTH = 0x03;
-            byte NORTH = 0x02;
-
-            if (matchingFace == BlockFace.EAST && (direction & EAST) == EAST) {
-                return block;
-            } else if (matchingFace == BlockFace.WEST && (direction & WEST) == WEST) {
-                return block;
-            } else if (matchingFace == BlockFace.SOUTH && (direction & SOUTH) == SOUTH) {
-                return block;
-            } else if (matchingFace == BlockFace.NORTH && (direction & NORTH) == NORTH) {
+            BlockData blockData = block.getBlockData();
+            if (!(blockData instanceof Directional)) {
+                return null;
+            }
+            if (((Directional) blockData).getFacing() == matchingFace) {
                 return block;
             }
         }
-
-        // Levers, buttons
-        else if (PROTECTABLES_LEVERS_ET_AL.contains(block.getType())) {
-            byte EAST = 0x4;
-            byte WEST = 0x3;
-            byte SOUTH = 0x1;
-            byte NORTH = 0x2;
-
-            if (matchingFace == BlockFace.EAST && (direction & EAST) == EAST) {
-                return block;
-            } else if (matchingFace == BlockFace.WEST && (direction & WEST) == WEST) {
-                return block;
-            } else if (matchingFace == BlockFace.SOUTH && (direction & SOUTH) == SOUTH) {
-                return block;
-            } else if (matchingFace == BlockFace.NORTH && (direction & NORTH) == NORTH) {
-                return block;
-            }
-        }
-
-        // // Blocks such as trap doors
-        // else if (PROTECTABLES_TRAP_DOORS.contains(block.getType())) {
-        // byte EAST = 0x2;
-        // byte WEST = 0x3;
-        // byte SOUTH = 0x0;
-        // byte NORTH = 0x1;
-        //
-        // if (matchingFace == BlockFace.WEST && (direction & EAST) == EAST) {
-        // return block;
-        // } else if (matchingFace == BlockFace.EAST && (direction & WEST) == WEST) {
-        // return block;
-        // } else if (matchingFace == BlockFace.NORTH && (direction & SOUTH) == SOUTH) {
-        // return block;
-        // } else if (matchingFace == BlockFace.SOUTH && (direction & NORTH) == NORTH) {
-        // return block;
-        // }
-        // }
-
         return null;
     }
 

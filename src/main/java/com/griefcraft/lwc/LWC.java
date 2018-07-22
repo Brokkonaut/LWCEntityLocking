@@ -110,10 +110,13 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
 
@@ -231,27 +234,17 @@ public class LWC {
     /**
      * Normalize a name to a more readable & usable form.
      * <p/>
-     * E.g sign_post/wall_sign = Sign, furnace/burning_furnace = Furnace,
-     * iron_door_block = iron_door
+     * E.g sign/wall_sign = Sign
      *
      * @param material
      * @return
      */
     public static String normalizeMaterialName(Material material) {
-        String name = StringUtils.replace(material.toString().toLowerCase(),
-                "block", "");
+        String name = material.toString().toLowerCase();
 
         // some name normalizations
         if (name.contains("sign")) {
             name = "sign";
-        }
-
-        if (name.contains("furnace")) {
-            name = "furnace";
-        }
-
-        if (name.endsWith("_")) {
-            name = name.substring(0, name.length() - 1);
         }
 
         return name.toLowerCase();
@@ -269,8 +262,23 @@ public class LWC {
                     "findAdjacentDoubleChest() cannot be called on a: "
                             + block.getType());
         }
+        BlockState state = block.getState();
+        if (state instanceof Chest) {
+            Inventory inventory = ((Chest) state).getInventory();
+            if (inventory instanceof DoubleChestInventory) {
+                DoubleChestInventory dci = (DoubleChestInventory) inventory;
+                Block block2 = dci.getLeftSide().getLocation().getBlock();
+                if (!block.equals(block2)) {
+                    return block2;
+                }
+                block2 = dci.getRightSide().getLocation().getBlock();
+                if (!block.equals(block2)) {
+                    return block2;
+                }
+            }
+        }
 
-        return findAdjacentBlock(block, block.getType());
+        return null;
     }
 
     /**
@@ -1160,8 +1168,7 @@ public class LWC {
         return block.getType() == block2.getType()
                 && block.getX() == block2.getX()
                 && block.getY() == block2.getY()
-                && block.getZ() == block2.getZ()
-                && block.getData() == block2.getData();
+                && block.getZ() == block2.getZ();
     }
 
     /**
@@ -1265,8 +1272,7 @@ public class LWC {
         return block.getType() == block2.getType()
                 && block.getX() == block2.getX()
                 && block.getY() == block2.getY()
-                && block.getZ() == block2.getZ()
-                && block.getRawData() == block2.getRawData();
+                && block.getZ() == block2.getZ();
     }
 
     public Protection findProtection(World world, int x, int y, int z) {
@@ -1311,21 +1317,12 @@ public class LWC {
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
-
-        String value = configuration.getString("protections." + node);
-
-        String temp = configuration.getString("protections.blocks." + state.name()
-                + "." + node);
-
-        if (temp != null && !temp.isEmpty()) {
-            value = temp;
-        }
         
-        temp = configuration.getString("protections.entities." + state.name()
+        String value = configuration.getString("protections.entities." + state.name().toLowerCase()
                 + "." + node);
 
-        if (temp != null && !temp.isEmpty()) {
-            value = temp;
+        if (value != null && value.isEmpty()) {
+            value = null;
         }
 
         protectionConfigurationCache.put(cacheKey, value);
@@ -1443,42 +1440,7 @@ public class LWC {
         if(block == null) {
             return null;
         }
-        Material material = block.getType();
-        if (material == null) {
-            return null;
-        }
-        String cacheKey = "b-" + material.name() + "-" + node;
-        if (protectionConfigurationCache.containsKey(cacheKey)) {
-            return protectionConfigurationCache.get(cacheKey);
-        }
-
-        List<String> names = new ArrayList<String>();
-
-        String materialName = normalizeMaterialName(material);
-
-        // add the name & the block id
-        names.add(materialName);
-
-        if (!materialName.equals(material.toString().toLowerCase())) {
-            names.add(material.toString().toLowerCase());
-        }
-
-        // Add the wildcards last so it can be overriden
-        names.add("*");
-
-        String value = configuration.getString("protections." + node);
-
-        for (String name : names) {
-            String temp = configuration.getString("protections.blocks." + name
-                    + "." + node);
-
-            if (temp != null && !temp.isEmpty()) {
-                value = temp;
-            }
-        }
-
-        protectionConfigurationCache.put(cacheKey, value);
-        return value;
+        return resolveProtectionConfiguration(block.getType(), node);
     }
 
     /**

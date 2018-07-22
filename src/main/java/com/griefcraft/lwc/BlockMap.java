@@ -30,9 +30,9 @@ public class BlockMap {
         for (Entry<Integer, String> e : LWC.getInstance().getPhysicalDatabase().loadBlockMappings().entrySet()) {
             int id = e.getKey();
             String name = e.getValue();
-            Material mat = Material.matchMaterial(name);
+            Material mat = Material.matchMaterial(name); // FIXME convert to 1.13
             if (mat == null) {
-                System.out.println("Invalid block mapping: " + name);
+                LWC.getInstance().getPlugin().getLogger().severe("Invalid block mapping: " + name);
                 continue;
             }
             internalAddMapping(id, mat);

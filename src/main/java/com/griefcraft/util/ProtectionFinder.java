@@ -280,8 +280,8 @@ public class ProtectionFinder {
         }
 
         // Manual intervention is required
-        if (block.getType() == Material.REDSTONE_WIRE || block.getType() == Material.REDSTONE_TORCH_OFF ||
-                block.getType() == Material.REDSTONE_TORCH_ON) {
+        if (block.getType() == Material.REDSTONE_WIRE || block.getType() == Material.REDSTONE_TORCH ||
+                block.getType() == Material.REDSTONE_WALL_TORCH) {
             return Result.E_ABORT;
         }
 

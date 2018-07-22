@@ -61,7 +61,7 @@ optional:
 
     # Blocks that cannot be placed around someone else's protection. This is most useful
     blacklistedBlocks:
-    - 166
+    - BARRIER
 
     # Players that are blocked from destroying any blocks protected by LWC. Mainly useful for MCPC
     # where mods can remove blocks and try to break the block by sending an event first (e.g turtle)
@@ -153,10 +153,7 @@ protections:
     # ONLY lwc admins will be able to modify the protection
     readonly-remove: false
 
-    # Current and custom protections are defined here by their block name or id
-    # If you use the Id, you MUST encase it in quotes, for example (chest):
-    # '54':
-    #     enabled: true
+    # Current and custom protections are defined here by their block name
     # The custom protection must also have enabled: true under it for it to function in the world
     blocks:
         chest:
@@ -171,9 +168,9 @@ protections:
         sign:
             enabled: true
             autoRegister: private
-        wooden_door:
-            enabled: true
         iron_door:
+            enabled: true
+        oak_door:
             enabled: true
         spruce_door:
             enabled: true
@@ -185,11 +182,21 @@ protections:
             enabled: true
         dark_oak_door:
             enabled: true
-        trap_door:
+        oak_trapdoor:
+            enabled: true
+        spruce_trapdoor:
+            enabled: true
+        birch_trapdoor:
+            enabled: true
+        jungle_trapdoor:
+            enabled: true
+        acacia_trapdoor:
+            enabled: true
+        dark_oak_trapdoor:
             enabled: true
         iron_trapdoor:
             enabled: true
-        fence_gate:
+        oak_fence_gate:
             enabled: true
         spruce_fence_gate:
             enabled: true
@@ -201,9 +208,16 @@ protections:
             enabled: true
         dark_oak_fence_gate:
             enabled: true
+    entities:
         armor_stand:
             enabled: true
-
+            autoRegister: private
+        painting:
+            enabled: true
+            autoRegister: private
+        item_frame:
+            enabled: true
+            autoRegister: private
 modes:
     droptransfer:
         enabled: true
