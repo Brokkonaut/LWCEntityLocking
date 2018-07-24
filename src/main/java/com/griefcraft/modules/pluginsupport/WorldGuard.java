@@ -39,11 +39,13 @@ import com.griefcraft.util.Colors;
 import com.griefcraft.util.config.Configuration;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.internal.permission.RegionPermissionModel;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -140,7 +142,7 @@ public class WorldGuard extends JavaModule {
 		}
 
 		// get the region manager for the world
-		RegionManager regionManager = worldGuard.getRegionManager(world);
+		RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
 
 		// try and get the region
 		ProtectedRegion region = regionManager.getRegion(regionName);
@@ -253,7 +255,7 @@ public class WorldGuard extends JavaModule {
 				// may be in multiple
 				// regions or none; we don't care here. That's WorldGuard's
 				// domain.
-				if (!worldGuard.canBuild(event.getPlayer(),
+				if (!canBuild(event.getPlayer(),
 						protection.getBlock())) {
 					continue;
 				}
@@ -285,7 +287,7 @@ public class WorldGuard extends JavaModule {
 				if (world == null) {
 					continue;
 				}
-				RegionManager regionManager = worldGuard.getRegionManager(world);
+				RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
 				if (regionManager == null) {
 					continue;
 				}
@@ -332,11 +334,11 @@ public class WorldGuard extends JavaModule {
 		Block block = event.getBlock();
 
 		// Load the region manager for the world
-		RegionManager regionManager = worldGuard.getRegionManager(block.getWorld());
+		RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(block.getWorld()));
 
 		// Are we enforcing building?
 		if (configuration.getBoolean("worldguard.requireBuildRights", true)) {
-			if (!worldGuard.canBuild(player, block)) {
+			if (!canBuild(player, block)) {
 				lwc.sendLocale(player, "lwc.worldguard.needbuildrights");
 				event.setCancelled(true);
 				return;
@@ -344,7 +346,7 @@ public class WorldGuard extends JavaModule {
 		}
 
 		// Create a vector for the region
-		Vector vector = BukkitUtil.toVector(block);
+		Vector vector = BukkitAdapter.asVector(block.getLocation());
 
 		// Load the regions the block encompasses
 		List<String> regions = regionManager.getApplicableRegionsIDs(vector);
@@ -371,7 +373,17 @@ public class WorldGuard extends JavaModule {
 		}
 	}
 
-	/**
+	private boolean canBuild(Player player, Block block) {
+	    LocalPlayer wgPlayer = worldGuard.wrapPlayer(player);
+	    com.sk89q.worldedit.world.World wgWorld = BukkitAdapter.adapt(block.getWorld());
+	    if(new RegionPermissionModel(wgPlayer).mayIgnoreRegionProtection(wgWorld)) {
+	        return true;
+	    }
+	    RegionQuery query = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+	    return query.testBuild(BukkitAdapter.adapt(block.getLocation()), wgPlayer);
+    }
+
+    /**
 	 * Check if a region is blacklisted
 	 *
 	 * @param region
