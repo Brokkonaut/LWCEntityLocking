@@ -45,32 +45,30 @@ public class BlockMap {
                 } else if(name.equals("STANDING_BANNER")) {
                     mat = Material.AIR;
                 }
-                if (mat == null) {
-                    LWC.getInstance().getPlugin().getLogger().severe("Invalid block mapping: " + name);
-                    LWC.getInstance().getPhysicalDatabase().deleteBlockMapping(id);
+                if (mat == null || mat == Material.AIR) {
+                    // -1 = unknown, will be updated on next protection access
+                    if (mat == null) {
+                        LWC.getInstance().getPlugin().getLogger().severe("Invalid block mapping: " + name);
+                    } else {
+                        LWC.getInstance().getPlugin().getLogger().info("Updating block mapping from " + name + " to UNKNOWN");
+                    }
+                    LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, -1);
                     inverseMappings.remove(name);
                     continue;
                 } else {
                     LWC.getInstance().getPlugin().getLogger().info("Updating block mapping from " + name + " to " + mat.name());
-                    if(mat == Material.AIR) {
-                        LWC.getInstance().getPlugin().getLogger().info("Merging block mapping with -1");
-                        LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, -1);
+                    Integer mergeId = inverseMappings.get(mat.name());
+                    if (mergeId != null) {
+                        // we have a material collision (several materials to one) -> merge them
+                        LWC.getInstance().getPlugin().getLogger().info("Merging block mapping with " + mergeId);
+                        LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, mergeId.intValue());
                         inverseMappings.remove(name);
                         continue;
                     } else {
-                        Integer mergeId = inverseMappings.get(mat.name());
-                        if (mergeId != null) {
-                            // we have a material collision (several materials to one) -> merge them
-                            LWC.getInstance().getPlugin().getLogger().info("Merging block mapping with " + mergeId);
-                            LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, mergeId.intValue());
-                            inverseMappings.remove(name);
-                            continue;
-                        } else {
-                            // material was renamed
-                            LWC.getInstance().getPhysicalDatabase().updateBlockMappingName(id, mat.name());
-                            inverseMappings.remove(name);
-                            inverseMappings.put(mat.name(), id);
-                        }
+                        // material was renamed
+                        LWC.getInstance().getPhysicalDatabase().updateBlockMappingName(id, mat.name());
+                        inverseMappings.remove(name);
+                        inverseMappings.put(mat.name(), id);
                     }
                 }
             }
