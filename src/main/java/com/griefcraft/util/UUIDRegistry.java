@@ -163,6 +163,7 @@ public class UUIDRegistry {
                     }
                 }
             } else {
+                @SuppressWarnings("deprecation")
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
 
                 if (offlinePlayer != null && offlinePlayer.getUniqueId() != null) {
