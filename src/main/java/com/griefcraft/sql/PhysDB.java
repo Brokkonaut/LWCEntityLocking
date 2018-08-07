@@ -2287,16 +2287,6 @@ public class PhysDB extends Database {
         }
     }
 
-    public void deleteBlockMapping(int id) {
-        try {
-            PreparedStatement insertSmt = prepare("DELETE FROM " + prefix + "blocks WHERE id = ?");
-            insertSmt.setInt(1, id);
-            insertSmt.executeUpdate();
-        } catch (SQLException e) {
-            printException(e);
-        }
-    }
-
     public void mergeBlockMapping(int oldid, int newid) {
         try {
             PreparedStatement updateSmt = prepare("UPDATE " + prefix + "protections SET blockId = ? WHERE blockId = ?");
