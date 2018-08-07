@@ -2,6 +2,7 @@ package com.griefcraft.lwc;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.bukkit.Material;
@@ -27,13 +28,51 @@ public class BlockMap {
     public void init() {
         blockToIdMap.clear();
         idToBlockMap = new Material[64];
-        for (Entry<Integer, String> e : LWC.getInstance().getPhysicalDatabase().loadBlockMappings().entrySet()) {
+        HashMap<Integer, String> existingMappings = LWC.getInstance().getPhysicalDatabase().loadBlockMappings();
+        HashMap<String, Integer> inverseMappings = new HashMap<>();
+        for (Entry<Integer, String> e : existingMappings.entrySet()) {
+            inverseMappings.put(e.getValue(), e.getKey());
+        }
+        for (Entry<Integer, String> e : existingMappings.entrySet()) {
             int id = e.getKey();
             String name = e.getValue();
-            Material mat = Material.matchMaterial(name); // FIXME convert to 1.13
+            Material mat = Material.getMaterial(name);
             if (mat == null) {
-                LWC.getInstance().getPlugin().getLogger().severe("Invalid block mapping: " + name);
-                continue;
+                // try to convert to 1.13 materials
+                mat = Material.getMaterial(name, true);
+                if (name.equals("BURNING_FURNACE")) {
+                    mat = Material.FURNACE;
+                } else if(name.equals("STANDING_BANNER")) {
+                    mat = Material.AIR;
+                }
+                if (mat == null) {
+                    LWC.getInstance().getPlugin().getLogger().severe("Invalid block mapping: " + name);
+                    LWC.getInstance().getPhysicalDatabase().deleteBlockMapping(id);
+                    inverseMappings.remove(name);
+                    continue;
+                } else {
+                    LWC.getInstance().getPlugin().getLogger().info("Updating block mapping from " + name + " to " + mat.name());
+                    if(mat == Material.AIR) {
+                        LWC.getInstance().getPlugin().getLogger().info("Merging block mapping with -1");
+                        LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, -1);
+                        inverseMappings.remove(name);
+                        continue;
+                    } else {
+                        Integer mergeId = inverseMappings.get(mat.name());
+                        if (mergeId != null) {
+                            // we have a material collision (several materials to one) -> merge them
+                            LWC.getInstance().getPlugin().getLogger().info("Merging block mapping with " + mergeId);
+                            LWC.getInstance().getPhysicalDatabase().mergeBlockMapping(id, mergeId.intValue());
+                            inverseMappings.remove(name);
+                            continue;
+                        } else {
+                            // material was renamed
+                            LWC.getInstance().getPhysicalDatabase().updateBlockMappingName(id, mat.name());
+                            inverseMappings.remove(name);
+                            inverseMappings.put(mat.name(), id);
+                        }
+                    }
+                }
             }
             internalAddMapping(id, mat);
         }
@@ -57,7 +96,7 @@ public class BlockMap {
     }
 
     public int registerOrGetId(Material mat) {
-        Preconditions.checkNotNull(mat,"mat may not be null");
+        Preconditions.checkNotNull(mat, "mat may not be null");
         Integer val = blockToIdMap.get(mat);
         if (val != null) {
             return val;

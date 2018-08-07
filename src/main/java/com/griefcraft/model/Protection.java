@@ -616,7 +616,7 @@ public class Protection {
         // return storedBlockId == Material.STEP || storedBlockId == Material.DOUBLE_STEP;
 
         // default:
-        return storedBlockId == block.getType();
+        return storedBlockId == null || storedBlockId == block.getType();
         // }
     }
 

@@ -2193,6 +2193,12 @@ public class PhysDB extends Database {
         Statement statement = null;
         try {
             statement = connection.createStatement();
+            try {
+                ResultSet rs = statement.executeQuery("SELECT blockId FROM " + prefix + "protections LIMIT 1");
+                rs.close();
+            } catch (SQLException e) {
+                 return; // no protectiosn table, no update
+            }
             ResultSet rs = statement.executeQuery("SELECT id FROM " + prefix + "blocks LIMIT 1");
             rs.close();
         } catch (SQLException e) {
@@ -2264,6 +2270,43 @@ public class PhysDB extends Database {
             PreparedStatement insertSmt = prepare("INSERT INTO " + prefix + "blocks (`id`,`name`) VALUES (?, ?)");
             insertSmt.setInt(1, id);
             insertSmt.setString(2, name);
+            insertSmt.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        }
+    }
+
+    public void updateBlockMappingName(int id, String name) {
+        try {
+            PreparedStatement insertSmt = prepare("UPDATE " + prefix + "blocks SET name = ? WHERE id = ?");
+            insertSmt.setString(1, name);
+            insertSmt.setInt(2, id);
+            insertSmt.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        }
+    }
+
+    public void deleteBlockMapping(int id) {
+        try {
+            PreparedStatement insertSmt = prepare("DELETE FROM " + prefix + "blocks WHERE id = ?");
+            insertSmt.setInt(1, id);
+            insertSmt.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        }
+    }
+
+    public void mergeBlockMapping(int oldid, int newid) {
+        try {
+            PreparedStatement updateSmt = prepare("UPDATE " + prefix + "protections SET blockId = ? WHERE blockId = ?");
+            updateSmt.setInt(1, newid);
+            updateSmt.setInt(2, oldid);
+            int updated = updateSmt.executeUpdate();
+            LWC.getInstance().getPlugin().getLogger().info("Updated " + updated + " protections!");
+
+            PreparedStatement insertSmt = prepare("DELETE FROM " + prefix + "blocks WHERE id = ?");
+            insertSmt.setInt(1, oldid);
             insertSmt.executeUpdate();
         } catch (SQLException e) {
             printException(e);

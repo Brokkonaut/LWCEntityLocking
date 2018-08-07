@@ -215,6 +215,10 @@ public class AdminCleanup extends JavaModule {
                                         if (!silent) {
                                             lwc.sendLocale(sender, "protection.admin.cleanup.removednoexist", "protection", protection.toString());
                                         }
+                                    } else if (protection.getBlockMaterial() != block.getType()) {
+                                        protection.setBlockMaterial(block.getType());
+                                        protection.save();
+                                        lwc.log("Updating material to " + block.getType() + " for block at " + block.getX() + "," + block.getY() + "," + block.getZ());
                                     }
                                 }
                             }
