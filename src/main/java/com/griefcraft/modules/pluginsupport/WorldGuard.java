@@ -272,8 +272,8 @@ public class WorldGuard extends JavaModule {
 				World world;
 				int c = regionName.indexOf(':');
 				if (c < 0) {
-					// No world specified in ACL. Use the block's world.
-					world = protection.getBlock().getWorld();
+					// No world specified in ACL. Use the protection's world.
+					world = protection.getBukkitWorld();
 				} else {
 					// World specified. Partition the string and look up the
 					// world.
