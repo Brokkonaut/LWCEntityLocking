@@ -259,16 +259,6 @@ public class WorldGuard extends JavaModule {
 						protection.getBlock())) {
 					continue;
 				}
-			} else if (regionName.startsWith("#")) {
-				// Silently disallow looking up regions by index, a newer WG
-				// feature.
-				// Iterating through potentially thousands of regions each time
-				// we check a block's
-				// ACL is not a good idea. It would be cleaner to use
-				// regionManager.getRegionExact()
-				// below, but that would break compatibility with older versions
-				// of WG.
-				continue;
 			} else {
 				// Region name specified, go look it up
 				World world;
