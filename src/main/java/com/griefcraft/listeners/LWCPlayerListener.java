@@ -49,6 +49,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
@@ -178,25 +179,27 @@ public class LWCPlayerListener implements Listener {
         if (entity instanceof Player || !lwc.isProtectable(entity.getType())) {
             return;
         }
-        if (e.getDamager() instanceof Player) {
-            Player p = (Player) e.getDamager();
-            if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
-                e.setCancelled(true);
-            }
-            Protection protection = lwc.findProtection(entity);
-            if (protection == null) {
-                return;
-            }
-            if(e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.ENTITY_EXPLOSION ) {
-                e.setCancelled(true);
-            }
-            if (!e.isCancelled() && !lwc.canAdminProtection(p, protection)) {
-                e.setCancelled(true);
-            }
-        } else {
-            Protection protection = lwc.findProtection(entity);
-            if (protection == null) {
-                return;
+        Protection protection = lwc.findProtection(entity);
+        if (protection == null) {
+            return;
+        }
+        if (e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.ENTITY_EXPLOSION || !(e.getDamager() instanceof Player)) {
+            e.setCancelled(true); // never allow explosions or non-players to damage protected entities
+            return;
+        }
+        Player p = (Player) e.getDamager();
+        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+            e.setCancelled(true);
+            return;
+        }
+        // owner permission is required for damaging entities
+        if (!protection.isOwner(p)) {
+            if (e.getCause() == DamageCause.ENTITY_ATTACK && entity instanceof ItemFrame) {
+                ItemStack item = ((ItemFrame) entity).getItem();
+                if (item != null && item.getType() != Material.AIR) {
+                    return; // special case for ItemFrames: they call a damageevent when the contained item is removed.
+                    // this is allowed for protection members.
+                }
             }
             e.setCancelled(true);
         }
