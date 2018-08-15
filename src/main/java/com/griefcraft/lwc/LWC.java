@@ -1280,11 +1280,13 @@ public class LWC {
             return protectionConfigurationCache.get(cacheKey);
         }
         
-        String value = configuration.getString("protections.entities." + state.name().toLowerCase()
+        String value = configuration.getString("protections." + node);
+        
+        String temp = configuration.getString("protections.entities." + state.name().toLowerCase()
                 + "." + node);
 
-        if (value != null && value.isEmpty()) {
-            value = null;
+        if (temp != null && !temp.isEmpty()) {
+            value = temp;
         }
 
         protectionConfigurationCache.put(cacheKey, value);
