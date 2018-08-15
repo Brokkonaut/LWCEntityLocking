@@ -29,7 +29,6 @@
 package com.griefcraft.listeners;
 
 import com.google.common.base.Objects;
-import com.google.common.cache.RemovalCause;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
@@ -84,6 +83,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class LWCPlayerListener implements Listener {
 
@@ -98,6 +98,7 @@ public class LWCPlayerListener implements Listener {
             @Override
             public void run() {
                 lastHopper = null;
+                lastEntityInteract = null;
             }
         }.runTaskTimer(plugin, 1, 1);
     }
@@ -186,17 +187,17 @@ public class LWCPlayerListener implements Listener {
         if (entity instanceof Player || !lwc.isProtectable(entity.getType())) {
             return;
         }
+        Player p = (e.getDamager() instanceof Player) ? (Player) e.getDamager() : null;
+        if (p != null && onPlayerEntityInteract(p, entity, e.isCancelled())) {
+            e.setCancelled(true);
+            return;
+        }
         Protection protection = lwc.findProtection(entity);
         if (protection == null) {
             return;
         }
-        if (e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.ENTITY_EXPLOSION || !(e.getDamager() instanceof Player)) {
+        if (e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.ENTITY_EXPLOSION || p == null) {
             e.setCancelled(true); // never allow explosions or non-players to damage protected entities
-            return;
-        }
-        Player p = (Player) e.getDamager();
-        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
-            e.setCancelled(true);
             return;
         }
         // owner permission is required for damaging entities
@@ -257,6 +258,7 @@ public class LWCPlayerListener implements Listener {
         Player p = e.getPlayer();
         if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
             e.setCancelled(true);
+            return;
         }
         Protection protection = lwc.findProtection(entity);
         if (protection == null) {
@@ -303,7 +305,13 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
+    private UUID lastEntityInteract;
+    private boolean lastEntityInteractResult;
+
     private boolean onPlayerEntityInteract(Player player, Entity entity, boolean cancelled) {
+        if (entity.getUniqueId().equals(lastEntityInteract)) {
+            return lastEntityInteractResult;
+        }
         // attempt to load the protection for this cart
         LWC lwc = LWC.getInstance();
         Protection protection = lwc.findProtection(entity);
@@ -389,6 +397,8 @@ public class LWCPlayerListener implements Listener {
             }
 
             if (!canAccess || result == Module.Result.CANCEL) {
+                lastEntityInteract = entity.getUniqueId();
+                lastEntityInteractResult = true;
                 return true;
             }
         } catch (Exception e) {
@@ -396,6 +406,8 @@ public class LWCPlayerListener implements Listener {
             e.printStackTrace();
             return true;
         }
+        lastEntityInteract = entity.getUniqueId();
+        lastEntityInteractResult = false;
         return false;
     }
 
@@ -517,8 +529,13 @@ public class LWCPlayerListener implements Listener {
                 }
             }
         }
-
-        boolean denyHoppers = Boolean.parseBoolean(lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(protection.getBlockId()), "denyHoppers"));
+        String denyHoppersString;
+        if (entityHolder == null) {
+            denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(protection.getBlockId()), "denyHoppers");
+        } else {
+            denyHoppersString = lwc.resolveProtectionConfiguration(entityHolder.getType(), "denyHoppers");
+        }
+        boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
 
         // xor = (a && !b) || (!a && b)
         if (denyHoppers ^ protection.hasFlag(Flag.Type.HOPPER)) {
