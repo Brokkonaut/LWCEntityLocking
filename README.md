@@ -1,6 +1,8 @@
 Contributors:
 Hidendra - Main Coder, Me_Goes_RAWR - Added entity locking, Brokkonaut - Updates since 1.8
 
+You can download development builds [from our Jenkins server](https://www.iani.de/jenkins/job/LWC/).
+
 LWC with support for minecraft 1.13 blocks and entities. If you currently use LWC, please see this wiki page: https://github.com/Hidendra/LWC/wiki/Bukkit-1.8
 
 
