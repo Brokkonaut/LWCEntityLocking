@@ -2222,11 +2222,15 @@ public class PhysDB extends Database {
                 PreparedStatement insertSmt = prepare("INSERT INTO " + prefix + "blocks (`id`,`name`) VALUES (?, ?)");
                 while (rs.next()) {
                     int id = rs.getInt("blockId");
-                    Material mat = Material.matchMaterial(Integer.toString(id));
-                    if (mat != null) {
-                        insertSmt.setInt(1, id);
-                        insertSmt.setString(2, mat.name());
-                        insertSmt.executeUpdate();
+                    if (id != EntityBlock.ENTITY_BLOCK_ID) {
+                        Material mat = Material.matchMaterial(Integer.toString(id));
+                        if (mat != null) {
+                            insertSmt.setInt(1, id);
+                            insertSmt.setString(2, mat.name());
+                            insertSmt.executeUpdate();
+                        } else {
+                            mergeBlockMapping(id, -1);
+                        }
                     }
                 }
                 rs.close();
