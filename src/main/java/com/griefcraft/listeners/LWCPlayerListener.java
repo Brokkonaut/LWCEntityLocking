@@ -29,7 +29,6 @@
 package com.griefcraft.listeners;
 
 import com.google.common.base.Objects;
-import com.google.common.cache.RemovalCause;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
