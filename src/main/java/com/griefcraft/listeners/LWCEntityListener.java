@@ -100,17 +100,17 @@ public class LWCEntityListener implements Listener {
         }
     }
 
-    private void entityCreatedByPlayer(Entity block, Player player) {
+    private void entityCreatedByPlayer(Entity entity, Player player) {
         if (!LWC.ENABLED) {
             return;
         }
         LWC lwc = plugin.getLWC();
-        if (!lwc.isProtectable(block.getType())) {
+        if (!lwc.isProtectable(entity.getType())) {
             return;
         }
 
         String autoRegisterType = lwc.resolveProtectionConfiguration(
-                block.getType(), "autoRegister");
+                entity.getType(), "autoRegister");
 
         // is it auto protectable?
         if (!autoRegisterType.equalsIgnoreCase("private")
@@ -140,7 +140,7 @@ public class LWCEntityListener implements Listener {
         }
 
         try {
-            Block entityBlock = EntityBlock.getEntityBlock(block);
+            Block entityBlock = EntityBlock.getEntityBlock(entity);
                     
             LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(
                     player, entityBlock);
@@ -153,7 +153,7 @@ public class LWCEntityListener implements Listener {
 
             // All good!
             Protection protection = lwc.getPhysicalDatabase()
-                    .registerEntityProtection(block, type, block.getWorld().getName(),
+                    .registerEntityProtection(entity, type, entity.getWorld().getName(),
                             player.getUniqueId().toString(), "", entityBlock.getX(), entityBlock.getY(), entityBlock.getZ());
 
             if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(
