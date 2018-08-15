@@ -29,6 +29,7 @@
 package com.griefcraft.listeners;
 
 import com.google.common.base.Objects;
+import com.google.common.cache.RemovalCause;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
@@ -112,16 +113,17 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        Player remover = (e.getRemover() instanceof Player) ? (Player) e.getRemover() : null;
-        if (remover == null || e.getCause() == RemoveCause.EXPLOSION) {
-            e.setCancelled(true);
-        } else {
-            if (onPlayerEntityInteract(remover, entity, e.isCancelled())) {
-                e.setCancelled(true);
-            } else if (lwc.canAdminProtection(remover, protection)) {
-                protection.remove();
-            }
+        if (e.getCause() != RemoveCause.ENTITY || !(e.getRemover() instanceof Player)) {
+            e.setCancelled(true); // never allow non-players to damage protected entities
+            return;
         }
+        Player p = (Player) e.getRemover();
+        // owner permission is required for removing hangings
+        if (!protection.isOwner(p)) {
+            e.setCancelled(true);
+            return;
+        }
+        protection.remove();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -135,12 +137,17 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        Player attacker = (e.getAttacker() instanceof Player) ? (Player) e.getAttacker() : null;
-        if (attacker == null || !lwc.canAdminProtection(attacker, protection)) {
-            e.setCancelled(true);
-        } else {
-            protection.remove();
+        if (!(e.getAttacker() instanceof Player)) {
+            e.setCancelled(true); // never allow non-players to damage protected entities
+            return;
         }
+        Player p = (Player) e.getAttacker();
+        // owner permission is required for minecarts
+        if (!protection.isOwner(p)) {
+            e.setCancelled(true);
+            return;
+        }
+        protection.remove();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -443,6 +450,7 @@ public class LWCPlayerListener implements Listener {
      * Handle the item move event
      *
      * @param inventory
+     * @return true if the move should be cancelled
      */
     private boolean handleMoveItemEvent(Inventory initiator, Inventory inventory) {
         LWC lwc = LWC.getInstance();
@@ -451,14 +459,16 @@ public class LWCPlayerListener implements Listener {
             return false;
         }
 
-        Location location;
+        Location location = null;
+        Entity entityHolder = null;
         InventoryHolder holder;
-        Location hopperLocation = null;
-        InventoryHolder hopperHolder;
+        Location initiatorLocation = null;
+        Entity initiatorEntity = null;
+        InventoryHolder initiatorHolder;
 
         try {
             holder = inventory.getHolder();
-            hopperHolder = initiator.getHolder();
+            initiatorHolder = initiator.getHolder();
         } catch (AbstractMethodError e) {
             return false;
         }
@@ -468,12 +478,16 @@ public class LWCPlayerListener implements Listener {
                 location = ((BlockState) holder).getLocation();
             } else if (holder instanceof DoubleChest) {
                 location = ((DoubleChest) holder).getLocation();
+            } else if (holder instanceof Entity && lwc.isProtectable(((Entity)holder).getType())) {
+                entityHolder = (Entity) holder;
             } else {
                 return false;
             }
 
-            if (hopperHolder instanceof Hopper) {
-                hopperLocation = ((Hopper) hopperHolder).getLocation();
+            if (initiatorHolder instanceof Hopper) {
+                initiatorLocation = ((Hopper) initiatorHolder).getLocation();
+            } else if(initiatorHolder instanceof Entity && lwc.isProtectable(((Entity)initiatorHolder).getType())) {
+               initiatorEntity = (Entity) initiatorHolder;
             }
         } catch (Exception e) {
             return false;
@@ -484,21 +498,21 @@ public class LWCPlayerListener implements Listener {
         // the database will be getting rammed
         lwc.getProtectionCache().increaseIfNecessary();
 
-        // Attempt to load the protection at that location
-        Protection protection = lwc.findProtection(location);
+        // Attempt to load the protection at that location/entity
+        Protection protection = entityHolder == null ? lwc.findProtection(location) : lwc.findProtection(entityHolder);
 
         // If no protection was found we can safely ignore it
         if (protection == null) {
             return false;
         }
 
-        if (hopperLocation != null && Boolean.parseBoolean(lwc.resolveProtectionConfiguration(Material.HOPPER, "enabled"))) {
-            Protection hopperProtection = lwc.findProtection(hopperLocation);
+        if ((initiatorLocation != null || initiatorEntity != null) && Boolean.parseBoolean(lwc.resolveProtectionConfiguration(Material.HOPPER, "enabled"))) {
+            Protection initiatorProtection = initiatorEntity == null ? lwc.findProtection(initiatorLocation) : lwc.findProtection(initiatorEntity);
 
-            if (hopperProtection != null) {
+            if (initiatorProtection != null) {
                 // if they're owned by the same person then we can allow the
                 // move
-                if (protection.getOwner().equals(hopperProtection.getOwner())) {
+                if (protection.getOwner().equals(initiatorProtection.getOwner())) {
                     return false;
                 }
             }
