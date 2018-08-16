@@ -46,6 +46,7 @@ import com.griefcraft.util.config.Configuration;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -59,6 +60,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -280,6 +282,7 @@ public class PhysDB extends Database {
         doUpdate400_5();
         doUpdate400_6();
         doUpdate5_0_12();
+        doUpdateModernLWC();
 
         Column column;
 
@@ -2218,11 +2221,12 @@ public class PhysDB extends Database {
             }
             blockMappings.execute();
             try {
+                statement.executeUpdate("UPDATE " + prefix + "protections SET blockId = -1 WHERE blockId IS NULL");
                 ResultSet rs = statement.executeQuery("SELECT DISTINCT blockId FROM " + prefix + "protections");
                 PreparedStatement insertSmt = prepare("INSERT INTO " + prefix + "blocks (`id`,`name`) VALUES (?, ?)");
                 while (rs.next()) {
                     int id = rs.getInt("blockId");
-                    if (id != EntityBlock.ENTITY_BLOCK_ID) {
+                    if (id >= 0 && id != EntityBlock.ENTITY_BLOCK_ID) {
                         Material mat = Material.matchMaterial(Integer.toString(id));
                         if (mat != null) {
                             insertSmt.setInt(1, id);
@@ -2237,6 +2241,48 @@ public class PhysDB extends Database {
             } catch (SQLException e2) {
                 printException(e2);
             }
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
+    }
+
+    /**
+     * Update from ModernLWC
+     */
+    private void doUpdateModernLWC() {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT DISTINCT blockName FROM " + prefix + "protections");
+            LWC.getInstance().getPlugin().getLogger().info("Upgrading from ModernLWC");
+            try {
+                PreparedStatement updateSmt = prepare("UPDATE " + prefix + "protections SET blockId = ? WHERE blockName = ?");
+                HashSet<String> typeMap = new HashSet<>();
+                typeMap.add("Entity");
+                for (EntityType e : EntityType.values()) {
+                    typeMap.add(e.name());
+                }
+                while (rs.next()) {
+                    String blockName = rs.getString(1);
+                    if (typeMap.contains(blockName)) {
+                        updateSmt.setInt(1, EntityBlock.ENTITY_BLOCK_ID);
+                        updateSmt.setString(2, blockName);
+                        updateSmt.executeUpdate();
+                    }
+                }
+                rs.close();
+                statement.executeUpdate("ALTER TABLE " + prefix + "protections DROP COLUMN blockName");
+                statement.executeUpdate("UPDATE " + prefix + "protections SET blockId = -1 WHERE blockId IS NULL");
+            } catch (SQLException e) {
+                printException(e);
+            }
+        } catch (SQLException e) {
+            return; // column does not exist, ignore
         } finally {
             if (statement != null) {
                 try {
