@@ -102,6 +102,9 @@ import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -794,7 +797,7 @@ public class LWC {
         boolean firstLine = true;
         for (String line : message) {
             if (firstLine && (sender instanceof Player)) {
-                ((Player) sender).sendActionBar(line);
+                ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(line));
             } else {
                 sender.sendMessage(line);
             }
