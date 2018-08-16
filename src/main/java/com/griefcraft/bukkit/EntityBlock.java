@@ -137,7 +137,6 @@ public class EntityBlock implements Block {
     public BlockState getState() {
         return null;
     }
-    @Override
     public BlockState getState(boolean create) {
         return null;
     }
