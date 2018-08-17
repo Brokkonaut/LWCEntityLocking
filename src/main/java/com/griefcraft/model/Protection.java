@@ -679,6 +679,7 @@ public class Protection {
 
         this.blockId = material == null ? -1 : BlockMap.instance().registerOrGetId(material);
         this.blockMaterial = material;
+        this.isEntity = false;
         // this.blockId = blockId;
         this.modified = true;
     }
