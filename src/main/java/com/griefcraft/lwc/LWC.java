@@ -476,7 +476,7 @@ public class LWC {
         }
 
         // support for old protection dbs that do not contain the block id
-        if ((protection.getBlockId() <= 0 || block.getType() != protection.getBlockMaterial())) {
+        if (!protection.isEntity() && (protection.getBlockId() <= 0 || block.getType() != protection.getBlockMaterial())) {
             protection.setBlockMaterial(block.getType());
             protection.save();
         }
