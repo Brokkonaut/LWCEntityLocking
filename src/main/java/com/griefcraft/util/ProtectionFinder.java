@@ -145,7 +145,7 @@ public class ProtectionFinder {
         blocks.clear();
 
         // Add the base block
-        blocks.add(baseBlock);
+        addBlock(baseBlock);
 
         // Go through each matcher and execute it
         for (Matcher matcher : getProtectionMatchers()) {
@@ -209,7 +209,9 @@ public class ProtectionFinder {
      * @param block
      */
     public void addBlock(Block block) {
-        addBlock(block.getState());
+        if (block != null) {
+            addBlock(block.getState());
+        }
     }
 
     /**
@@ -218,7 +220,7 @@ public class ProtectionFinder {
      * @param block
      */
     public void addBlock(BlockState block) {
-        if (!blocks.contains(block)) {
+        if (block != null && !blocks.contains(block)) {
             blocks.add(block);
         }
     }
