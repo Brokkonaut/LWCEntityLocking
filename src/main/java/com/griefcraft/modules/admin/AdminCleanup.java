@@ -202,7 +202,7 @@ public class AdminCleanup extends JavaModule {
                                 protection.uncacheBlock();
                                 Block block = protection.getBlock(); // load the block
 
-                                if (protection.getBlockId() >= EntityBlock.ENTITY_BLOCK_ID) {
+                                if (protection.getBlockId() == EntityBlock.ENTITY_BLOCK_ID) {
                                     // entity cleanup?
                                 } else {
                                     // remove protections not found in the world

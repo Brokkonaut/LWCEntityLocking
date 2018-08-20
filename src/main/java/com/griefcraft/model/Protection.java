@@ -964,7 +964,7 @@ public class Protection {
         if (cachedBlock != null) {
             return cachedBlock;
         }
-        if(getBlockId() >= EntityBlock.ENTITY_BLOCK_ID){
+        if(getBlockId() == EntityBlock.ENTITY_BLOCK_ID){
             return null;
         }
 
