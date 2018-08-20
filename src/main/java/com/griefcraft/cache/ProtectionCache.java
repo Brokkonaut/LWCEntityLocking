@@ -228,11 +228,10 @@ public class ProtectionCache {
 		byId.put(protection.getId(), protection);
 
 		// get the protection's finder if it was found via that
-		if (protection.getProtectionFinder() != null) {
+		if (protection.getProtectionFinder() != null && protection.getBlock() != null) {
 			Block protectedBlock = protection.getBlock();
 
-			for (BlockState state : protection.getProtectionFinder()
-					.getBlocks()) {
+			for (BlockState state : protection.getProtectionFinder().getBlocks()) {
 				if (!protectedBlock.equals(state.getBlock())) {
 				    CacheKey cacheKey = cacheKey(state.getLocation());
 					byKnownBlock.put(cacheKey, protection);
