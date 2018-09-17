@@ -182,10 +182,8 @@ public class AdminCleanup extends JavaModule {
                 int checked = 0;
                 boolean hasMore = true;
                 while (hasMore) {
-                    long freeMemoryPercent = Runtime.getRuntime().maxMemory() * 100 / (Runtime.getRuntime().freeMemory() + Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory());
-                    if (freeMemoryPercent < 5) {
+                    while (Runtime.getRuntime().maxMemory() * 100 / (Runtime.getRuntime().freeMemory() + Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory()) < 5) {
                         Thread.sleep(5000);
-                        continue;
                     }
                     while (hasMore && protections.size() < BATCH_SIZE) {
                         // Wait until we have BATCH_SIZE protections
