@@ -56,8 +56,12 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.bstats</groupId>
+                    <groupId>org.bstats.bStats-Metrics</groupId>
                     <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.papermc</groupId>
+                    <artifactId>paperlib</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -78,8 +82,12 @@
                     <artifactId>commandbook</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.bstats</groupId>
+                    <groupId>org.bstats.bStats-Metrics</groupId>
                     <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.papermc</groupId>
+                    <artifactId>paperlib</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -202,11 +202,14 @@ public class EntityBlock implements Block {
     }
     @Override
     public Collection<ItemStack> getDrops() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     @Override
     public Collection<ItemStack> getDrops(ItemStack tool) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
-
+    @Override
+    public boolean isPassable() {
+        return true;
+    }
 }
