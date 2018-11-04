@@ -77,6 +77,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -188,7 +189,7 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         Player p = (e.getDamager() instanceof Player) ? (Player) e.getDamager() : null;
-        if (p != null && onPlayerEntityInteract(p, entity, e.isCancelled())) {
+        if (p != null && onPlayerEntityInteract(p, entity, e.isCancelled(), true)) {
             e.setCancelled(true);
             return;
         }
@@ -236,7 +237,7 @@ public class LWCPlayerListener implements Listener {
         }
 
         Player p = e.getPlayer();
-        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+        if (onPlayerEntityInteract(p, entity, e.isCancelled(), true)) {
             e.setCancelled(true);
         }
         Protection protection = lwc.findProtection(entity);
@@ -256,7 +257,7 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+        if (onPlayerEntityInteract(p, entity, e.isCancelled(), e.getHand() == EquipmentSlot.HAND)) {
             e.setCancelled(true);
             return;
         }
@@ -277,7 +278,7 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        if (onPlayerEntityInteract(p, entity, e.isCancelled())) {
+        if (onPlayerEntityInteract(p, entity, e.isCancelled(), e.getHand() == EquipmentSlot.HAND)) {
             e.setCancelled(true);
         }
         Protection protection = lwc.findProtection(entity);
@@ -300,7 +301,7 @@ public class LWCPlayerListener implements Listener {
         if (!lwc.isProtectable(entity.getType())) {
             return;
         }
-        if (onPlayerEntityInteract((Player) event.getPlayer(), entity, event.isCancelled())) {
+        if (onPlayerEntityInteract((Player) event.getPlayer(), entity, event.isCancelled(), true)) {
             event.setCancelled(true);
         }
     }
@@ -308,7 +309,7 @@ public class LWCPlayerListener implements Listener {
     private UUID lastEntityInteract;
     private boolean lastEntityInteractResult;
 
-    private boolean onPlayerEntityInteract(Player player, Entity entity, boolean cancelled) {
+    private boolean onPlayerEntityInteract(Player player, Entity entity, boolean cancelled, boolean showMessage) {
         if (entity.getUniqueId().equals(lastEntityInteract)) {
             return lastEntityInteractResult;
         }
@@ -393,7 +394,7 @@ public class LWCPlayerListener implements Listener {
             }
 
             if (result == Module.Result.DEFAULT) {
-                canAccess = lwc.enforceAccess(player, protection, fakeBlock, canAccess);
+                canAccess = lwc.enforceAccess(player, protection, fakeBlock, canAccess, showMessage);
             }
 
             if (!canAccess || result == Module.Result.CANCEL) {
@@ -702,7 +703,7 @@ public class LWCPlayerListener implements Listener {
             }
 
             if (result == Module.Result.DEFAULT) {
-                canAccess = lwc.enforceAccess(player, protection, block, canAccess);
+                canAccess = lwc.enforceAccess(player, protection, block, canAccess, event.getHand() == EquipmentSlot.HAND);
             }
 
             if (!canAccess || result == Module.Result.CANCEL) {

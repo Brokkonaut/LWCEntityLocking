@@ -468,7 +468,7 @@ public class LWC {
      * @return true if the player was granted access
      */
     public boolean enforceAccess(Player player, Protection protection,
-            Block block, boolean hasAccess) {
+            Block block, boolean hasAccess, boolean showMessage) {
         MessageParser parser = plugin.getMessageParser();
 
         if (block == null || protection == null) {
@@ -533,24 +533,26 @@ public class LWC {
                     protectionTypeToString = "Unknown";
                 }
 
-                if (parser.parseMessage("protection." + blockName.toLowerCase() + ".notice.protected") != null) {
-                    if (messageInActionBar) {
-                        sendLocaleToActionBar(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                if (showMessage) {
+                    if (parser.parseMessage("protection." + blockName.toLowerCase() + ".notice.protected") != null) {
+                        if (messageInActionBar) {
+                            sendLocaleToActionBar(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                        } else {
+                            sendLocale(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                        }
                     } else {
-                        sendLocale(player, "protection." + blockName.toLowerCase() + ".notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                        if (messageInActionBar) {
+                            sendLocaleToActionBar(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                        } else {
+                            sendLocale(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
+                        }
                     }
-                } else {
-                    if (messageInActionBar) {
-                        sendLocaleToActionBar(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
-                    } else {
-                        sendLocale(player, "protection.general.notice.protected", "type", protectionTypeToString, "block", blockName, "owner", owner);
-                    }
+                    messageSent = true;
                 }
-                messageSent = true;
             }
         }
 
-        if (!hasAccess) {
+        if (!hasAccess && showMessage) {
             Protection.Type type = protection.getType();
 
             if (type == Protection.Type.PASSWORD) {
