@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Chunk;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,6 +19,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 public class EntityBlock implements Block {
 	public static final int ENTITY_BLOCK_ID = 5000;
@@ -211,5 +214,9 @@ public class EntityBlock implements Block {
     @Override
     public boolean isPassable() {
         return true;
+    }
+    @Override
+    public RayTraceResult rayTrace(Location start, Vector direction, double maxDistance, FluidCollisionMode fluidCollisionMode) {
+        return null;
     }
 }
