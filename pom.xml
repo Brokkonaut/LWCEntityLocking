@@ -56,7 +56,7 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.bstats.bStats-Metrics</groupId>
+                    <groupId>org.bstats</groupId>
                     <artifactId>bstats-bukkit</artifactId>
                 </exclusion>
                 <exclusion>
@@ -82,7 +82,7 @@
                     <artifactId>commandbook</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.bstats.bStats-Metrics</groupId>
+                    <groupId>org.bstats</groupId>
                     <artifactId>bstats-bukkit</artifactId>
                 </exclusion>
                 <exclusion>
