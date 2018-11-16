@@ -106,7 +106,7 @@ public class DoorsModule extends JavaModule {
         loadAction();
     }
 
-	@Override
+    @Override
     public void onProtectionInteract(LWCProtectionInteractEvent event) {
         if (event.getResult() == Result.CANCEL || !isEnabled() || event.getEvent().getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK || event.getPlayer().isSneaking()) {
             return;
@@ -135,6 +135,9 @@ public class DoorsModule extends JavaModule {
         if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType()) && ((Bisected)block.getBlockData()).getHalf() == Half.TOP) {
             // Inspect the bottom half instead, fool!
             block = block.getRelative(BlockFace.DOWN);
+            if (!isValid(block.getType())) {
+                return;
+            }
         }
 
         // Should we look for double doors?
@@ -203,9 +206,9 @@ public class DoorsModule extends JavaModule {
      * @param allowDoorToOpen If FALSE, and the door is currently CLOSED, it will NOT be opened!
      * @param doors Blocks given must be the bottom block of the door
      */
-	private void changeDoorStates(boolean allowDoorToOpen, Block... doors) {
+    private void changeDoorStates(boolean allowDoorToOpen, Block... doors) {
         for (Block door : doors) {
-            if (door == null) {
+            if (door == null || !(door.getBlockData() instanceof Openable)) {
                 continue;
             }
             
