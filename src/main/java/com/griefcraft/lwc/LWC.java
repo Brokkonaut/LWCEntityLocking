@@ -665,6 +665,98 @@ public class LWC {
     }
 
     /**
+     * Check if a player has the ability to access a protections contents (take items)
+     *
+     * @param player
+     * @param protection
+     * @return
+     */
+    public boolean canAccessProtectionContents(Player player, Protection protection) {
+        if (protection == null || player == null) {
+            return true;
+        }
+
+        if (isAdmin(player)) {
+            return true;
+        }
+
+        if (isMod(player)) {
+            Player protectionOwner = protection.getBukkitOwner();
+
+            if (protectionOwner == null) {
+                return true;
+            }
+
+            if (!isAdmin(protectionOwner)) {
+                return true;
+            }
+        }
+
+        // Their access level
+        Permission.Access access = Permission.Access.NONE;
+
+        switch (protection.getType()) {
+        case PUBLIC:
+            return true;
+
+        case PASSWORD:
+            if (wrapPlayer(player).isProtectionAccessible(protection)) {
+                return true;
+            }
+            // fallthrough intended!
+        case PRIVATE:
+        case DONATION:
+        case SHOWCASE:
+            if (protection.isOwner(player)) {
+                return true;
+            }
+
+            if (protection.getAccess(player.getUniqueId().toString(),
+                    Permission.Type.PLAYER).ordinal() >= Permission.Access.PLAYER
+                    .ordinal()) {
+                return true;
+            }
+
+            if (protection.getAccess(player.getName(), Permission.Type.PLAYER)
+                    .ordinal() >= Permission.Access.PLAYER.ordinal()) {
+                return true;
+            }
+
+            // Check for item keys
+            for (Permission permission : protection.getPermissions()) {
+                if (permission.getType() != Permission.Type.ITEM) {
+                    continue;
+                }
+
+                // Get the item they need to have
+
+                // Are they wielding it?
+                if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
+                    return true;
+                }
+            }
+
+            for (String groupName : permissions.getGroups(player)) {
+                if (protection.getAccess(groupName, Permission.Type.GROUP)
+                        .ordinal() >= Permission.Access.PLAYER.ordinal()) {
+                    return true;
+                }
+            }
+
+            break;
+        default:
+            break;
+        }
+
+        // call the canAccessProtection hook
+        LWCAccessEvent event = new LWCAccessEvent(player, protection, access);
+        moduleLoader.dispatchEvent(event);
+
+        return event.getAccess() == Permission.Access.PLAYER
+                || event.getAccess() == Permission.Access.ADMIN;
+    }
+
+    /**
      * Check if a player can do mod functions on LWC
      *
      * @param player
