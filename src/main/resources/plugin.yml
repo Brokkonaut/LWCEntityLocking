@@ -35,6 +35,9 @@ commands:
   cdonation:
     description: Creates a chest that can be deposited into, but only removed by player with access.
     usage: /<command>
+  cshowcase:
+    description: Creates a showcase chest that can be looked into, but only modified by player with access.
+    usage: /<command>
   cmodify:
     description: Modify an existing private protection.
     usage: /<command> <Modifications>

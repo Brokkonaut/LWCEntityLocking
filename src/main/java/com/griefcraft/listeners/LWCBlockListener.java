@@ -343,7 +343,7 @@ public class LWCBlockListener implements Listener {
 					.findAdjacentProtectionsOnAllSides(block)) {
 				if (protection != null) {
 					if (!lwc.canAccessProtection(player, protection)
-							|| (protection.getType() == Protection.Type.DONATION && !lwc
+							|| ((protection.getType() == Protection.Type.DONATION || protection.getType() == Protection.Type.SHOWCASE) && !lwc
 									.canAdminProtection(player, protection))) {
 						// they can't access the protection ..
 						event.setCancelled(true);
