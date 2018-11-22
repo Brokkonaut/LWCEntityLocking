@@ -835,11 +835,11 @@ public class LWCPlayerListener implements Listener {
             }
         }
 
-        // Can they admin it? (remove items/etc)
-        boolean canAdmin = lwc.canAdminProtection(player, protection);
+        // Can they use it? (remove items/etc)
+        boolean canAccessContents = lwc.canAccessProtectionContents(player, protection);
 
         // nope.avi
-        if (!canAdmin) {
+        if (!canAccessContents) {
             event.setCancelled(true);
         }
     }
