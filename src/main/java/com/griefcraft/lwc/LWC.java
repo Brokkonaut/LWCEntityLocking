@@ -314,6 +314,7 @@ public class LWC {
         case PASSWORD:
         case PRIVATE:
         case DONATION:
+        case SHOWCASE:
             if (protection.isOwner(player)) {
                 return true;
             }
@@ -560,7 +561,8 @@ public class LWC {
                         "block", materialToString(block), "owner",
                         protection.getOwner());
             } else if ((type == Protection.Type.PRIVATE
-                    || type == Protection.Type.DONATION) && !messageSent) {
+                    || type == Protection.Type.DONATION
+                    || type == Protection.Type.SHOWCASE) && !messageSent) {
                 sendLocale(player, "protection.general.locked.private",
                         "block", materialToString(block), "owner",
                         protection.getOwner());
@@ -604,6 +606,7 @@ public class LWC {
         switch (protection.getType()) {
         case PUBLIC:
         case DONATION:
+        case SHOWCASE:
             return true;
 
         case PASSWORD:

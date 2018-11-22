@@ -778,7 +778,20 @@ public class LWCPlayerListener implements Listener {
             return;
         }
 
-        if (event.getAction() != InventoryAction.COLLECT_TO_CURSOR) {
+        // Attempt to load the protection at that location
+        Protection protection = lwc.findProtection(location);
+
+        // If no protection was found we can safely ignore it
+        if (protection == null) {
+            return;
+        }
+
+        // If it's not a donation or showcase chest, ignore if
+        if (protection.getType() != Protection.Type.DONATION && protection.getType() != Protection.Type.SHOWCASE) {
+            return;
+        }
+
+        if (protection.getType() != Protection.Type.SHOWCASE && event.getAction() != InventoryAction.COLLECT_TO_CURSOR) {
             // If it's not a container, we don't want it
             if (event.getSlotType() != InventoryType.SlotType.CONTAINER) {
                 return;
@@ -820,19 +833,6 @@ public class LWCPlayerListener implements Listener {
                 // inserting it into the inventory, not switching it
                 return;
             }
-        }
-
-        // Attempt to load the protection at that location
-        Protection protection = lwc.findProtection(location);
-
-        // If no protection was found we can safely ignore it
-        if (protection == null) {
-            return;
-        }
-
-        // If it's not a donation chest, ignore if
-        if (protection.getType() != Protection.Type.DONATION) {
-            return;
         }
 
         // Can they admin it? (remove items/etc)
