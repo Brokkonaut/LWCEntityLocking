@@ -394,7 +394,9 @@ public class LWCBlockListener implements Listener {
 
 		// is it auto protectable?
 		if (!autoRegisterType.equalsIgnoreCase("private")
-				&& !autoRegisterType.equalsIgnoreCase("public")) {
+                && !autoRegisterType.equalsIgnoreCase("public")
+                && !autoRegisterType.equalsIgnoreCase("donation")
+                && !autoRegisterType.equalsIgnoreCase("showcase")) {
 			return;
 		}
 
@@ -407,7 +409,7 @@ public class LWCBlockListener implements Listener {
 		Protection.Type type;
 
 		try {
-			type = Protection.Type.valueOf(autoRegisterType.toUpperCase());
+			type = Protection.Type.matchType(autoRegisterType);
 		} catch (IllegalArgumentException e) {
 			// No auto protect type found
 			return;
