@@ -58,7 +58,7 @@ public class ModifyModule extends JavaModule {
             return;
         }
 
-        if (!event.hasAction("modify")) {
+        if (!event.hasAction("modify") && !event.hasAction("create")) {
             return;
         }
 
@@ -74,7 +74,7 @@ public class ModifyModule extends JavaModule {
         }
 
         if (lwc.canAdminProtection(player.getBukkitPlayer(), protection)) {
-            Action action = player.getAction("modify");
+            Action action = player.hasAction("modify") ? player.getAction("modify") : player.getAction("create");
 
             String data = action.getData();
             String[] rights = new String[0];

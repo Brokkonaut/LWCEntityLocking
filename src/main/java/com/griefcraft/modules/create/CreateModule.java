@@ -36,7 +36,6 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCBlockInteractEvent;
 import com.griefcraft.scripting.event.LWCCommandEvent;
-import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.sql.PhysDB;
@@ -48,30 +47,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class CreateModule extends JavaModule {
-
-    @Override
-    public void onProtectionInteract(LWCProtectionInteractEvent event) {
-        if (event.getResult() != Result.DEFAULT) {
-            return;
-        }
-
-        if (!event.hasAction("create")) {
-            return;
-        }
-
-        LWC lwc = event.getLWC();
-        Protection protection = event.getProtection();
-        Player player = event.getPlayer();
-
-        if (protection.isOwner(player)) {
-            lwc.sendLocale(player, "protection.interact.error.alreadyregistered", "block", LWC.materialToString(protection.getBlockMaterial()));
-        } else {
-            lwc.sendLocale(player, "protection.interact.error.notowner", "block", LWC.materialToString(protection.getBlockMaterial()));
-        }
-
-        lwc.removeModes(player);
-        event.setResult(Result.CANCEL);
-    }
 
 	@Override
     public void onBlockInteract(LWCBlockInteractEvent event) {
