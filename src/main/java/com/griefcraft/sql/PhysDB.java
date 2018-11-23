@@ -282,7 +282,7 @@ public class PhysDB extends Database {
         doUpdate400_5();
         doUpdate400_6();
         doUpdate5_0_12();
-        doUpdateModernLWC();
+        boolean resetDatabaseVersion = doUpdateModernLWC();
 
         Column column;
 
@@ -418,7 +418,9 @@ public class PhysDB extends Database {
         blockMappings.execute();
 
         // Load the database version
-        loadDatabaseVersion();
+        if (!resetDatabaseVersion) {
+            loadDatabaseVersion();
+        }
 
         // perform database upgrades
         performDatabaseUpdates();
@@ -438,7 +440,6 @@ public class PhysDB extends Database {
         // Indexes
         if (databaseVersion == 0) {
             // Drop old, old indexes
-            log("Dropping old indexes (One time, may take a while!)");
             dropIndex("protections", "in1");
             dropIndex("protections", "in6");
             dropIndex("protections", "in7");
@@ -450,11 +451,10 @@ public class PhysDB extends Database {
             dropIndex("history", "in14");
 
             // Create our updated (good) indexes
-            log("Creating new indexes (One time, may take a while!)");
-            createIndex("protections", "protections_main", "x, y, z, world");
-            createIndex("protections", "protections_utility", "owner");
+            createIndex("protections", "protections_main", "x, y, z, world(50)");
+            createIndex("protections", "protections_utility", "owner(50)");
             createIndex("history", "history_main", "protectionId");
-            createIndex("history", "history_utility", "player");
+            createIndex("history", "history_utility", "player(50)");
             createIndex("history", "history_utility2", "x, y, z");
 
             // increment the database version
@@ -462,7 +462,6 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 1) {
-            log("Creating index on internal");
             createIndex("internal", "internal_main", "name");
             incrementDatabaseVersion();
         }
@@ -478,18 +477,18 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 4) {
-            List<String> blacklistedBlocks = lwc.getConfiguration().getStringList("optional.blacklistedBlocks", new ArrayList<String>());
-
-            if (!blacklistedBlocks.contains(Material.HOPPER.name())) {
-                blacklistedBlocks.add(Material.HOPPER.name());
-                lwc.getConfiguration().setProperty("optional.blacklistedBlocks", blacklistedBlocks);
-                lwc.getConfiguration().save();
-                Configuration.reload();
-
-                lwc.log("Added Hoppers to Blacklisted Blocks in core.yml (optional.blacklistedBlocks)");
-                lwc.log("This means that Hoppers CANNOT be placed around protections a player does not have access to");
-                lwc.log("If you DO NOT want this feature, simply remove " + Material.HOPPER.name() + " (Hoppers) from blacklistedBlocks :-)");
-            }
+            // List<String> blacklistedBlocks = lwc.getConfiguration().getStringList("optional.blacklistedBlocks", new ArrayList<String>());
+            //
+            // if (!blacklistedBlocks.contains(Material.HOPPER.name())) {
+            // blacklistedBlocks.add(Material.HOPPER.name());
+            // lwc.getConfiguration().setProperty("optional.blacklistedBlocks", blacklistedBlocks);
+            // lwc.getConfiguration().save();
+            // Configuration.reload();
+            //
+            // lwc.log("Added Hoppers to Blacklisted Blocks in core.yml (optional.blacklistedBlocks)");
+            // lwc.log("This means that Hoppers CANNOT be placed around protections a player does not have access to");
+            // lwc.log("If you DO NOT want this feature, simply remove " + Material.HOPPER.name() + " (Hoppers) from blacklistedBlocks :-)");
+            // }
 
             incrementDatabaseVersion();
         }
@@ -518,6 +517,13 @@ public class PhysDB extends Database {
             incrementDatabaseVersion();
         }
 
+        if (databaseVersion == 6) {
+            createIndex("protections", "protections_main", "x, y, z, world(50)");
+            createIndex("protections", "protections_utility", "owner(50)");
+            createIndex("history", "history_utility", "player(50)");
+
+            incrementDatabaseVersion();
+        }
     }
 
     /**
@@ -2254,7 +2260,7 @@ public class PhysDB extends Database {
     /**
      * Update from ModernLWC
      */
-    private void doUpdateModernLWC() {
+    private boolean doUpdateModernLWC() {
         Statement statement = null;
         try {
             statement = connection.createStatement();
@@ -2282,7 +2288,7 @@ public class PhysDB extends Database {
                 printException(e);
             }
         } catch (SQLException e) {
-            return; // column does not exist, ignore
+            return false; // column does not exist, ignore
         } finally {
             if (statement != null) {
                 try {
@@ -2291,6 +2297,7 @@ public class PhysDB extends Database {
                 }
             }
         }
+        return true;
     }
 
     public HashMap<Integer, String> loadBlockMappings() {
