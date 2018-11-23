@@ -269,157 +269,157 @@ public class PhysDB extends Database {
         if (loaded) {
             return;
         }
+        
+        databaseVersion = -1;
+        loadDatabaseVersion();
 
-        /**
-         * Updates that alter or rename a table go here
-         */
-        doUpdate301();
-        doUpdate302();
-        doUpdate330();
-        doUpdate400_1();
-        doUpdate400_4();
-        doUpdate400_4();
-        doUpdate400_5();
-        doUpdate400_6();
-        doUpdate5_0_12();
-        boolean resetDatabaseVersion = doUpdateModernLWC();
+        if (databaseVersion < 6) {
+            /**
+             * Updates that alter or rename a table go here
+             */
+            doUpdate301();
+            doUpdate302();
+            doUpdate330();
+            doUpdate400_4();
+            doUpdate400_5();
+            doUpdate400_6();
+            doUpdate5_0_12();
+            boolean resetDatabaseVersion = doUpdateModernLWC();
 
-        Column column;
+            Column column;
 
-        Table protections = new Table(this, "protections");
-        {
-            column = new Column("id");
-            column.setType("INTEGER");
-            column.setPrimary(true);
-            protections.add(column);
+            Table protections = new Table(this, "protections");
+            {
+                column = new Column("id");
+                column.setType("INTEGER");
+                column.setPrimary(true);
+                protections.add(column);
 
-            column = new Column("owner");
-            column.setType("VARCHAR(255)");
-            protections.add(column);
+                column = new Column("owner");
+                column.setType("VARCHAR(36)");
+                protections.add(column);
 
-            column = new Column("type");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("type");
+                column.setType("INTEGER");
+                protections.add(column);
 
-            column = new Column("x");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("x");
+                column.setType("INTEGER");
+                protections.add(column);
 
-            column = new Column("y");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("y");
+                column.setType("INTEGER");
+                protections.add(column);
 
-            column = new Column("z");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("z");
+                column.setType("INTEGER");
+                protections.add(column);
 
-            column = new Column("flags");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("data");
+                column.setType("TEXT");
+                protections.add(column);
 
-            column = new Column("data");
-            column.setType("TEXT");
-            protections.add(column);
+                column = new Column("blockId");
+                column.setType("INTEGER");
+                protections.add(column);
 
-            column = new Column("blockId");
-            column.setType("INTEGER");
-            protections.add(column);
+                column = new Column("world");
+                column.setType("VARCHAR(50)");
+                protections.add(column);
 
-            column = new Column("world");
-            column.setType("VARCHAR(255)");
-            protections.add(column);
+                column = new Column("password");
+                column.setType("VARCHAR(255)");
+                protections.add(column);
 
-            column = new Column("password");
-            column.setType("VARCHAR(255)");
-            protections.add(column);
+                column = new Column("date");
+                column.setType("VARCHAR(50)");
+                protections.add(column);
 
-            column = new Column("date");
-            column.setType("VARCHAR(255)");
-            protections.add(column);
+                column = new Column("last_accessed");
+                column.setType("INTEGER");
+                protections.add(column);
+            }
 
-            column = new Column("last_accessed");
-            column.setType("INTEGER");
-            protections.add(column);
-        }
+            Table history = new Table(this, "history");
+            {
+                column = new Column("id");
+                column.setType("INTEGER");
+                column.setPrimary(true);
+                history.add(column);
 
-        Table history = new Table(this, "history");
-        {
-            column = new Column("id");
-            column.setType("INTEGER");
-            column.setPrimary(true);
-            history.add(column);
+                column = new Column("protectionId");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("protectionId");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("player");
+                column.setType("VARCHAR(36)");
+                history.add(column);
 
-            column = new Column("player");
-            column.setType("VARCHAR(255)");
-            history.add(column);
+                column = new Column("x");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("x");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("y");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("y");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("z");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("z");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("type");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("type");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("status");
+                column.setType("INTEGER");
+                history.add(column);
 
-            column = new Column("status");
-            column.setType("INTEGER");
-            history.add(column);
+                column = new Column("metadata");
+                column.setType("VARCHAR(255)");
+                history.add(column);
 
-            column = new Column("metadata");
-            column.setType("VARCHAR(255)");
-            history.add(column);
+                column = new Column("timestamp");
+                column.setType("long");
+                history.add(column);
+            }
 
-            column = new Column("timestamp");
-            column.setType("long");
-            history.add(column);
-        }
+            Table internal = new Table(this, "internal");
+            {
+                column = new Column("name");
+                column.setType("VARCHAR(40)");
+                column.setPrimary(true);
+                column.setAutoIncrement(false);
+                internal.add(column);
 
-        Table internal = new Table(this, "internal");
-        {
-            column = new Column("name");
-            column.setType("VARCHAR(40)");
-            column.setPrimary(true);
-            column.setAutoIncrement(false);
-            internal.add(column);
+                column = new Column("value");
+                column.setType("VARCHAR(40)");
+                internal.add(column);
+            }
 
-            column = new Column("value");
-            column.setType("VARCHAR(40)");
-            internal.add(column);
-        }
+            Table blockMappings = new Table(this, "blocks");
+            {
+                column = new Column("id");
+                column.setType("INTEGER");
+                column.setPrimary(true);
+                column.setAutoIncrement(false);
+                blockMappings.add(column);
 
-        Table blockMappings = new Table(this, "blocks");
-        {
-            column = new Column("id");
-            column.setType("INTEGER");
-            column.setPrimary(true);
-            column.setAutoIncrement(false);
-            blockMappings.add(column);
+                column = new Column("name");
+                column.setType("VARCHAR(40)");
+                blockMappings.add(column);
+            }
 
-            column = new Column("name");
-            column.setType("VARCHAR(40)");
-            blockMappings.add(column);
-        }
+            protections.execute();
+            history.execute();
+            internal.execute();
+            blockMappings.execute();
 
-        protections.execute();
-        history.execute();
-        internal.execute();
-        blockMappings.execute();
-
-        // Load the database version
-        if (!resetDatabaseVersion) {
-            loadDatabaseVersion();
+            // Load the database version
+            databaseVersion = 0;
+            if (!resetDatabaseVersion) {
+                loadDatabaseVersion();
+            }
         }
 
         // perform database upgrades
@@ -451,10 +451,11 @@ public class PhysDB extends Database {
             dropIndex("history", "in14");
 
             // Create our updated (good) indexes
-            createIndex("protections", "protections_main", "x, y, z, world" + (currentType == Type.MySQL ? "(50)" : ""));
-            createIndex("protections", "protections_utility", "owner" + (currentType == Type.MySQL ? "(50)" : ""));
+            doUpdatedDatabaseVersion7(); // do this here to avoid regenerating the index
+            createIndex("protections", "protections_main", "x, y, z, world");
+            createIndex("protections", "protections_utility", "owner");
             createIndex("history", "history_main", "protectionId");
-            createIndex("history", "history_utility", "player" + (currentType == Type.MySQL ? "(50)" : ""));
+            createIndex("history", "history_utility", "player");
             createIndex("history", "history_utility2", "x, y, z");
 
             // increment the database version
@@ -518,9 +519,16 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 6) {
-            createIndex("protections", "protections_main", "x, y, z, world" + (currentType == Type.MySQL ? "(50)" : ""));
-            createIndex("protections", "protections_utility", "owner" + (currentType == Type.MySQL ? "(50)" : ""));
-            createIndex("history", "history_utility", "player" + (currentType == Type.MySQL ? "(50)" : ""));
+            doUpdatedDatabaseVersion7(); // do this here to avoid regenerating the index
+            createIndex("protections", "protections_main", "x, y, z, world");
+            createIndex("protections", "protections_utility", "owner");
+            createIndex("history", "history_utility", "player");
+
+            incrementDatabaseVersion();
+        }
+
+        if (databaseVersion == 7) {
+            doUpdatedDatabaseVersion7();
 
             incrementDatabaseVersion();
         }
@@ -2005,26 +2013,6 @@ public class PhysDB extends Database {
     }
 
     /**
-     * 4.0.0, update 1
-     */
-    private void doUpdate400_1() {
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            statement.execute("SELECT rights FROM " + prefix + "protections LIMIT 1");
-        } catch (SQLException e) {
-            addColumn(prefix + "protections", "rights", "TEXT");
-        } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-    }
-
-    /**
      * 4.0.0, update 2
      */
     private void doUpdate400_2() {
@@ -2298,6 +2286,28 @@ public class PhysDB extends Database {
             }
         }
         return true;
+    }
+
+    /**
+     * Optimize some columns
+     */
+    private void doUpdatedDatabaseVersion7() {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate("ALTER TABLE `" + prefix + "protections` CHANGE `owner` `owner` VARCHAR(36)");
+            statement.executeUpdate("ALTER TABLE `" + prefix + "protections` CHANGE `world` `world` VARCHAR(50)");
+            statement.executeUpdate("ALTER TABLE `" + prefix + "protections` CHANGE `date` `date` VARCHAR(50)");
+            statement.executeUpdate("ALTER TABLE `" + prefix + "history` CHANGE `owner` `owner` VARCHAR(36)");
+        } catch (SQLException e) {
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public HashMap<Integer, String> loadBlockMappings() {
