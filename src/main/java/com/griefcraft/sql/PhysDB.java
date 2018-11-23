@@ -529,6 +529,7 @@ public class PhysDB extends Database {
 
         if (databaseVersion == 7) {
             doUpdatedDatabaseVersion7();
+            dropColumn(prefix + "protections", "rights");
 
             incrementDatabaseVersion();
         }
