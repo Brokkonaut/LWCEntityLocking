@@ -159,6 +159,9 @@ protections:
         chest:
             enabled: true
             autoRegister: private
+        trapped_chest:
+            enabled: true
+            autoRegister: private
         furnace:
             enabled: true
             autoRegister: private
