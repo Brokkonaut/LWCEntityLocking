@@ -451,10 +451,10 @@ public class PhysDB extends Database {
             dropIndex("history", "in14");
 
             // Create our updated (good) indexes
-            createIndex("protections", "protections_main", "x, y, z, world(50)");
-            createIndex("protections", "protections_utility", "owner(50)");
+            createIndex("protections", "protections_main", "x, y, z, world" + (currentType == Type.MySQL ? "(50)" : ""));
+            createIndex("protections", "protections_utility", "owner" + (currentType == Type.MySQL ? "(50)" : ""));
             createIndex("history", "history_main", "protectionId");
-            createIndex("history", "history_utility", "player(50)");
+            createIndex("history", "history_utility", "player" + (currentType == Type.MySQL ? "(50)" : ""));
             createIndex("history", "history_utility2", "x, y, z");
 
             // increment the database version
@@ -518,9 +518,9 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 6) {
-            createIndex("protections", "protections_main", "x, y, z, world(50)");
-            createIndex("protections", "protections_utility", "owner(50)");
-            createIndex("history", "history_utility", "player(50)");
+            createIndex("protections", "protections_main", "x, y, z, world" + (currentType == Type.MySQL ? "(50)" : ""));
+            createIndex("protections", "protections_utility", "owner" + (currentType == Type.MySQL ? "(50)" : ""));
+            createIndex("history", "history_utility", "player" + (currentType == Type.MySQL ? "(50)" : ""));
 
             incrementDatabaseVersion();
         }
