@@ -151,6 +151,7 @@ public class FreeModule extends JavaModule {
             lwc.sendLocale(sender, "protection.remove.protection.finalize");
         } else if (type.equals("modes")) {
             player.disableAllModes();
+            player.removeAllActions();
             lwc.sendLocale(sender, "protection.remove.modes.finalize");
         } else if (type.equals("allprotections")) {
             // Prompt them for /lwc confirm
