@@ -42,10 +42,9 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -108,50 +107,9 @@ public class AdminCleanup extends JavaModule {
             this.silent = silent;
         }
 
-        /**
-         * Push removal changes to the database
-         *
-         * @param toRemove
-         */
-        private void push(PhysDB database, List<Integer> toRemove) throws SQLException {
-            final StringBuilder builder = new StringBuilder();
-            final int total = toRemove.size();
-            int count = 0;
-
-            // iterate over the items to remove
-            Iterator<Integer> iter = toRemove.iterator();
-
-            // the database prefix
-            String prefix = lwc.getPhysicalDatabase().getPrefix();
-
-            // create the statement to use
-            Statement statement = database.getConnection().createStatement();
-
-            while (iter.hasNext()) {
-                int protectionId = iter.next();
-
-                if (count % 100000 == 0) {
-                    builder.append("DELETE FROM ").append(prefix).append("protections WHERE id IN (").append(protectionId);
-                } else {
-                    builder.append(",").append(protectionId);
-                }
-
-                if (count % 100000 == 99999 || count == (total - 1)) {
-                    builder.append(")");
-                    statement.executeUpdate(builder.toString());
-                    builder.setLength(0);
-
-                    sender.sendMessage(Colors.Green + "REMOVED " + (count + 1) + " / " + total);
-                }
-
-                count++;
-            }
-
-            statement.close();
-        }
-
         public void run() {
-            List<Integer> toRemove = new ArrayList<Integer>();
+            ArrayDeque<Integer> protectionsToRemove = new ArrayDeque<>();
+            ArrayDeque<Protection> protectionsToSave = new ArrayDeque<>();
             int removed = 0;
             int percentChecked = 0;
 
@@ -220,7 +178,7 @@ public class AdminCleanup extends JavaModule {
                                         }
                                     } else if (protection.getBlockMaterial() != block.getType()) {
                                         protection.setBlockMaterial(block.getType());
-                                        protection.save();
+                                        protectionsToSave.addLast(protection);
                                         lwc.log("Updating material to " + block.getType() + " for block at " + block.getX() + "," + block.getY() + "," + block.getZ());
                                     }
                                 }
@@ -233,7 +191,7 @@ public class AdminCleanup extends JavaModule {
                     // Get all of the blocks
                     ArrayList<Integer> newToRemove = getBlocks.get();
                     if (newToRemove != null) {
-                        toRemove.addAll(newToRemove);
+                        protectionsToRemove.addAll(newToRemove);
                         removed += newToRemove.size();
                     }
                     checked += protections.size();
@@ -253,15 +211,62 @@ public class AdminCleanup extends JavaModule {
                 // close the sql statements
                 result.close();
                 resultStatement.close();
-
-                // flush all of the queries
-                push(database, toRemove);
-
                 database.dispose();
 
-                final int totalChecked = checked;
-                final int totalRemoved = removed;
+                // flush deleted protections
+                final int totalToRemove = protectionsToRemove.size();
+                while (!protectionsToRemove.isEmpty()) {
+                    Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
+                        public Void call() throws Exception {
+                            final StringBuilder builder = new StringBuilder();
 
+                            // the database prefix
+                            String prefix = lwc.getPhysicalDatabase().getPrefix();
+
+                            // create the statement to use
+                            Statement statement = lwc.getPhysicalDatabase().getConnection().createStatement();
+
+                            int count = 0;
+                            while (!protectionsToRemove.isEmpty() && count < 20000) {
+                                int protectionId = protectionsToRemove.removeFirst();
+                                if (count == 0) {
+                                    builder.append("DELETE FROM ").append(prefix).append("protections WHERE id IN (").append(protectionId);
+                                } else {
+                                    builder.append(",").append(protectionId);
+                                }
+                                count++;
+                            }
+                            builder.append(")");
+                            statement.executeUpdate(builder.toString());
+
+                            sender.sendMessage(Colors.Green + "REMOVED " + (totalToRemove - protectionsToRemove.size()) + " / " + totalToRemove);
+
+                            statement.close();
+
+                            return null;
+                        }
+                    }).get();
+                }
+                
+                // flush updated protections
+                final int totalToSave = protectionsToSave.size();
+                while (!protectionsToSave.isEmpty()) {
+                    Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
+                        public Void call() throws Exception {
+                            long startTime = System.nanoTime();
+                            while (!protectionsToSave.isEmpty() && System.nanoTime() - startTime < 30L * 1000L * 1000L) {
+                                Protection protection = protectionsToSave.removeFirst();
+                                protection.saveNow();
+                            }
+
+                            sender.sendMessage(Colors.Green + "UPDATED " + (totalToSave - protectionsToSave.size()) + " / " + totalToSave);
+
+                            return null;
+                        }
+                    }).get();
+                }
+
+                final int totalChecked = checked;
                 Bukkit.getScheduler().runTask(lwc.getPlugin(), new Runnable() {
                     @Override
                     public void run() {
@@ -269,7 +274,7 @@ public class AdminCleanup extends JavaModule {
                         sender.sendMessage("Resetting cache...");
                         lwc.getPhysicalDatabase().precache();
 
-                        sender.sendMessage("Cleanup completed. Removed " + totalRemoved + " protections out of " + totalChecked + " checked protections.");
+                        sender.sendMessage("Cleanup completed. Removed " + totalToRemove + " protections out of " + totalChecked + " checked protections.");
                     }
                 });
 
