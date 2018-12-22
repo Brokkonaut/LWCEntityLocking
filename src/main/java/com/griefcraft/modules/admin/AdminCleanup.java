@@ -38,6 +38,7 @@ import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.Colors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
@@ -109,7 +110,7 @@ public class AdminCleanup extends JavaModule {
 
         public void run() {
             ArrayDeque<Integer> protectionsToRemove = new ArrayDeque<>();
-            ArrayDeque<Protection> protectionsToSave = new ArrayDeque<>();
+            ArrayDeque<ProtectionAndMaterial> protectionsToSave = new ArrayDeque<>();
             int removed = 0;
             int percentChecked = 0;
 
@@ -177,8 +178,7 @@ public class AdminCleanup extends JavaModule {
                                             lwc.sendLocale(sender, "protection.admin.cleanup.removednoexist", "protection", protection.toString());
                                         }
                                     } else if (protection.getBlockMaterial() != block.getType()) {
-                                        protection.setBlockMaterial(block.getType());
-                                        protectionsToSave.addLast(protection);
+                                        protectionsToSave.addLast(new ProtectionAndMaterial(protection, block.getType()));
                                         lwc.log("Updating material to " + block.getType() + " for block at " + block.getX() + "," + block.getY() + "," + block.getZ());
                                     }
                                 }
@@ -256,8 +256,9 @@ public class AdminCleanup extends JavaModule {
                             int oldDone = totalToSave - protectionsToSave.size();
                             long startTime = System.nanoTime();
                             while (!protectionsToSave.isEmpty() && System.nanoTime() - startTime < 30L * 1000L * 1000L) {
-                                Protection protection = protectionsToSave.removeFirst();
-                                protection.saveNow();
+                                ProtectionAndMaterial protectionAndMaterial = protectionsToSave.removeFirst();
+                                protectionAndMaterial.getProtection().setBlockMaterial(protectionAndMaterial.getMaterial());
+                                protectionAndMaterial.getProtection().saveNow();
                             }
 
                             int newDone = totalToSave - protectionsToSave.size();
@@ -285,6 +286,24 @@ public class AdminCleanup extends JavaModule {
                 sender.sendMessage("Exception caught during cleanup: " + e.getMessage());
                 lwc.getPlugin().getLogger().log(Level.SEVERE, "Exception caught during cleanup", e);
             }
+        }
+    }
+
+    private static class ProtectionAndMaterial {
+        private final Protection protection;
+        private final Material material;
+
+        public ProtectionAndMaterial(Protection protection, Material material) {
+            this.protection = protection;
+            this.material = material;
+        }
+
+        public Material getMaterial() {
+            return material;
+        }
+
+        public Protection getProtection() {
+            return protection;
         }
     }
 }
