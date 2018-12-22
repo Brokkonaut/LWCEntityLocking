@@ -247,20 +247,23 @@ public class AdminCleanup extends JavaModule {
                         }
                     }).get();
                 }
-                
+
                 // flush updated protections
                 final int totalToSave = protectionsToSave.size();
                 while (!protectionsToSave.isEmpty()) {
                     Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
                         public Void call() throws Exception {
+                            int oldDone = totalToSave - protectionsToSave.size();
                             long startTime = System.nanoTime();
                             while (!protectionsToSave.isEmpty() && System.nanoTime() - startTime < 30L * 1000L * 1000L) {
                                 Protection protection = protectionsToSave.removeFirst();
                                 protection.saveNow();
                             }
 
-                            sender.sendMessage(Colors.Green + "UPDATED " + (totalToSave - protectionsToSave.size()) + " / " + totalToSave);
-
+                            int newDone = totalToSave - protectionsToSave.size();
+                            if (protectionsToSave.isEmpty() || (newDone / 50) != (oldDone / 50)) {
+                                sender.sendMessage(Colors.Green + "UPDATED " + newDone + " / " + totalToSave);
+                            }
                             return null;
                         }
                     }).get();
