@@ -75,6 +75,7 @@ public class PhysDB extends Database {
      * The database version
      */
     private int databaseVersion = 0;
+    private int entityLockingDatabaseVersion = 0;
 
     /**
      * The number of protections that should exist
@@ -270,10 +271,12 @@ public class PhysDB extends Database {
             return;
         }
         
-        databaseVersion = -1;
+        databaseVersion = 0;
         loadDatabaseVersion();
+        entityLockingDatabaseVersion = 0;
+        loadEntityLockingDatabaseVersion();
 
-        if (databaseVersion < 6) {
+        if (entityLockingDatabaseVersion < 1) {
             /**
              * Updates that alter or rename a table go here
              */
@@ -417,8 +420,10 @@ public class PhysDB extends Database {
 
             // Load the database version
             databaseVersion = 0;
+            entityLockingDatabaseVersion = 0;
             if (!resetDatabaseVersion) {
                 loadDatabaseVersion();
+                loadEntityLockingDatabaseVersion();
             }
         }
 
@@ -436,6 +441,10 @@ public class PhysDB extends Database {
      */
     public void performDatabaseUpdates() {
         LWC lwc = LWC.getInstance();
+
+        if (entityLockingDatabaseVersion == 0) {
+            databaseVersion = 0; // reset to check all updates
+        }
 
         // Indexes
         if (databaseVersion == 0) {
@@ -533,6 +542,10 @@ public class PhysDB extends Database {
 
             incrementDatabaseVersion();
         }
+
+        if (entityLockingDatabaseVersion == 0) {
+            incrementEntityLockingDatabaseVersion();
+        }
     }
 
     /**
@@ -540,6 +553,13 @@ public class PhysDB extends Database {
      */
     public void incrementDatabaseVersion() {
         setDatabaseVersion(++databaseVersion);
+    }
+
+    /**
+     * Increment the database version
+     */
+    public void incrementEntityLockingDatabaseVersion() {
+        setEntityLockingDatabaseVersion(++entityLockingDatabaseVersion);
     }
 
     /**
@@ -556,6 +576,27 @@ public class PhysDB extends Database {
             PreparedStatement statement = prepare("UPDATE " + prefix + "internal SET value = ? WHERE name = ?");
             statement.setInt(1, databaseVersion);
             statement.setString(2, "version");
+
+            // ok
+            statement.executeUpdate();
+        } catch (SQLException e) {
+        }
+    }
+
+    /**
+     * Set the database version and sync it to the database
+     *
+     * @param databaseVersion
+     */
+    public void setEntityLockingDatabaseVersion(int databaseVersion) {
+        // set it locally
+        this.entityLockingDatabaseVersion = databaseVersion;
+
+        // ship it to the database
+        try {
+            PreparedStatement statement = prepare("UPDATE " + prefix + "internal SET value = ? WHERE name = ?");
+            statement.setInt(1, entityLockingDatabaseVersion);
+            statement.setString(2, "entityversion");
 
             // ok
             statement.executeUpdate();
@@ -652,6 +693,44 @@ public class PhysDB extends Database {
         }
 
         return databaseVersion;
+    }
+
+    /**
+     * Load the database internal version
+     *
+     * @return
+     */
+    public int loadEntityLockingDatabaseVersion() {
+        try {
+            PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
+            statement.setString(1, "entityversion");
+
+            // Execute it
+            ResultSet set = statement.executeQuery();
+
+            // load the version
+            if (set.next()) {
+                entityLockingDatabaseVersion = Integer.parseInt(set.getString("value"));
+            } else {
+                throw new IllegalStateException("Internal is empty");
+            }
+
+            // close everything
+            set.close();
+        } catch (Exception e) {
+            // Doesn't exist, create it
+            try {
+                PreparedStatement statement = prepare("INSERT INTO " + prefix + "internal (name, value) VALUES(?, ?)");
+                statement.setString(1, "entityversion");
+                statement.setInt(2, entityLockingDatabaseVersion);
+
+                // ok
+                statement.executeUpdate();
+            } catch (SQLException ex) {
+            }
+        }
+
+        return entityLockingDatabaseVersion;
     }
 
     /**
