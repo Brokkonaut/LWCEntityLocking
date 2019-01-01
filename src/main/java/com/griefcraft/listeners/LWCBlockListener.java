@@ -68,60 +68,58 @@ import com.griefcraft.util.Colors;
 
 public class LWCBlockListener implements Listener {
 
-	/**
-	 * The plugin instance
-	 */
-	private LWCPlugin plugin;
+    /**
+     * The plugin instance
+     */
+    private LWCPlugin plugin;
 
-	/**
-	 * A set of blacklisted blocks
-	 */
-	private final EnumSet<Material> blacklistedBlocks = EnumSet.noneOf(Material.class);
+    /**
+     * A set of blacklisted blocks
+     */
+    private final EnumSet<Material> blacklistedBlocks = EnumSet.noneOf(Material.class);
 
-	public LWCBlockListener(LWCPlugin plugin) {
-		this.plugin = plugin;
-		loadAndProcessConfig();
-	}
+    public LWCBlockListener(LWCPlugin plugin) {
+        this.plugin = plugin;
+        loadAndProcessConfig();
+    }
 
-	public static final BlockFace[] POSSIBLE_FACES = { BlockFace.NORTH,
-			BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP,
-			BlockFace.DOWN };
+    public static final BlockFace[] POSSIBLE_FACES = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockRedstoneChange(BlockRedstoneEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
 
-		LWC lwc = plugin.getLWC();
-		Block block = event.getBlock();
+        LWC lwc = plugin.getLWC();
+        Block block = event.getBlock();
 
-		if (block == null) {
-			return;
-		}
+        if (block == null) {
+            return;
+        }
 
-		Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block.getLocation());
 
-		if (protection == null) {
-			return;
-		}
+        if (protection == null) {
+            return;
+        }
 
-		LWCRedstoneEvent evt = new LWCRedstoneEvent(event, protection);
-		lwc.getModuleLoader().dispatchEvent(evt);
+        LWCRedstoneEvent evt = new LWCRedstoneEvent(event, protection);
+        lwc.getModuleLoader().dispatchEvent(evt);
 
-		if (evt.isCancelled()) {
-			event.setNewCurrent(event.getOldCurrent());
-		}
-	}
+        if (evt.isCancelled()) {
+            event.setNewCurrent(event.getOldCurrent());
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onStructureGrow(StructureGrowEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
+        if (!LWC.ENABLED) {
+            return;
+        }
 
-		LWC lwc = LWC.getInstance();
-		// the blocks that were changed / replaced
+        LWC lwc = LWC.getInstance();
+        // the blocks that were changed / replaced
         List<BlockState> blocks = event.getBlocks();
 
         for (BlockState newblock : blocks) {
@@ -135,139 +133,132 @@ public class LWCBlockListener implements Listener {
                 event.setCancelled(true);
             }
         }
-	}
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onSignChange(SignChangeEvent event) {
-		if (!LWC.ENABLED || event.isCancelled()) {
-			return;
-		}
+    public void onSignChange(SignChangeEvent event) {
+        if (!LWC.ENABLED || event.isCancelled()) {
+            return;
+        }
 
-		LWC lwc = plugin.getLWC();
-		Block block = event.getBlock();
-		Player player = event.getPlayer();
+        LWC lwc = plugin.getLWC();
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
 
-		if (block == null) {
-			return;
-		}
+        if (block == null) {
+            return;
+        }
 
-		Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block.getLocation());
 
-		if (protection == null) {
-			return;
-		}
+        if (protection == null) {
+            return;
+        }
 
-		boolean canAccess = lwc.canAccessProtection(player, protection);
+        boolean canAccess = lwc.canAccessProtection(player, protection);
 
-		if (!canAccess) {
-			event.setCancelled(true);
-		}
-	}
+        if (!canAccess) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockBreak(BlockBreakEvent event) {
-		if (!LWC.ENABLED || event.isCancelled()) {
-			return;
-		}
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!LWC.ENABLED || event.isCancelled()) {
+            return;
+        }
 
-		LWC lwc = plugin.getLWC();
-		Player player = event.getPlayer();
-		Block block = event.getBlock();
+        LWC lwc = plugin.getLWC();
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
 
-		boolean ignoreBlockDestruction = Boolean
-				.parseBoolean(lwc.resolveProtectionConfiguration(block,
-						"ignoreBlockDestruction"));
+        boolean ignoreBlockDestruction = Boolean.parseBoolean(lwc.resolveProtectionConfiguration(block, "ignoreBlockDestruction"));
 
-		if (ignoreBlockDestruction) {
-			return;
-		}
+        if (ignoreBlockDestruction) {
+            return;
+        }
 
-		ProtectionCache cache = lwc.getProtectionCache();
-		CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
+        ProtectionCache cache = lwc.getProtectionCache();
+        CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
-		// In the event they place a block, remove any known nulls there
-		if (cache.isKnownNull(cacheKey)) {
-			cache.remove(cacheKey);
-		}
+        // In the event they place a block, remove any known nulls there
+        if (cache.isKnownNull(cacheKey)) {
+            cache.remove(cacheKey);
+        }
 
-		Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block.getLocation());
 
-		if (protection == null) {
-			return;
-		}
+        if (protection == null) {
+            return;
+        }
 
-		boolean canAccess = lwc.canAccessProtection(player, protection);
-		boolean canAdmin = lwc.canAdminProtection(player, protection);
+        boolean canAccess = lwc.canAccessProtection(player, protection);
+        boolean canAdmin = lwc.canAdminProtection(player, protection);
 
-		// when destroying a chest, it's possible they are also destroying a
-		// double chest
-		// in the event they're trying to destroy a double chest, we should just
-		// move
-		// the protection to the chest that is not destroyed, if it is not that
-		// one already.
-		if (protection.isOwner(player)) {
-			Block doubleChest = BlockUtil.findAdjacentDoubleChest(block);
+        // when destroying a chest, it's possible they are also destroying a
+        // double chest
+        // in the event they're trying to destroy a double chest, we should just
+        // move
+        // the protection to the chest that is not destroyed, if it is not that
+        // one already.
+        if (protection.isOwner(player)) {
+            Block doubleChest = BlockUtil.findAdjacentDoubleChest(block);
 
-			if (doubleChest != null) {
-				// if they destroyed the protected block we want to move it aye?
-				protection.setBlockMaterial(doubleChest.getType());
-				protection.setX(doubleChest.getX());
-				protection.setY(doubleChest.getY());
-				protection.setZ(doubleChest.getZ());
-				protection.saveNow();
+            if (doubleChest != null) {
+                // if they destroyed the protected block we want to move it aye?
+                protection.setBlockMaterial(doubleChest.getType());
+                protection.setX(doubleChest.getX());
+                protection.setY(doubleChest.getY());
+                protection.setZ(doubleChest.getZ());
+                protection.saveNow();
 
-				// Repair the cache
-				protection.radiusRemoveCache();
+                // Repair the cache
+                protection.radiusRemoveCache();
 
-				if (protection.getProtectionFinder() != null) {
-					protection.getProtectionFinder().removeBlock(
-							block.getState());
-				}
+                if (protection.getProtectionFinder() != null) {
+                    protection.getProtectionFinder().removeBlock(block.getState());
+                }
 
-				lwc.getProtectionCache().addProtection(protection);
+                lwc.getProtectionCache().addProtection(protection);
 
-				return;
-			}
-		}
+                return;
+            }
+        }
 
-		try {
-			LWCProtectionDestroyEvent evt = new LWCProtectionDestroyEvent(
-					player, protection,
-					LWCProtectionDestroyEvent.Method.BLOCK_DESTRUCTION,
-					canAccess, canAdmin);
-			lwc.getModuleLoader().dispatchEvent(evt);
+        try {
+            LWCProtectionDestroyEvent evt = new LWCProtectionDestroyEvent(player, protection, LWCProtectionDestroyEvent.Method.BLOCK_DESTRUCTION, canAccess, canAdmin);
+            lwc.getModuleLoader().dispatchEvent(evt);
 
-			if (evt.isCancelled() || !canAccess) {
-				event.setCancelled(true);
-			}
-		} catch (Exception e) {
-			event.setCancelled(true);
-			lwc.sendLocale(player, "protection.internalerror", "id",
-					"BLOCK_BREAK");
-			e.printStackTrace();
-		}
-	}
+            if (evt.isCancelled() || !canAccess) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            event.setCancelled(true);
+            lwc.sendLocale(player, "protection.internalerror", "id", "BLOCK_BREAK");
+            e.printStackTrace();
+        }
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
-		LWC lwc = plugin.getLWC();
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
+        LWC lwc = plugin.getLWC();
 
-		for (BlockState state : event.getReplacedBlockStates()) {
-			Protection protection = lwc.findProtection(state);
+        for (BlockState state : event.getReplacedBlockStates()) {
+            Protection protection = lwc.findProtection(state);
 
-			if (protection != null && !lwc.canAccessProtection(event.getPlayer(), protection)) {
-				event.setCancelled(true);
-				return;
-			}
-		}
-	}
+            if (protection != null && !lwc.canAccessProtection(event.getPlayer(), protection)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockPistonRetract(BlockPistonRetractEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
-		LWC lwc = this.plugin.getLWC();
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockPistonRetract(BlockPistonRetractEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+        LWC lwc = this.plugin.getLWC();
 
         for (Block moved : event.getBlocks()) {
             if ((lwc.findProtection(moved) != null)) {
@@ -275,21 +266,21 @@ public class LWCBlockListener implements Listener {
                 return;
             }
         }
-	}
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockPistonExtend(BlockPistonExtendEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockPistonExtend(BlockPistonExtendEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
         LWC lwc = plugin.getLWC();
-		for (Block moved : event.getBlocks()) {
+        for (Block moved : event.getBlocks()) {
             if ((lwc.findProtection(moved) != null)) {
                 event.setCancelled(true);
                 return;
             }
         }
-	}
+    }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockExplode(BlockExplodeEvent event) {
@@ -304,122 +295,111 @@ public class LWCBlockListener implements Listener {
             Protection protection = plugin.getLWC().findProtection(block);
 
             if (protection != null) {
-                boolean ignoreExplosions = Boolean.parseBoolean(lwc
-                        .resolveProtectionConfiguration(protection.getBlock(),
-                                "ignoreExplosions"));
+                boolean ignoreExplosions = Boolean.parseBoolean(lwc.resolveProtectionConfiguration(protection.getBlock(), "ignoreExplosions"));
 
-                if (!(ignoreExplosions || protection
-                        .hasFlag(Flag.Type.ALLOWEXPLOSIONS))) {
+                if (!(ignoreExplosions || protection.hasFlag(Flag.Type.ALLOWEXPLOSIONS))) {
                     it.remove();
                 }
             }
         }
     }
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockPlace(BlockPlaceEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
 
-		LWC lwc = plugin.getLWC();
-		Player player = event.getPlayer();
-		Block block = event.getBlockPlaced();
+        LWC lwc = plugin.getLWC();
+        Player player = event.getPlayer();
+        Block block = event.getBlockPlaced();
 
-		ProtectionCache cache = lwc.getProtectionCache();
-		CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
+        ProtectionCache cache = lwc.getProtectionCache();
+        CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
 
-		// In the event they place a block, remove any known nulls there
-		if (cache.isKnownNull(cacheKey)) {
-			cache.remove(cacheKey);
-		}
+        // In the event they place a block, remove any known nulls there
+        if (cache.isKnownNull(cacheKey)) {
+            cache.remove(cacheKey);
+        }
 
         // check if the block is blacklisted
         boolean blockIsBlacklisted = blacklistedBlocks.contains(block.getType());
 
-		if (blockIsBlacklisted) {
-			// it's blacklisted, check for a protected chest
-			for (Protection protection : lwc
-					.findAdjacentProtectionsOnAllSides(block)) {
-				if (protection != null) {
-					if (!lwc.canAccessProtection(player, protection)
-							|| ((protection.getType() == Protection.Type.DONATION || protection.getType() == Protection.Type.SHOWCASE) && !lwc
-									.canAdminProtection(player, protection))) {
-						// they can't access the protection ..
-						event.setCancelled(true);
-						return;
-					}
-				}
-			}
-		}
-	}
+        if (blockIsBlacklisted) {
+            // it's blacklisted, check for a protected chest
+            for (Protection protection : lwc.findAdjacentProtectionsOnAllSides(block)) {
+                if (protection != null) {
+                    if (!lwc.canAccessProtection(player, protection) || ((protection.getType() == Protection.Type.DONATION || protection.getType() == Protection.Type.SHOWCASE) && !lwc.canAdminProtection(player, protection))) {
+                        // they can't access the protection ..
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
-	/**
-	 * Used for auto registering placed protections
-	 */
-	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-	public void onBlockPlaceMonitor(BlockPlaceEvent event) {
-		if (!LWC.ENABLED) {
-			return;
-		}
+    /**
+     * Used for auto registering placed protections
+     */
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBlockPlaceMonitor(BlockPlaceEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
 
-		LWC lwc = plugin.getLWC();
-		Player player = event.getPlayer();
-		Block block = event.getBlockPlaced();
+        LWC lwc = plugin.getLWC();
+        Player player = event.getPlayer();
+        Block block = event.getBlockPlaced();
 
-		// Update the cache if a protection is matched here
-		Protection current = lwc.findProtection(block.getLocation());
-		if (current != null) {
-			if (!current.isBlockInWorld()) {
-				// Corrupted protection
-				lwc.log("Removing corrupted protection: " + current);
-				current.remove();
-			} else {
-				if (current.getProtectionFinder() != null) {
-					current.getProtectionFinder().fullMatchBlocks();
-					lwc.getProtectionCache().addProtection(current);
-				}
+        // Update the cache if a protection is matched here
+        Protection current = lwc.findProtection(block.getLocation());
+        if (current != null) {
+            if (!current.isBlockInWorld()) {
+                // Corrupted protection
+                lwc.log("Removing corrupted protection: " + current);
+                current.remove();
+            } else {
+                if (current.getProtectionFinder() != null) {
+                    current.getProtectionFinder().fullMatchBlocks();
+                    lwc.getProtectionCache().addProtection(current);
+                }
 
-				return;
-			}
-		}
+                return;
+            }
+        }
 
-		// The placable block must be protectable
-		if (!lwc.isProtectable(block)) {
-			return;
-		}
-		
-		String autoRegisterType = lwc.resolveProtectionConfiguration(block,
-				"autoRegister");
+        // The placable block must be protectable
+        if (!lwc.isProtectable(block)) {
+            return;
+        }
 
-		// is it auto protectable?
-		if (!autoRegisterType.equalsIgnoreCase("private")
-                && !autoRegisterType.equalsIgnoreCase("public")
-                && !autoRegisterType.equalsIgnoreCase("donation")
-                && !autoRegisterType.equalsIgnoreCase("showcase")) {
-			return;
-		}
+        String autoRegisterType = lwc.resolveProtectionConfiguration(block, "autoRegister");
 
-		if (!lwc.hasPermission(player, "lwc.create." + autoRegisterType,
-				"lwc.create", "lwc.protect")) {
-			return;
-		}
+        // is it auto protectable?
+        if (!autoRegisterType.equalsIgnoreCase("private") && !autoRegisterType.equalsIgnoreCase("public") && !autoRegisterType.equalsIgnoreCase("donation") && !autoRegisterType.equalsIgnoreCase("showcase")) {
+            return;
+        }
 
-		// Parse the type
-		Protection.Type type;
+        if (!lwc.hasPermission(player, "lwc.create." + autoRegisterType, "lwc.create", "lwc.protect")) {
+            return;
+        }
 
-		try {
-			type = Protection.Type.matchType(autoRegisterType);
-		} catch (IllegalArgumentException e) {
-			// No auto protect type found
-			return;
-		}
+        // Parse the type
+        Protection.Type type;
 
-		// Is it okay?
-		if (type == null) {
-			player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
-			return;
-		}
+        try {
+            type = Protection.Type.matchType(autoRegisterType);
+        } catch (IllegalArgumentException e) {
+            // No auto protect type found
+            return;
+        }
+
+        // Is it okay?
+        if (type == null) {
+            player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
+            return;
+        }
 
         // If it's a chest, make sure they aren't placing it connected to
         // an already registered chest
@@ -432,41 +412,30 @@ public class LWCBlockListener implements Listener {
         }
 
         try {
-			LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(
-					player, block);
-			lwc.getModuleLoader().dispatchEvent(evt);
+            LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(player, block);
+            lwc.getModuleLoader().dispatchEvent(evt);
 
-			// something cancelled registration
-			if (evt.isCancelled()) {
-				return;
-			}
+            // something cancelled registration
+            if (evt.isCancelled()) {
+                return;
+            }
 
-			// All good!
-			Protection protection = lwc.getPhysicalDatabase()
-					.registerProtection(block.getType(), type,
-							block.getWorld().getName(),
-							player.getUniqueId().toString(), "", block.getX(),
-							block.getY(), block.getZ());
+            // All good!
+            Protection protection = lwc.getPhysicalDatabase().registerProtection(block.getType(), type, block.getWorld().getName(), player.getUniqueId().toString(), "", block.getX(), block.getY(), block.getZ());
 
-			if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(block,
-					"quiet"))) {
-				lwc.sendLocale(player, "protection.onplace.create.finalize",
-						"type", lwc.getPlugin().getMessageParser()
-								.parseMessage(autoRegisterType.toLowerCase()),
-						"block", LWC.materialToString(block));
-			}
+            if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(block, "quiet"))) {
+                lwc.sendLocale(player, "protection.onplace.create.finalize", "type", lwc.getPlugin().getMessageParser().parseMessage(autoRegisterType.toLowerCase()), "block", LWC.materialToString(block));
+            }
 
-			if (protection != null) {
-				lwc.getModuleLoader().dispatchEvent(
-						new LWCProtectionRegistrationPostEvent(protection));
-			}
-		} catch (Exception e) {
-			lwc.sendLocale(player, "protection.internalerror", "id",
-					"PLAYER_INTERACT");
-			e.printStackTrace();
-		}
-	}
-	
+            if (protection != null) {
+                lwc.getModuleLoader().dispatchEvent(new LWCProtectionRegistrationPostEvent(protection));
+            }
+        } catch (Exception e) {
+            lwc.sendLocale(player, "protection.internalerror", "id", "PLAYER_INTERACT");
+            e.printStackTrace();
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         if (!LWC.ENABLED) {
@@ -486,17 +455,13 @@ public class LWCBlockListener implements Listener {
         }
     }
 
-	/**
-	 * Load and process the configuration
-	 */
-	public void loadAndProcessConfig() {
-		List<String> ids = LWC
-				.getInstance()
-				.getConfiguration()
-				.getStringList("optional.blacklistedBlocks",
-						new ArrayList<String>());
+    /**
+     * Load and process the configuration
+     */
+    public void loadAndProcessConfig() {
+        List<String> ids = LWC.getInstance().getConfiguration().getStringList("optional.blacklistedBlocks", new ArrayList<String>());
 
-		for (String sId : ids) {
+        for (String sId : ids) {
             Material mat = Material.matchMaterial(sId);
             if (mat == null) {
                 plugin.getLogger().log(Level.SEVERE, "Invalid block name in optional.blacklistedBlocks: " + sId);
@@ -504,5 +469,5 @@ public class LWCBlockListener implements Listener {
                 blacklistedBlocks.add(mat);
             }
         }
-	}
+    }
 }

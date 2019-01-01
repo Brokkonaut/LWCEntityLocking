@@ -526,7 +526,7 @@ public class LWCPlayerListener implements Listener {
                 location = ((BlockState) holder).getLocation();
             } else if (holder instanceof DoubleChest) {
                 location = ((DoubleChest) holder).getLocation();
-            } else if (holder instanceof Entity && lwc.isProtectable(((Entity)holder).getType())) {
+            } else if (holder instanceof Entity && lwc.isProtectable(((Entity) holder).getType())) {
                 entityHolder = (Entity) holder;
             } else {
                 return false;
@@ -534,8 +534,8 @@ public class LWCPlayerListener implements Listener {
 
             if (initiatorHolder instanceof Hopper) {
                 initiatorLocation = ((Hopper) initiatorHolder).getLocation();
-            } else if(initiatorHolder instanceof Entity && lwc.isProtectable(((Entity)initiatorHolder).getType())) {
-               initiatorEntity = (Entity) initiatorHolder;
+            } else if (initiatorHolder instanceof Entity && lwc.isProtectable(((Entity) initiatorHolder).getType())) {
+                initiatorEntity = (Entity) initiatorHolder;
             }
         } catch (Exception e) {
             return false;
