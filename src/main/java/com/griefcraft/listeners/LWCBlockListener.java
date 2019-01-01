@@ -43,12 +43,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.world.StructureGrowEvent;
@@ -301,6 +305,62 @@ public class LWCBlockListener implements Listener {
                     it.remove();
                 }
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockFromTo(BlockFromToEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        Block block = event.getToBlock();
+        Protection protection = plugin.getLWC().findProtection(block);
+
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockFade(BlockFadeEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        Block block = event.getBlock();
+        Protection protection = plugin.getLWC().findProtection(block);
+
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockBurn(BlockBurnEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        Block block = event.getBlock();
+        Protection protection = plugin.getLWC().findProtection(block);
+
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBlockSpread(BlockSpreadEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        Block block = event.getBlock();
+        Protection protection = plugin.getLWC().findProtection(block);
+
+        if (protection != null) {
+            event.setCancelled(true);
         }
     }
 
