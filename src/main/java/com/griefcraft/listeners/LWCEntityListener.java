@@ -56,6 +56,7 @@ import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class LWCEntityListener implements Listener {
 
@@ -68,6 +69,16 @@ public class LWCEntityListener implements Listener {
 
     public LWCEntityListener(LWCPlugin plugin) {
         this.plugin = plugin;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                onTick();
+            }
+        }.runTaskTimer(plugin, 1, 1);
+    }
+
+    protected void onTick() {
+        placedArmorStandPlayer = null;
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
