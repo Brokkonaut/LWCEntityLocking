@@ -35,7 +35,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
-
+import org.bukkit.block.data.type.Switch;
+import org.bukkit.block.data.type.Switch.Face;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
     /**
      * Possible faces around the base block that protections could be at
      */
-    public static final BlockFace[] POSSIBLE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+    public static final BlockFace[] POSSIBLE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
 
     public boolean matches(ProtectionFinder finder) {
         // The block we are working on
@@ -99,7 +100,14 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             if (!(blockData instanceof Directional)) {
                 return null;
             }
-            if (((Directional) blockData).getFacing() == matchingFace) {
+            BlockFace existingFace = ((Directional) blockData).getFacing();
+            if (blockData instanceof Switch) {
+                Switch switcher = (Switch) blockData;
+                if (switcher.getFace() != Face.WALL) {
+                    existingFace = switcher.getFace() == Face.FLOOR ? BlockFace.UP : BlockFace.DOWN;
+                }
+            }
+            if (existingFace == matchingFace) {
                 return block;
             }
         }
