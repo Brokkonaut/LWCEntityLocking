@@ -279,7 +279,7 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (!e.isCancelled() && !lwc.canAccessProtection(p, protection)) {
+        if (!e.isCancelled() && !lwc.canAccessProtectionContents(p, protection)) {
             e.setCancelled(true);
         }
     }
@@ -300,7 +300,7 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (!lwc.canAccessProtection(p, protection)) {
+        if (!lwc.canAccessProtectionContents(p, protection)) {
             e.setCancelled(true);
         }
     }
@@ -320,7 +320,7 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (!lwc.canAccessProtection(p, protection)) {
+        if (!lwc.canAccessProtectionContents(p, protection)) {
             e.setCancelled(true);
         }
     }
@@ -356,7 +356,7 @@ public class LWCPlayerListener implements Listener {
         try {
             Set<String> actions = lwcPlayer.getActionNames();
             Module.Result result;
-            boolean canAccess = lwc.canAccessProtection(player, protection);
+            boolean canAccess = lwc.canAccessProtectionContents(player, protection);
 
             // Calculate if the player has a pending action (i.e any action
             // besides 'interacted')
