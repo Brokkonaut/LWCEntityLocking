@@ -162,7 +162,16 @@ protections:
         trapped_chest:
             enabled: true
             autoRegister: private
+        barrel:
+            enabled: true
+            autoRegister: private
         furnace:
+            enabled: true
+            autoRegister: private
+        blast_furnace:
+            enabled: true
+            autoRegister: private
+        smoker:
             enabled: true
             autoRegister: private
         dispenser:
@@ -171,6 +180,11 @@ protections:
         sign:
             enabled: true
             autoRegister: private
+        lectern:
+            enabled: true
+            autoRegister: showcase
+        composter:
+            enabled: true
         iron_door:
             enabled: true
         oak_door:

@@ -43,13 +43,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class LimitsV2 extends JavaModule {
 
+    private static final Set<Material> SIGNS = EnumSet.of(Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
+            Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.ACACIA_SIGN,
+            Material.BIRCH_SIGN, Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN);
+            
     /**
      * The limit represented by unlimited
      */
@@ -156,8 +162,11 @@ public class LimitsV2 extends JavaModule {
         @Override
         public int getProtectionCount(Player player, Material material) {
             LWC lwc = LWC.getInstance();
-            return lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.SIGN)
-                    + lwc.getPhysicalDatabase().getProtectionCount(player.getName(), Material.WALL_SIGN);
+            int count = 0;
+            for(Material m : SIGNS) {
+                count += lwc.getPhysicalDatabase().getProtectionCount(player.getName(), m);
+            }
+            return count;
         }
 
     }
@@ -275,7 +284,7 @@ public class LimitsV2 extends JavaModule {
                 if (limit instanceof BlockLimit) {
                     material = ((BlockLimit) limit).getMaterial();
                 } else if (limit instanceof SignLimit) {
-                    material = Material.SIGN;
+                    material = Material.OAK_SIGN;
                 }
 
                 boolean reachedLimit = hasReachedLimit(target, material);
@@ -523,7 +532,7 @@ public class LimitsV2 extends JavaModule {
             if (limit instanceof DefaultLimit) {
                 defaultLimit = limit;
             } else if (limit instanceof SignLimit) {
-                if (material == Material.WALL_SIGN || material == Material.SIGN) {
+                if (SIGNS.contains(material)) {
                     return limit;
                 }
             } else if (limit instanceof BlockLimit) {
