@@ -139,7 +139,7 @@ public class LWCPlayerListener implements Listener {
     public void onHangingBreakByEntity(HangingBreakByEntityEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
         Protection protection = lwc.findProtection(entity);
@@ -167,7 +167,7 @@ public class LWCPlayerListener implements Listener {
     public void onMinecartBreak(VehicleDestroyEvent e) {
         Entity entity = e.getVehicle();
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
         Protection protection = lwc.findProtection(entity);
@@ -194,7 +194,7 @@ public class LWCPlayerListener implements Listener {
         }
         Entity entity = event.getEntity();
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
         Protection protection = lwc.findProtection(entity);
@@ -207,7 +207,7 @@ public class LWCPlayerListener implements Listener {
     public void onProtectedEntityDamage(EntityDamageEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
-        if (entity instanceof Player || e instanceof EntityDamageByEntityEvent || !lwc.isProtectable(entity.getType())) {
+        if (entity instanceof Player || e instanceof EntityDamageByEntityEvent || !lwc.isProtectable(entity)) {
             return;
         }
         Protection protection = lwc.findProtection(entity);
@@ -220,7 +220,7 @@ public class LWCPlayerListener implements Listener {
     public void onProtectedEntityDamageByEntity(EntityDamageByEntityEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
-        if (entity instanceof Player || !lwc.isProtectable(entity.getType())) {
+        if (entity instanceof Player || !lwc.isProtectable(entity)) {
             return;
         }
         Player p = (e.getDamager() instanceof Player) ? (Player) e.getDamager() : null;
@@ -253,7 +253,7 @@ public class LWCPlayerListener implements Listener {
     public void onDeath(EntityDeathEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
 
@@ -267,7 +267,7 @@ public class LWCPlayerListener implements Listener {
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
 
@@ -288,7 +288,7 @@ public class LWCPlayerListener implements Listener {
     public void onEntityInteract(PlayerInteractEntityEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
-        if (entity instanceof Player || !lwc.isProtectable(entity.getType())) {
+        if (entity instanceof Player || !lwc.isProtectable(entity)) {
             return;
         }
         Player p = e.getPlayer();
@@ -309,7 +309,7 @@ public class LWCPlayerListener implements Listener {
     public void onAtEntityInteract(PlayerInteractAtEntityEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
-        if (entity instanceof Player || !lwc.isProtectable(entity.getType())) {
+        if (entity instanceof Player || !lwc.isProtectable(entity)) {
             return;
         }
         Player p = e.getPlayer();
@@ -333,7 +333,7 @@ public class LWCPlayerListener implements Listener {
         }
         Entity entity = (Entity) holder;
         LWC lwc = LWC.getInstance();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
         if (onPlayerEntityInteract((Player) event.getPlayer(), entity, event.isCancelled(), true)) {
@@ -526,7 +526,7 @@ public class LWCPlayerListener implements Listener {
                 location = ((BlockState) holder).getLocation();
             } else if (holder instanceof DoubleChest) {
                 location = ((DoubleChest) holder).getLocation();
-            } else if (holder instanceof Entity && lwc.isProtectable(((Entity) holder).getType())) {
+            } else if (holder instanceof Entity && lwc.isProtectable((Entity) holder)) {
                 entityHolder = (Entity) holder;
             } else {
                 return false;
@@ -534,7 +534,7 @@ public class LWCPlayerListener implements Listener {
 
             if (initiatorHolder instanceof Hopper) {
                 initiatorLocation = ((Hopper) initiatorHolder).getLocation();
-            } else if (initiatorHolder instanceof Entity && lwc.isProtectable(((Entity) initiatorHolder).getType())) {
+            } else if (initiatorHolder instanceof Entity && lwc.isProtectable((Entity) initiatorHolder)) {
                 initiatorEntity = (Entity) initiatorHolder;
             }
         } catch (Exception e) {

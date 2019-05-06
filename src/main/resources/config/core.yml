@@ -221,6 +221,10 @@ protections:
         item_frame:
             enabled: true
             autoRegister: private
+    special:
+        noaimob:
+            enabled: false
+            autoRegister: private
 modes:
     droptransfer:
         enabled: true
