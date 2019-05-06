@@ -71,6 +71,9 @@ optional:
     # If protections limits will be enabled (defaults to unlimited protections)
     useProtectionLimits: true
 
+    # If protection admins can destroy protections (or only protection owners)
+    protectionAdminCanDestroyProtections: true
+
 # Database information for LWC
 database:
 
@@ -234,6 +237,10 @@ protections:
             autoRegister: private
         item_frame:
             enabled: true
+            autoRegister: private
+    special:
+        noaimob:
+            enabled: false
             autoRegister: private
 modes:
     droptransfer:

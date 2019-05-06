@@ -49,12 +49,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -65,7 +68,7 @@ public class LWCEntityListener implements Listener {
      */
     private LWCPlugin plugin;
 
-    private UUID placedArmorStandPlayer;
+    private UUID placedArmorStandOrSpawnEggPlayer;
 
     public LWCEntityListener(LWCPlugin plugin) {
         this.plugin = plugin;
@@ -78,7 +81,7 @@ public class LWCEntityListener implements Listener {
     }
 
     protected void onTick() {
-        placedArmorStandPlayer = null;
+        placedArmorStandOrSpawnEggPlayer = null;
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -92,20 +95,28 @@ public class LWCEntityListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerInteract(PlayerInteractEvent e) {
         ItemStack inHand = e.getItem();
-        if (inHand != null && inHand.getType() == Material.ARMOR_STAND) {
-            placedArmorStandPlayer = e.getPlayer().getUniqueId();
+        if (inHand != null && (inHand.getType() == Material.ARMOR_STAND || inHand.getType().name().endsWith("_SPAWN_EGG"))) {
+            placedArmorStandOrSpawnEggPlayer = e.getPlayer().getUniqueId();
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
+        ItemStack inHand = e.getHand() == EquipmentSlot.OFF_HAND ? e.getPlayer().getInventory().getItemInOffHand() : e.getPlayer().getInventory().getItemInMainHand();
+        if (inHand != null && (inHand.getType() == Material.ARMOR_STAND || inHand.getType().name().endsWith("_SPAWN_EGG"))) {
+            placedArmorStandOrSpawnEggPlayer = e.getPlayer().getUniqueId();
+        }
+    }
+
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
     public void onCreatureSpawn(CreatureSpawnEvent e) {
-        if (placedArmorStandPlayer != null) {
-            Player player = plugin.getServer().getPlayer(placedArmorStandPlayer);
-            Entity block = e.getEntity();
-            placedArmorStandPlayer = null;
-            if (player != null && block.getType() == EntityType.ARMOR_STAND) {
-                if (player.getWorld().equals(block.getWorld()) && player.getLocation().distanceSquared(block.getLocation()) <= 25) {
-                    entityCreatedByPlayer(block, player);
+        if (placedArmorStandOrSpawnEggPlayer != null) {
+            Player player = plugin.getServer().getPlayer(placedArmorStandOrSpawnEggPlayer);
+            Entity entity = e.getEntity();
+            placedArmorStandOrSpawnEggPlayer = null;
+            if (player != null && !e.isCancelled() && (e.getEntityType() == EntityType.ARMOR_STAND || e.getSpawnReason() == SpawnReason.SPAWNER_EGG)) {
+                if (player.getWorld().equals(entity.getWorld()) && player.getLocation().distanceSquared(entity.getLocation()) <= 25) {
+                    entityCreatedByPlayer(entity, player);
                 }
             }
         }
@@ -116,11 +127,11 @@ public class LWCEntityListener implements Listener {
             return;
         }
         LWC lwc = plugin.getLWC();
-        if (!lwc.isProtectable(entity.getType())) {
+        if (!lwc.isProtectable(entity)) {
             return;
         }
 
-        String autoRegisterType = lwc.resolveProtectionConfiguration(entity.getType(), "autoRegister");
+        String autoRegisterType = lwc.getAutoRegisterType(entity);
 
         // is it auto protectable?
         if (!autoRegisterType.equalsIgnoreCase("private") && !autoRegisterType.equalsIgnoreCase("public")) {

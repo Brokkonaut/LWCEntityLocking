@@ -114,8 +114,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
@@ -344,6 +346,23 @@ public class LWC {
         moduleLoader.dispatchEvent(event);
 
         return event.getAccess() == Permission.Access.ADMIN;
+    }
+
+    /**
+     * Check if a player has the ability to destroy a protection
+     *
+     * @param player
+     * @param protection
+     * @return
+     */
+    public boolean canDestoryProtection(Player player, Protection protection) {
+        if (protection.isOwner(player)) {
+            return true;
+        }
+        if (canAdminProtection(player, protection) && getConfiguration().getBoolean("optional.protectionAdminCanDestroyProtections", false)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1369,9 +1388,29 @@ public class LWC {
         return protectableBlocks.contains(state.getType());
     }
 
-    public boolean isProtectable(EntityType state) {
+    public boolean isProtectable(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        if (protectableEntites.contains(entity.getType())) {
+            return true;
+        }
+        if ((entity instanceof LivingEntity) && !(entity instanceof Player) && !(entity instanceof ArmorStand) && !((LivingEntity) entity).hasAI()) {
+            if (Boolean.parseBoolean(resolveSpecialProtectionConfiguration("noaimob", "enabled"))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        return protectableEntites.contains(state);
+    public String getAutoRegisterType(Entity entity) {
+        if ((entity instanceof LivingEntity) && !(entity instanceof Player) && !(entity instanceof ArmorStand) && !((LivingEntity) entity).hasAI()) {
+            String protection = resolveSpecialProtectionConfiguration("noaimob", "autoRegister");
+            if (protection != null) {
+                return protection;
+            }
+        }
+        return resolveProtectionConfiguration(entity.getType(), "autoRegister");
     }
 
     public String resolveProtectionConfiguration(EntityType state, String node) {
@@ -1388,6 +1427,18 @@ public class LWC {
         if (temp != null && !temp.isEmpty()) {
             value = temp;
         }
+
+        protectionConfigurationCache.put(cacheKey, value);
+        return value;
+    }
+
+    public String resolveSpecialProtectionConfiguration(String special, String node) {
+        String cacheKey = "s-" + special + "-" + node;
+        if (protectionConfigurationCache.containsKey(cacheKey)) {
+            return protectionConfigurationCache.get(cacheKey);
+        }
+
+        String value = configuration.getString("protections.special." + special + "." + node);
 
         protectionConfigurationCache.put(cacheKey, value);
         return value;
@@ -1483,7 +1534,7 @@ public class LWC {
     public boolean isProtectable(Block block) {
         Material material = block.getType();
         if (block instanceof EntityBlock) {
-            return isProtectable(((EntityBlock) block).getEntity().getType());
+            return isProtectable(((EntityBlock) block).getEntity());
         }
 
         if (material == null) {
