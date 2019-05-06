@@ -349,6 +349,23 @@ public class LWC {
     }
 
     /**
+     * Check if a player has the ability to destroy a protection
+     *
+     * @param player
+     * @param protection
+     * @return
+     */
+    public boolean canDestoryProtection(Player player, Protection protection) {
+        if (protection.isOwner(player)) {
+            return true;
+        }
+        if (canAdminProtection(player, protection) && getConfiguration().getBoolean("optional.protectionAdminCanDestroyProtections", false)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Find a block that is adjacent to another block given a Material
      *
      * @param block

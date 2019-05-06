@@ -205,7 +205,7 @@ public class LWCBlockListener implements Listener {
         // move
         // the protection to the chest that is not destroyed, if it is not that
         // one already.
-        if (protection.isOwner(player)) {
+        if (lwc.canDestoryProtection(player, protection)) {
             Block doubleChest = BlockUtil.findAdjacentDoubleChest(block);
 
             if (doubleChest != null) {

@@ -156,7 +156,7 @@ public class LWCPlayerListener implements Listener {
         }
         Player p = (Player) e.getRemover();
         // owner permission is required for removing hangings
-        if (!protection.isOwner(p)) {
+        if (!lwc.canDestoryProtection(p, protection)) {
             e.setCancelled(true);
             return;
         }
@@ -180,7 +180,7 @@ public class LWCPlayerListener implements Listener {
         }
         Player p = (Player) e.getAttacker();
         // owner permission is required for minecarts
-        if (!protection.isOwner(p)) {
+        if (!lwc.canDestoryProtection(p, protection)) {
             e.setCancelled(true);
             return;
         }
@@ -237,7 +237,7 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         // owner permission is required for damaging entities
-        if (!protection.isOwner(p)) {
+        if (!lwc.canDestoryProtection(p, protection)) {
             if (e.getCause() == DamageCause.ENTITY_ATTACK && entity instanceof ItemFrame) {
                 ItemStack item = ((ItemFrame) entity).getItem();
                 if (item != null && item.getType() != Material.AIR) {
