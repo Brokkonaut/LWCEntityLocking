@@ -227,7 +227,7 @@ public class LWC {
                 locale = materialName;
             }
 
-            return StringUtil.capitalizeFirstLetter(locale);
+            return StringUtil.capitalizeFirstLetter(StringUtil.fastReplace(locale, '_', ' '));
         }
 
         return "";
@@ -978,7 +978,8 @@ public class LWC {
      */
     public static String materialToString(Block block) {
         if (block instanceof EntityBlock) {
-            return ((EntityBlock) block).getEntity().getClass().getSimpleName(); // TODO
+            String name = ((EntityBlock) block).getEntity().getType().name();
+            return StringUtil.capitalizeFirstLetter(StringUtil.fastReplace(name, '_', ' '));
         }
         return materialToString(block.getType());
     }
