@@ -48,6 +48,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Hopper;
+import org.bukkit.block.Lectern;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -654,6 +655,15 @@ public class LWCPlayerListener implements Listener {
             Protection protection = lwc.findProtection(block.getLocation());
             Module.Result result;
             boolean canAccess = lwc.canAccessProtection(player, protection);
+
+            // special case for lecterns: interact might add a book, so we have to check canAccessProtectionContents
+            if (block.getType() == Material.LECTERN && state instanceof Lectern && event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK) {
+                Lectern lectern = (Lectern) state;
+                ItemStack book = lectern.getInventory().getItem(0);
+                if (book == null || book.getType() == Material.AIR) {
+                    canAccess = lwc.canAccessProtectionContents(player, protection);
+                }
+            }
 
             // Calculate if the player has a pending action (i.e any action
             // besides 'interacted')
