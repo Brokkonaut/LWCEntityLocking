@@ -657,6 +657,22 @@ public class PhysDB extends Database {
         }
     }
 
+    private boolean hasInternalTable() throws SQLException {
+        PreparedStatement statement = null;
+        if (getType() == Type.SQLite) {
+            statement = prepare("SELECT name FROM sqlite_master WHERE name = ?");
+        } else if (getType() == Type.MySQL) {
+            statement = prepare("SHOW TABLES LIKE ?");
+        } else {
+            return false;
+        }
+        statement.setString(1, prefix + "internal");
+        ResultSet set = statement.executeQuery();
+        boolean hasTable = set.next();
+        set.close();
+        return hasTable;
+    }
+
     /**
      * Load the database internal version
      *
@@ -664,6 +680,10 @@ public class PhysDB extends Database {
      */
     public int loadDatabaseVersion() {
         try {
+            if (!hasInternalTable()) {
+                return -1;
+            }
+
             PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
             statement.setString(1, "version");
 
@@ -688,7 +708,7 @@ public class PhysDB extends Database {
 
                 // ok
                 statement.executeUpdate();
-            } catch (SQLException ex) {
+            } catch (Exception ex) {
             }
         }
 
@@ -702,6 +722,10 @@ public class PhysDB extends Database {
      */
     public int loadEntityLockingDatabaseVersion() {
         try {
+            if (!hasInternalTable()) {
+                return -1;
+            }
+
             PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
             statement.setString(1, "entityversion");
 
@@ -726,7 +750,7 @@ public class PhysDB extends Database {
 
                 // ok
                 statement.executeUpdate();
-            } catch (SQLException ex) {
+            } catch (Exception ex) {
             }
         }
 
