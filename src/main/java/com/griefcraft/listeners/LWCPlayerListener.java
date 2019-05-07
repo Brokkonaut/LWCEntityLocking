@@ -657,11 +657,13 @@ public class LWCPlayerListener implements Listener {
             boolean canAccess = lwc.canAccessProtection(player, protection);
 
             // special case for lecterns: interact might add a book, so we have to check canAccessProtectionContents
-            if (block.getType() == Material.LECTERN && state instanceof Lectern && event.getItem() != null && event.getItem().getType() == Material.WRITTEN_BOOK) {
-                Lectern lectern = (Lectern) state;
-                ItemStack book = lectern.getInventory().getItem(0);
-                if (book == null || book.getType() == Material.AIR) {
-                    canAccess = lwc.canAccessProtectionContents(player, protection);
+            if (block.getType() == Material.LECTERN && state instanceof Lectern && event.getItem() != null) {
+                if (event.getItem().getType() == Material.WRITTEN_BOOK || event.getItem().getType() == Material.WRITABLE_BOOK) {
+                    Lectern lectern = (Lectern) state;
+                    ItemStack book = lectern.getInventory().getItem(0);
+                    if (book == null || book.getType() == Material.AIR) {
+                        canAccess = lwc.canAccessProtectionContents(player, protection);
+                    }
                 }
             }
 
