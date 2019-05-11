@@ -36,6 +36,7 @@ import com.griefcraft.lwc.LWCPlugin;
 import com.griefcraft.model.Flag;
 import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Protection;
+import com.griefcraft.model.Protection.Type;
 import com.griefcraft.scripting.Module;
 import com.griefcraft.scripting.event.LWCBlockInteractEvent;
 import com.griefcraft.scripting.event.LWCDropItemEvent;
@@ -78,6 +79,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -654,15 +656,15 @@ public class LWCPlayerListener implements Listener {
             Set<String> actions = lwcPlayer.getActionNames();
             Protection protection = lwc.findProtection(block.getLocation());
             Module.Result result;
-            boolean canAccess = lwc.canAccessProtection(player, protection);
+            boolean canAccess = protection == null || lwc.canAccessProtection(player, protection);
 
             // special case for lecterns: interact might add a book, so we have to check canAccessProtectionContents
-            if (block.getType() == Material.LECTERN && state instanceof Lectern && event.getItem() != null) {
+            if (protection != null && block.getType() == Material.LECTERN && state instanceof Lectern && event.getItem() != null) {
                 if (event.getItem().getType() == Material.WRITTEN_BOOK || event.getItem().getType() == Material.WRITABLE_BOOK) {
                     Lectern lectern = (Lectern) state;
                     ItemStack book = lectern.getInventory().getItem(0);
                     if (book == null || book.getType() == Material.AIR) {
-                        canAccess = lwc.canAccessProtectionContents(player, protection);
+                        canAccess = lwc.canAccessProtectionContents(player, protection) || protection.getType() == Type.DONATION;
                     }
                 }
             }
@@ -774,6 +776,22 @@ public class LWCPlayerListener implements Listener {
         // remove the place from the player cache and reset anything they can
         // access
         LWCPlayer.removePlayer(event.getPlayer());
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerTakeLecternBook(PlayerTakeLecternBookEvent event) {
+        LWC lwc = LWC.getInstance();
+
+        Protection protection = lwc.findProtection(event.getLectern());
+        if (protection == null) {
+            return;
+        }
+
+        boolean canAccess = lwc.canAccessProtectionContents(event.getPlayer(), protection);
+        canAccess = lwc.enforceAccess(event.getPlayer(), protection, event.getLectern().getBlock(), canAccess, true);
+        if (!canAccess) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
