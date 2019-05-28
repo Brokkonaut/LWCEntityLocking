@@ -45,6 +45,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -92,8 +93,11 @@ public class LWCEntityListener implements Listener {
         entityCreatedByPlayer(block, player);
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerInteract(PlayerInteractEvent e) {
+        if (e.useItemInHand() == Result.DENY) {
+            return;
+        }
         ItemStack inHand = e.getItem();
         if (inHand != null && (inHand.getType() == Material.ARMOR_STAND || inHand.getType().name().endsWith("_SPAWN_EGG"))) {
             placedArmorStandOrSpawnEggPlayer = e.getPlayer().getUniqueId();
