@@ -1864,7 +1864,7 @@ public class LWC {
                 if (type == Permission.Type.PLAYER) {
                     sendLocale(sender, "protection.interact.rights.register."
                             + localeChild, "name",
-                            UUIDRegistry.formatPlayerName(value), "isadmin",
+                            UUIDRegistry.getNameOrUUID(value), "isadmin",
                             isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 } else {
@@ -1880,7 +1880,7 @@ public class LWC {
                 if (type == Permission.Type.PLAYER) {
                     sendLocale(sender, "protection.interact.rights.remove."
                             + localeChild, "name",
-                            UUIDRegistry.formatPlayerName(value), "isadmin",
+                            UUIDRegistry.getNameOrUUID(value), "isadmin",
                             isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 } else {
