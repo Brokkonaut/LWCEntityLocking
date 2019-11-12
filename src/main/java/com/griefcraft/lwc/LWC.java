@@ -1288,8 +1288,7 @@ public class LWC {
 
         Protection protection = protectionCache.getProtection(cacheKey);
 
-        return protection != null ? protection : findProtection(location
-                .getBlock());
+        return protection != null ? protection : findProtection(location.getBlock().getState());
     }
 
     /**
@@ -1303,6 +1302,9 @@ public class LWC {
     }
 
     public Protection findProtection(BlockState block) {
+        if (block instanceof EntityBlock) {
+            return findProtection(((EntityBlock) block).getEntity());
+        }
         // If the block type is AIR, then we have a problem .. but attempt to
         // load a protection anyway
         // Note: this call stems from a very old bug in Bukkit that likely does
@@ -1312,7 +1314,7 @@ public class LWC {
         // is an eir block even though the client and server sees it differently
         // (ie a chest).
         // This was of course very problematic!
-        if (block.getType() == Material.AIR || block instanceof EntityBlock) {
+        if (block.getType() == Material.AIR) {
             // We won't be able to match any other blocks anyway, so the least
             // we can do is attempt to load a protection
             return physicalDatabase.loadProtection(block.getWorld().getName(),
