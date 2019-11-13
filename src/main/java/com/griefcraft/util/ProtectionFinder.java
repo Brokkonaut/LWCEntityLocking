@@ -165,7 +165,7 @@ public class ProtectionFinder {
         BlockData data = baseBlock.getBlockData();
         Material material = data.getMaterial();
 
-        if (material == Material.HOPPER) {
+        if (material == Material.HOPPER || material == Material.BARREL || material.name().endsWith("SHULKER_BOX")) {
             return new Matcher[0];
         }
 
