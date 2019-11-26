@@ -42,6 +42,7 @@ import com.griefcraft.util.matchers.DoorMatcher;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -242,7 +243,7 @@ public class DoorsModule extends JavaModule {
                 s = wasClosed ? Sound.BLOCK_WOODEN_TRAPDOOR_OPEN : Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE;
             }
             if (s != null) {
-                door.getWorld().playSound(door.getLocation(), s, 1, 1);
+                door.getWorld().playSound(door.getLocation(), s, SoundCategory.BLOCKS, 1, 1);
             }
 
             // Open the upper half of the door
