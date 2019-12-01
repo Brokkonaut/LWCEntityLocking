@@ -62,7 +62,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
@@ -85,26 +84,17 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
 public class LWCPlayerListener implements Listener {
 
-    private static final long HANGING_PROTECTION_TIME_AGAINST_PROJECTILES_IN_TICKS = 20 * 4;
-
     /**
      * The plugin instance
      */
     private LWCPlugin plugin;
-
-    private long tick;
-
-    private HashMap<UUID, Long> recentShooters = new HashMap<>();
 
     public LWCPlayerListener(LWCPlugin plugin) {
         this.plugin = plugin;
@@ -117,26 +107,10 @@ public class LWCPlayerListener implements Listener {
     }
 
     protected void onTick() {
-        tick++;
         lastHopper = null;
         lastEntityInteract = null;
-        if (!recentShooters.isEmpty()) {
-            Iterator<Long> it = recentShooters.values().iterator();
-            while (it.hasNext()) {
-                if (it.next() + HANGING_PROTECTION_TIME_AGAINST_PROJECTILES_IN_TICKS < tick) {
-                    it.remove();
-                }
-            }
-        }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onProjectileLaunch(ProjectileLaunchEvent e) {
-        ProjectileSource source = e.getEntity().getShooter();
-        if (source instanceof Player) {
-            recentShooters.put(((Player) source).getUniqueId(), tick);
-        }
-    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent e) {
@@ -151,10 +125,6 @@ public class LWCPlayerListener implements Listener {
         }
         if (e.getCause() != RemoveCause.ENTITY || !(e.getRemover() instanceof Player)) {
             e.setCancelled(true); // never allow non-players to damage protected entities
-            return;
-        }
-        if (recentShooters.containsKey(e.getRemover().getUniqueId())) {
-            e.setCancelled(true); // if a player just shot a projectile it might be the cause of the breaking
             return;
         }
         Player p = (Player) e.getRemover();
