@@ -59,6 +59,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -134,6 +135,20 @@ public class LWCPlayerListener implements Listener {
             return;
         }
         protection.remove();
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityCombust(EntityCombustEvent e) {
+        Entity entity = e.getEntity();
+        LWC lwc = LWC.getInstance();
+        if (!lwc.isProtectable(entity)) {
+            return;
+        }
+        Protection protection = lwc.findProtection(entity);
+        if (protection == null) {
+            return;
+        }
+        e.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
