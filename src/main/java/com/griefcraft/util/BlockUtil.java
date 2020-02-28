@@ -3,6 +3,7 @@ package com.griefcraft.util;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.block.data.type.Chest;
 
 public class BlockUtil {
@@ -47,6 +48,25 @@ public class BlockUtil {
             }
         }
 
+        return null;
+    }
+
+    public static Block findAdjacentBedPart(Block block) {
+        BlockData blockData = block.getBlockData();
+        if (!(blockData instanceof Bed)) {
+            return null;
+        }
+
+        Bed bedData = (Bed) blockData;
+        BlockFace bedFace = bedData.getFacing();
+        if (bedData.getPart() == Bed.Part.HEAD) {
+            bedFace = bedFace.getOppositeFace();
+        }
+
+        Block relativeBlock = block.getRelative(bedFace);
+        if (relativeBlock.getType() == block.getType()) {
+            return relativeBlock;
+        }
         return null;
     }
 }
