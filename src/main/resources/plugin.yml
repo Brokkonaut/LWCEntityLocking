@@ -8,7 +8,7 @@ description: >
              Inventory protection & management utilizing SQLite or MySQL as its backend
              Other blocks can also be protected individually, if configured.
 load: startup
-softdepend: [iConomy,Permissions,PermissionsBukkit,Vault,FurnitureLib]
+softdepend: [iConomy,Permissions,PermissionsBukkit,Vault,FurnitureLib,WorldEdit,WorldGuard]
 
 commands:
   lwc:
