@@ -58,6 +58,7 @@ import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -675,7 +676,7 @@ public class LWCPlayerListener implements Listener {
             }
 
             // If the event was cancelled and they have an action, warn them
-            if (event.isCancelled()) {
+            if (event.useInteractedBlock() == Result.DENY) {
                 // only send it if a non-"interacted" action is set which is
                 // always set on the player
                 if (hasPendingAction) {

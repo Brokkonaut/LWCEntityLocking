@@ -35,8 +35,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.FaceAttachable.AttachedFace;
 import org.bukkit.block.data.type.Switch;
-import org.bukkit.block.data.type.Switch.Face;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -104,8 +104,8 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             BlockFace existingFace = ((Directional) blockData).getFacing();
             if (blockData instanceof Switch) {
                 Switch switcher = (Switch) blockData;
-                if (switcher.getFace() != Face.WALL) {
-                    existingFace = switcher.getFace() == Face.FLOOR ? BlockFace.UP : BlockFace.DOWN;
+                if (switcher.getAttachedFace()!= AttachedFace.WALL) {
+                    existingFace = switcher.getAttachedFace() == AttachedFace.FLOOR ? BlockFace.UP : BlockFace.DOWN;
                 }
             }
             if (existingFace == matchingFace) {

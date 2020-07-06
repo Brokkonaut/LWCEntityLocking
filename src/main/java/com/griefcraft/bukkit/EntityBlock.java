@@ -224,4 +224,8 @@ public class EntityBlock implements Block {
     public BoundingBox getBoundingBox() {
         return null;
     }
+    @Override
+    public Collection<ItemStack> getDrops(ItemStack tool, Entity entity) {
+        return Collections.emptyList();
+    }
 }

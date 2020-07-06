@@ -41,7 +41,6 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.internal.permission.RegionPermissionModel;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
@@ -365,7 +364,8 @@ public class WorldGuard extends JavaModule {
 	private boolean canBuild(Player player, Block block) {
 	    LocalPlayer wgPlayer = worldGuard.wrapPlayer(player);
 	    com.sk89q.worldedit.world.World wgWorld = BukkitAdapter.adapt(block.getWorld());
-	    if(new RegionPermissionModel(wgPlayer).mayIgnoreRegionProtection(wgWorld)) {
+	    
+	    if(com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(wgPlayer, wgWorld)) {
 	        return true;
 	    }
 	    RegionQuery query = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
