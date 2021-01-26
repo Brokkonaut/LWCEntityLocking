@@ -131,30 +131,33 @@ public class DoorsModule extends JavaModule {
             return;
         }
 
-        // Are we looking at the top half?
-        // If we are, we need to get the bottom half instead
-        if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType()) && ((Bisected)block.getBlockData()).getHalf() == Half.TOP) {
-            // Inspect the bottom half instead, fool!
-            block = block.getRelative(BlockFace.DOWN);
-            if (!isValid(block.getType())) {
-                return;
-            }
-        }
-
-        // Should we look for double doors?
-        boolean doubleDoors = usingDoubleDoors();
-
         // The BOTTOM half of the other side of the double door
         Block doubleDoorBlock = null;
+        
+        // special handling for doors
+        if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType())) {
+            // Are we looking at the top half?
+            // If we are, we need to get the bottom half instead
+            if (((Bisected) block.getBlockData()).getHalf() == Half.TOP) {
+                // Inspect the bottom half instead, fool!
+                block = block.getRelative(BlockFace.DOWN);
+                if (!isValid(block.getType())) {
+                    return;
+                }
+            }
 
-        // Only waste CPU if we need the double door block
-        if (doubleDoors) {
-            doubleDoorBlock = getDoubleDoor(block);
+            // Should we look for double doors?
+            boolean doubleDoors = usingDoubleDoors();
 
-            if (doubleDoorBlock != null) {
-                Protection other = lwc.findProtection(doubleDoorBlock.getLocation());
-                if (!lwc.canAccessProtection(player, other)) {
-                    doubleDoorBlock = null; // don't open the other door :-)
+            // Only waste CPU if we need the double door block
+            if (doubleDoors) {
+                doubleDoorBlock = getDoubleDoor(block);
+
+                if (doubleDoorBlock != null) {
+                    Protection other = lwc.findProtection(doubleDoorBlock.getLocation());
+                    if (!lwc.canAccessProtection(player, other)) {
+                        doubleDoorBlock = null; // don't open the other door :-)
+                    }
                 }
             }
         }
