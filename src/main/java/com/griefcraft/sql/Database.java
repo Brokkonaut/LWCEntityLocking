@@ -201,7 +201,11 @@ public abstract class Database {
 
         // Load the driver class
         if (currentType == Type.MySQL) {
-            Class.forName("com.mysql.jdbc.Driver");
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+            } catch (ClassNotFoundException ignored) {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
         } else {
             Class.forName("org.sqlite.JDBC");
         }
