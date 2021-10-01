@@ -1867,12 +1867,12 @@ public class LWC {
                     sendLocale(sender, "protection.interact.rights.register."
                             + localeChild, "name",
                             UUIDRegistry.getNameOrUUID(value), "isadmin",
-                            isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
+                            isAdmin ? " [" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 } else {
                     sendLocale(sender, "protection.interact.rights.register."
                             + localeChild, "name", value, "isadmin",
-                            isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
+                            isAdmin ? " [" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 }
             } else {
@@ -1883,12 +1883,12 @@ public class LWC {
                     sendLocale(sender, "protection.interact.rights.remove."
                             + localeChild, "name",
                             UUIDRegistry.getNameOrUUID(value), "isadmin",
-                            isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
+                            isAdmin ? " [" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 } else {
                     sendLocale(sender, "protection.interact.rights.remove."
                             + localeChild, "name", value, "isadmin",
-                            isAdmin ? "[" + Colors.Red + "ADMIN" + Colors.Gold
+                            isAdmin ? " [" + Colors.Red + "ADMIN" + Colors.Gold
                                     + "]" : "");
                 }
             }
