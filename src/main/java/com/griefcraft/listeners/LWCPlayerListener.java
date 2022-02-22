@@ -521,8 +521,8 @@ public class LWCPlayerListener implements Listener {
                 return false;
             }
 
-            if (initiatorHolder instanceof Hopper) {
-                initiatorLocation = ((Hopper) initiatorHolder).getLocation();
+            if (initiatorHolder instanceof BlockState) {
+                initiatorLocation = ((BlockState) initiatorHolder).getLocation();
             } else if (initiatorHolder instanceof Entity && lwc.isProtectable((Entity) initiatorHolder)) {
                 initiatorEntity = (Entity) initiatorHolder;
             }
