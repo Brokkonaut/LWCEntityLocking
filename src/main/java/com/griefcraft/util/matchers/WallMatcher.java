@@ -29,7 +29,8 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-
+import java.util.EnumSet;
+import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -37,8 +38,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.FaceAttachable.AttachedFace;
 import org.bukkit.block.data.type.Switch;
-import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * Matches wall entities
@@ -64,6 +63,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      */
     public static final BlockFace[] POSSIBLE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
 
+    @Override
     public boolean matches(ProtectionFinder finder) {
         // The block we are working on
         Block block = finder.getBaseBlock().getBlock();

@@ -43,8 +43,6 @@ import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
 import com.griefcraft.scripting.event.LWCRedstoneEvent;
 import com.griefcraft.scripting.event.LWCReloadEvent;
 import com.griefcraft.scripting.event.LWCSendLocaleEvent;
-import org.bukkit.plugin.Plugin;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.plugin.Plugin;
 
 public class ModuleLoader {
 
@@ -171,12 +170,12 @@ public class ModuleLoader {
      * This was mainly added for backwards compatibility reasons (vs events to be individually registered). This still
      * achieves the same effect by using reflection.
      */
-    private final Map<Event, List<Module>> fastModuleCache = new HashMap<Event, List<Module>>();
+    private final Map<Event, List<Module>> fastModuleCache = new HashMap<>();
 
     /**
      * Toasty caches for doesObjectOverrideMethod
      */
-    private final Map<String, Boolean> overrideCache = new HashMap<String, Boolean>();
+    private final Map<String, Boolean> overrideCache = new HashMap<>();
 
     public ModuleLoader(LWC lwc) {
         this.lwc = lwc;
@@ -194,7 +193,7 @@ public class ModuleLoader {
 
     /**
      * Register a module into the fast cache
-     * 
+     *
      * @param module
      */
     private void registerFastCache(Module module) {
@@ -368,7 +367,7 @@ public class ModuleLoader {
     public void loadAll() {
         // Ensure LWC is at the head of the list
         synchronized (pluginModules) {
-            Map<Plugin, List<MetaData>> newMap = new LinkedHashMap<Plugin, List<MetaData>>();
+            Map<Plugin, List<MetaData>> newMap = new LinkedHashMap<>();
 
             // Add LWC
             newMap.put(lwc.getPlugin(), pluginModules.get(lwc.getPlugin()));
@@ -450,7 +449,7 @@ public class ModuleLoader {
         }
 
         if (modules == null) {
-            modules = new ArrayList<MetaData>();
+            modules = new ArrayList<>();
         }
 
         MetaData metaData = new MetaData(module);

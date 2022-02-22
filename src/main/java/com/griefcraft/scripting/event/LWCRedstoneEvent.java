@@ -54,10 +54,12 @@ public class LWCRedstoneEvent extends LWCEvent implements Cancellable {
         return protection;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }

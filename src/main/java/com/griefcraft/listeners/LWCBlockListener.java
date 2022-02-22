@@ -28,12 +28,23 @@
 
 package com.griefcraft.listeners;
 
+import com.griefcraft.cache.CacheKey;
+import com.griefcraft.cache.ProtectionCache;
+import com.griefcraft.lwc.LWC;
+import com.griefcraft.lwc.LWCPlugin;
+import com.griefcraft.model.Flag;
+import com.griefcraft.model.Protection;
+import com.griefcraft.scripting.event.LWCProtectionDestroyEvent;
+import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
+import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
+import com.griefcraft.scripting.event.LWCRedstoneEvent;
+import com.griefcraft.util.BlockUtil;
+import com.griefcraft.util.Colors;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -56,19 +67,6 @@ import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.world.StructureGrowEvent;
-
-import com.griefcraft.cache.CacheKey;
-import com.griefcraft.cache.ProtectionCache;
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.lwc.LWCPlugin;
-import com.griefcraft.model.Flag;
-import com.griefcraft.model.Protection;
-import com.griefcraft.scripting.event.LWCProtectionDestroyEvent;
-import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
-import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
-import com.griefcraft.scripting.event.LWCRedstoneEvent;
-import com.griefcraft.util.BlockUtil;
-import com.griefcraft.util.Colors;
 
 public class LWCBlockListener implements Listener {
 

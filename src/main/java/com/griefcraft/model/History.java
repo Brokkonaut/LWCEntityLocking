@@ -30,7 +30,6 @@ package com.griefcraft.model;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.util.StringUtil;
-
 import java.util.Arrays;
 import java.util.List;
 

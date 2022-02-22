@@ -48,11 +48,10 @@
 
 package com.griefcraft.util;
 
-import org.bukkit.command.CommandSender;
-
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import org.bukkit.command.CommandSender;
 
 /**
  * Simple stop watch, allowing for timing of a number of tasks,
@@ -88,7 +87,7 @@ public class StopWatch {
     /**
      * List of TaskInfo objects
      */
-    private final List<TaskInfo> taskList = new LinkedList<TaskInfo>();
+    private final List<TaskInfo> taskList = new LinkedList<>();
 
     /**
      * Start time of the current task

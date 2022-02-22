@@ -30,14 +30,12 @@ package com.griefcraft.util.matchers;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.util.ProtectionFinder;
-
+import java.util.EnumSet;
+import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-
-import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * Matches doors (both Iron & Wooden)
@@ -53,6 +51,7 @@ public class DoorMatcher implements ProtectionFinder.Matcher {
 
     private static final BlockFace[] faces = new BlockFace[] { BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH };
 
+    @Override
     public boolean matches(ProtectionFinder finder) {
         BlockState baseBlockState = finder.getBaseBlock();
         Block block = baseBlockState.getBlock();

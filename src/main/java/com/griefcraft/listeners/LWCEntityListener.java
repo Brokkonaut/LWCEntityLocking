@@ -28,9 +28,6 @@
 
 package com.griefcraft.listeners;
 
-import java.util.Iterator;
-import java.util.UUID;
-
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
@@ -39,7 +36,8 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.util.Colors;
-
+import java.util.Iterator;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;

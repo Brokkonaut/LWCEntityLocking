@@ -52,6 +52,7 @@ public class LWCDropItemEvent extends LWCPlayerEvent implements Cancellable {
      *
      * @return
      */
+    @Override
     public boolean isCancelled() {
         return dropItemEvent.isCancelled();
     }
@@ -61,6 +62,7 @@ public class LWCDropItemEvent extends LWCPlayerEvent implements Cancellable {
      *
      * @param cancelled
      */
+    @Override
     public void setCancelled(boolean cancelled) {
         dropItemEvent.setCancelled(cancelled);
     }

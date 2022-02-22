@@ -28,13 +28,12 @@
 
 package com.griefcraft.integration.permissions;
 
+import java.util.Arrays;
+import java.util.List;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class VaultPermissions extends SuperPermsPermissions {
 

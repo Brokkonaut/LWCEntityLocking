@@ -30,10 +30,9 @@ package com.griefcraft.scripting.event;
 
 import com.griefcraft.scripting.Module;
 import com.griefcraft.scripting.ModuleLoader;
+import java.util.Set;
 import org.bukkit.block.Block;
 import org.bukkit.event.player.PlayerInteractEvent;
-
-import java.util.Set;
 
 public class LWCBlockInteractEvent extends LWCPlayerEvent implements IResult {
 
@@ -66,10 +65,12 @@ public class LWCBlockInteractEvent extends LWCPlayerEvent implements IResult {
         return actions;
     }
 
+    @Override
     public Module.Result getResult() {
         return result;
     }
 
+    @Override
     public void setResult(Module.Result result) {
         this.result = result;
     }

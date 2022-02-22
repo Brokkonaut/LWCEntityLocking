@@ -33,38 +33,47 @@ import org.bukkit.entity.Player;
 
 public class NoCurrency implements ICurrency {
 
+    @Override
     public boolean isActive() {
         return false;
     }
 
+    @Override
     public boolean usingCentralBank() {
         return false;
     }
 
+    @Override
     public String format(double money) {
         return Double.toString(money);
     }
 
+    @Override
     public String getMoneyName() {
         return "";
     }
 
+    @Override
     public double getBalance(Player player) {
         return 0;
     }
 
+    @Override
     public boolean canAfford(Player player, double money) {
         return false;
     }
 
+    @Override
     public boolean canCentralBankAfford(double money) {
         return false;
     }
 
+    @Override
     public double addMoney(Player player, double money) {
         return 0;
     }
 
+    @Override
     public double removeMoney(Player player, double money) {
         return 0;
     }

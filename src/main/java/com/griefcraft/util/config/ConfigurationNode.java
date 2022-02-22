@@ -39,7 +39,7 @@ public class ConfigurationNode {
     /**
      * Added by Hidendra
      */
-    protected final Map<String, Object> cache = new HashMap<String, Object>();
+    protected final Map<String, Object> cache = new HashMap<>();
 
     ConfigurationNode(Map<String, Object> root) {
         this.root = root;
@@ -246,13 +246,14 @@ public class ConfigurationNode {
      */
     @SuppressWarnings("unchecked")
     public List<String> getKeys(String path) {
-        if (path == null)
-            return new ArrayList<String>(root.keySet());
+        if (path == null) {
+            return new ArrayList<>(root.keySet());
+        }
         Object o = getProperty(path);
         if (o == null) {
             return null;
         } else if (o instanceof Map) {
-            return new ArrayList<String>(((Map<String, Object>) o).keySet());
+            return new ArrayList<>(((Map<String, Object>) o).keySet());
         } else {
             return null;
         }
@@ -295,10 +296,10 @@ public class ConfigurationNode {
     public List<String> getStringList(String path, List<String> def) {
         List<Object> raw = getList(path);
         if (raw == null) {
-            return def != null ? def : new ArrayList<String>();
+            return def != null ? def : new ArrayList<>();
         }
 
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Object o : raw) {
             if (o == null) {
                 continue;
@@ -326,10 +327,10 @@ public class ConfigurationNode {
     public List<Integer> getIntList(String path, List<Integer> def) {
         List<Object> raw = getList(path);
         if (raw == null) {
-            return def != null ? def : new ArrayList<Integer>();
+            return def != null ? def : new ArrayList<>();
         }
 
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         for (Object o : raw) {
             Integer i = castInt(o);
             if (i != null) {
@@ -356,10 +357,10 @@ public class ConfigurationNode {
     public List<Double> getDoubleList(String path, List<Double> def) {
         List<Object> raw = getList(path);
         if (raw == null) {
-            return def != null ? def : new ArrayList<Double>();
+            return def != null ? def : new ArrayList<>();
         }
 
-        List<Double> list = new ArrayList<Double>();
+        List<Double> list = new ArrayList<>();
         for (Object o : raw) {
             Double i = castDouble(o);
             if (i != null) {
@@ -386,10 +387,10 @@ public class ConfigurationNode {
     public List<Boolean> getBooleanList(String path, List<Boolean> def) {
         List<Object> raw = getList(path);
         if (raw == null) {
-            return def != null ? def : new ArrayList<Boolean>();
+            return def != null ? def : new ArrayList<>();
         }
 
-        List<Boolean> list = new ArrayList<Boolean>();
+        List<Boolean> list = new ArrayList<>();
         for (Object o : raw) {
             Boolean tetsu = castBoolean(o);
             if (tetsu != null) {
@@ -417,10 +418,10 @@ public class ConfigurationNode {
     public List<ConfigurationNode> getNodeList(String path, List<ConfigurationNode> def) {
         List<Object> raw = getList(path);
         if (raw == null) {
-            return def != null ? def : new ArrayList<ConfigurationNode>();
+            return def != null ? def : new ArrayList<>();
         }
 
-        List<ConfigurationNode> list = new ArrayList<ConfigurationNode>();
+        List<ConfigurationNode> list = new ArrayList<>();
         for (Object o : raw) {
             if (o instanceof Map) {
                 list.add(new ConfigurationNode((Map<String, Object>) o));
@@ -462,7 +463,7 @@ public class ConfigurationNode {
         if (o == null) {
             return null;
         } else if (o instanceof Map) {
-            Map<String, ConfigurationNode> nodes = new HashMap<String, ConfigurationNode>();
+            Map<String, ConfigurationNode> nodes = new HashMap<>();
 
             for (Map.Entry<String, Object> entry : ((Map<String, Object>) o).entrySet()) {
                 if (entry.getValue() instanceof Map) {

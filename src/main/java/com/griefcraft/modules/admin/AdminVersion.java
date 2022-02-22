@@ -28,12 +28,11 @@
 
 package com.griefcraft.modules.admin;
 
-import org.bukkit.command.CommandSender;
-
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.util.Colors;
+import org.bukkit.command.CommandSender;
 
 public class AdminVersion extends JavaModule {
 

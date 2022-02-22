@@ -30,14 +30,6 @@ package com.griefcraft.model;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.modules.history.HistoryModule;
-import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.plugin.Plugin;
 
 public class LWCPlayer implements CommandSender {
 
@@ -62,22 +61,22 @@ public class LWCPlayer implements CommandSender {
     /**
      * Cache of LWCPlayer objects
      */
-    private final static Map<UUID, LWCPlayer> playerCache = new HashMap<UUID, LWCPlayer>();
+    private final static Map<UUID, LWCPlayer> playerCache = new HashMap<>();
 
     /**
      * The map of actions the player has
      */
-    private final Map<String, Action> actions = new HashMap<String, Action>();
+    private final Map<String, Action> actions = new HashMap<>();
 
     /**
      * The set of modes the player has
      */
-    private final Set<Mode> modes = new HashSet<Mode>();
+    private final Set<Mode> modes = new HashSet<>();
 
     /**
      * The set of protections the player can access
      */
-    private final Set<Protection> accessibleProtections = new HashSet<Protection>();
+    private final Set<Protection> accessibleProtections = new HashSet<>();
 
     public LWCPlayer(LWC lwc, Player player) {
         this.lwc = lwc;
@@ -128,6 +127,7 @@ public class LWCPlayer implements CommandSender {
     /**
      * @return the player's name
      */
+    @Override
     public String getName() {
         return player.getName();
     }
@@ -240,14 +240,14 @@ public class LWCPlayer implements CommandSender {
      * @return the Set of modes the player has activated
      */
     public Set<Mode> getModes() {
-        return new HashSet<Mode>(modes);
+        return new HashSet<>(modes);
     }
 
     /**
      * @return the Set of actions the player has
      */
     public Map<String, Action> getActions() {
-        return new HashMap<String, Action>(actions);
+        return new HashMap<>(actions);
     }
 
     /**
@@ -261,12 +261,12 @@ public class LWCPlayer implements CommandSender {
      * @return the set of protections the player can temporarily access
      */
     public Set<Protection> getAccessibleProtections() {
-        return new HashSet<Protection>(accessibleProtections);
+        return new HashSet<>(accessibleProtections);
     }
 
     /**
      * Checks if a protection is accessible
-     * 
+     *
      * @return true if and only if the protection is accessible
      */
     public boolean isProtectionAccessible(Protection p) {
@@ -350,7 +350,7 @@ public class LWCPlayer implements CommandSender {
      * @return
      */
     public List<History> getRelatedHistory(History.Type type) {
-        List<History> related = new ArrayList<History>();
+        List<History> related = new ArrayList<>();
 
         for (History history : getRelatedHistory()) {
             if (history.getType() == type) {
@@ -361,68 +361,84 @@ public class LWCPlayer implements CommandSender {
         return related;
     }
 
+    @Override
     public void sendMessage(String s) {
         player.sendMessage(s);
     }
 
+    @Override
     public void sendMessage(String[] s) {
         for (String _s : s) {
             sendMessage(_s);
         }
     }
 
+    @Override
     public Server getServer() {
         return player.getServer();
     }
 
+    @Override
     public boolean isPermissionSet(String s) {
         return player.isPermissionSet(s);
     }
 
+    @Override
     public boolean isPermissionSet(Permission permission) {
         return player.isPermissionSet(permission);
     }
 
+    @Override
     public boolean hasPermission(String s) {
         return player.hasPermission(s);
     }
 
+    @Override
     public boolean hasPermission(Permission permission) {
         return player.hasPermission(permission);
     }
 
+    @Override
     public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b) {
         return player.addAttachment(plugin, s, b);
     }
 
+    @Override
     public PermissionAttachment addAttachment(Plugin plugin) {
         return player.addAttachment(plugin);
     }
 
+    @Override
     public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b, int i) {
         return player.addAttachment(plugin, s, b, i);
     }
 
+    @Override
     public PermissionAttachment addAttachment(Plugin plugin, int i) {
         return player.addAttachment(plugin, i);
     }
 
+    @Override
     public void removeAttachment(PermissionAttachment permissionAttachment) {
         player.removeAttachment(permissionAttachment);
     }
 
+    @Override
     public void recalculatePermissions() {
         player.recalculatePermissions();
     }
 
+    @Override
     public Set<PermissionAttachmentInfo> getEffectivePermissions() {
         return player.getEffectivePermissions();
     }
 
+    @Override
     public boolean isOp() {
         return player.isOp();
     }
 
+    @Override
     public void setOp(boolean b) {
         player.setOp(b);
     }

@@ -29,12 +29,6 @@
 package com.griefcraft.util.config;
 
 import com.griefcraft.scripting.ModuleLoader;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.reader.UnicodeReader;
-import org.yaml.snakeyaml.representer.Representer;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,6 +38,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.reader.UnicodeReader;
+import org.yaml.snakeyaml.representer.Representer;
 
 public class Configuration extends ConfigurationNode {
     private Yaml yaml;
@@ -52,7 +51,7 @@ public class Configuration extends ConfigurationNode {
     /**
      * List of loaded config files
      */
-    private static Map<String, Configuration> loaded = new HashMap<String, Configuration>();
+    private static Map<String, Configuration> loaded = new HashMap<>();
 
     /**
      * The config updater for config files
@@ -189,7 +188,7 @@ public class Configuration extends ConfigurationNode {
         try {
             read(yaml.load(new UnicodeReader(inputStream)));
         } catch (ConfigurationException e) {
-            root = new HashMap<String, Object>();
+            root = new HashMap<>();
         } finally {
             try {
                 if (inputStream != null) {
@@ -208,7 +207,7 @@ public class Configuration extends ConfigurationNode {
             cache.clear();
             load(new FileInputStream(file));
         } catch (IOException e) {
-            root = new HashMap<String, Object>();
+            root = new HashMap<>();
         }
     }
 
@@ -246,7 +245,7 @@ public class Configuration extends ConfigurationNode {
     private void read(Object input) throws ConfigurationException {
         try {
             if (null == input) {
-                root = new HashMap<String, Object>();
+                root = new HashMap<>();
             } else {
                 root = (Map<String, Object>) input;
             }

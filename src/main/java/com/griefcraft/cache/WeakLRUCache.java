@@ -72,7 +72,7 @@ public class WeakLRUCache<K, V> implements Map<K, V> {
 
         this.weakCache = new LinkedHashMap<K, WeakValue<V, K>>(maxCapacity, 0.75f, true) {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -114,36 +114,43 @@ public class WeakLRUCache<K, V> implements Map<K, V> {
      *
      * @return
      */
+    @Override
     public int size() {
         processQueue();
         return weakCache.size();
     }
 
+    @Override
     public boolean isEmpty() {
         processQueue();
         return weakCache.isEmpty();
     }
 
+    @Override
     public boolean containsKey(Object key) {
         processQueue();
         return weakCache.containsKey(key);
     }
 
+    @Override
     public boolean containsValue(Object value) {
         processQueue();
         return weakCache.containsValue(value);
     }
 
+    @Override
     public void clear() {
         processQueue();
         weakCache.clear();
     }
 
+    @Override
     public Set<K> keySet() {
         processQueue();
         return weakCache.keySet();
     }
 
+    @Override
     public V get(Object key) {
         reads++;
         processQueue();
@@ -163,27 +170,32 @@ public class WeakLRUCache<K, V> implements Map<K, V> {
         return result;
     }
 
+    @Override
     public V put(K key, V value) {
         writes++;
         processQueue();
 
-        WeakValue<V, K> oldRef = weakCache.put(key, new WeakValue<V, K>(value, key, queue));
+        WeakValue<V, K> oldRef = weakCache.put(key, new WeakValue<>(value, key, queue));
         return oldRef != null ? oldRef.get() : null;
     }
 
+    @Override
     public V remove(Object key) {
         WeakValue<V, K> old = weakCache.remove(key);
         return old != null ? old.get() : null;
     }
 
+    @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         throw new UnsupportedOperationException("putAll() is not supported by WeakLRUCache");
     }
 
+    @Override
     public Collection<V> values() {
         throw new UnsupportedOperationException("values() is not supported by WeakLRUCache");
     }
 
+    @Override
     public Set<Entry<K, V>> entrySet() {
         throw new UnsupportedOperationException("entrySet() is not supported by WeakLRUCache");
     }

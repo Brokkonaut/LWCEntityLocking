@@ -32,7 +32,6 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.util.config.Configuration;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -261,7 +260,7 @@ public class LimitsModule extends JavaModule {
 
     /**
      * Resolve a configuration node for a player. Tries nodes in this order:
-     * 
+     *
      * <pre>
      * players.PLAYERNAME.node
      * groups.GROUPNAME.node

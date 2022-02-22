@@ -29,9 +29,7 @@
 package com.griefcraft.integration.currency;
 
 import com.griefcraft.integration.ICurrency;
-
 import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -58,6 +56,7 @@ public class VaultCurrency implements ICurrency {
         }
     }
 
+    @Override
     public boolean isActive() {
         // If the economy provider is still null it is possible it hasn't been hooked in yet
         // So we just check for it again, since isActive() is called before any econ
@@ -69,35 +68,43 @@ public class VaultCurrency implements ICurrency {
         return economy != null;
     }
 
+    @Override
     public boolean usingCentralBank() {
         return false;
     }
 
+    @Override
     public String format(double money) {
         return economy.format(money);
     }
 
+    @Override
     public String getMoneyName() {
         return economy.currencyNameSingular();
     }
 
+    @Override
     public double getBalance(Player player) {
         return economy.getBalance(player);
     }
 
+    @Override
     public boolean canAfford(Player player, double money) {
         return economy.has(player, money);
     }
 
+    @Override
     public boolean canCentralBankAfford(double money) {
         return false;
     }
 
+    @Override
     public double addMoney(Player player, double money) {
         economy.depositPlayer(player, money);
         return getBalance(player);
     }
 
+    @Override
     public double removeMoney(Player player, double money) {
         economy.withdrawPlayer(player, money);
         return getBalance(player);

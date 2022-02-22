@@ -31,9 +31,8 @@ package com.griefcraft.scripting.event;
 import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.Module;
 import com.griefcraft.scripting.ModuleLoader;
-import org.bukkit.event.player.PlayerInteractEvent;
-
 import java.util.Set;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public class LWCProtectionInteractEvent extends LWCProtectionEvent implements IResult {
 
@@ -66,10 +65,12 @@ public class LWCProtectionInteractEvent extends LWCProtectionEvent implements IR
         return actions;
     }
 
+    @Override
     public Module.Result getResult() {
         return result;
     }
 
+    @Override
     public void setResult(Module.Result result) {
         this.result = result;
     }

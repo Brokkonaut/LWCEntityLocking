@@ -43,15 +43,6 @@ import com.griefcraft.scripting.Module;
 import com.griefcraft.util.Statistics;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
-
-import org.bukkit.Material;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,6 +54,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 public class PhysDB extends Database {
 
@@ -143,7 +141,7 @@ public class PhysDB extends Database {
 
     /**
      * Get the total amount of protections
-     * 
+     *
      * @return the number of protections
      */
     public int getProtectionCount() {
@@ -152,7 +150,7 @@ public class PhysDB extends Database {
 
     /**
      * Get the amount of protections for the given protection type
-     * 
+     *
      * @param type
      * @return the number of protected chests
      */
@@ -258,6 +256,7 @@ public class PhysDB extends Database {
      * @return
      * @deprecated
      */
+    @Deprecated
     public String getMenuStyle(String player) {
         return "basic";
     }
@@ -806,7 +805,7 @@ public class PhysDB extends Database {
             printException(e);
         }
 
-        return new ArrayList<Protection>();
+        return new ArrayList<>();
     }
 
     /**
@@ -931,7 +930,7 @@ public class PhysDB extends Database {
      * @return
      */
     private List<Protection> resolveProtections(ResultSet set) {
-        List<Protection> protections = new ArrayList<Protection>();
+        List<Protection> protections = new ArrayList<>();
 
         try {
             while (set.next()) {
@@ -955,7 +954,7 @@ public class PhysDB extends Database {
      * @return
      */
     private List<Protection> resolveProtections(PreparedStatement statement) {
-        List<Protection> protections = new ArrayList<Protection>();
+        List<Protection> protections = new ArrayList<>();
         ResultSet set = null;
 
         try {
@@ -1129,7 +1128,7 @@ public class PhysDB extends Database {
             printException(e);
         }
 
-        return new ArrayList<Protection>();
+        return new ArrayList<>();
     }
 
     /**
@@ -1145,7 +1144,7 @@ public class PhysDB extends Database {
     public List<Protection> loadProtections(String world, int baseX, int baseY, int baseZ, int radius) {
         if (hasAllProtectionsCached()) {
             ProtectionCache cache = LWC.getInstance().getProtectionCache();
-            List<Protection> protections = new ArrayList<Protection>();
+            List<Protection> protections = new ArrayList<>();
 
             if (cache.size() < 1000) {
                 for (Protection protection : cache.getReferences().keySet()) {
@@ -1190,7 +1189,7 @@ public class PhysDB extends Database {
             printException(e);
         }
 
-        return new ArrayList<Protection>();
+        return new ArrayList<>();
     }
 
     /**
@@ -1239,7 +1238,7 @@ public class PhysDB extends Database {
             printException(e);
         }
 
-        return new ArrayList<Protection>();
+        return new ArrayList<>();
     }
 
     /**
@@ -1250,7 +1249,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<Protection> loadProtectionsByPlayerAlsoIfNotOwner(String player) {
-        List<Protection> protections = new ArrayList<Protection>();
+        List<Protection> protections = new ArrayList<>();
 
         try {
             PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? OR data LIKE ?");
@@ -1274,7 +1273,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<Protection> loadProtectionsByPlayer(String player) {
-        List<Protection> protections = new ArrayList<Protection>();
+        List<Protection> protections = new ArrayList<>();
 
         try {
             PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ?");
@@ -1298,7 +1297,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<Protection> loadProtectionsByPlayer(String player, int start, int count) {
-        List<Protection> protections = new ArrayList<Protection>();
+        List<Protection> protections = new ArrayList<>();
 
         UUID uuid = UUIDRegistry.getUUID(player);
 
@@ -1506,7 +1505,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(Protection protection) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1552,7 +1551,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(String player) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1636,7 +1635,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(String player, int start, int count) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1673,7 +1672,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory() {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1706,7 +1705,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(History.Status status) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1743,7 +1742,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(int x, int y, int z) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1784,7 +1783,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(String player, int x, int y, int z) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -1822,7 +1821,7 @@ public class PhysDB extends Database {
      * @return
      */
     public List<History> loadHistory(int start, int count) {
-        List<History> temp = new ArrayList<History>();
+        List<History> temp = new ArrayList<>();
 
         if (!LWC.getInstance().isHistoryEnabled()) {
             return temp;
@@ -2131,7 +2130,7 @@ public class PhysDB extends Database {
             ResultSet set = stmt.executeQuery("SELECT * FROM " + prefix + "rights");
 
             // keep a mini-cache of protections, max size of 100k should be OK!
-            LRUCache<Integer, Protection> cache = new LRUCache<Integer, Protection>(1000 * 100);
+            LRUCache<Integer, Protection> cache = new LRUCache<>(1000 * 100);
 
             while (set.next()) {
                 // load the data we will be using

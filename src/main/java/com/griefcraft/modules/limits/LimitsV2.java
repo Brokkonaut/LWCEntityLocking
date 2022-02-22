@@ -35,13 +35,6 @@ import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.scripting.event.LWCReloadEvent;
 import com.griefcraft.util.Colors;
 import com.griefcraft.util.config.Configuration;
-
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -49,6 +42,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class LimitsV2 extends JavaModule {
 
@@ -74,17 +72,17 @@ public class LimitsV2 extends JavaModule {
     /**
      * A map of the default limits
      */
-    private final List<Limit> defaultLimits = new LinkedList<Limit>();
+    private final List<Limit> defaultLimits = new LinkedList<>();
 
     /**
      * A map of all of the player limits
      */
-    private final Map<String, List<Limit>> playerLimits = new HashMap<String, List<Limit>>();
+    private final Map<String, List<Limit>> playerLimits = new HashMap<>();
 
     /**
      * A map of all of the group limits - downcasted to lowercase to simplify comparisons
      */
-    private final Map<String, List<Limit>> groupLimits = new HashMap<String, List<Limit>>();
+    private final Map<String, List<Limit>> groupLimits = new HashMap<>();
 
     public abstract class Limit {
 
@@ -343,7 +341,7 @@ public class LimitsV2 extends JavaModule {
      * @return
      */
     private List<Limit> findLimitsViaPermissions(Player player) {
-        List<Limit> limits = new LinkedList<Limit>();
+        List<Limit> limits = new LinkedList<>();
 
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
@@ -396,7 +394,7 @@ public class LimitsV2 extends JavaModule {
      */
     public List<Limit> getPlayerLimits(Player player) {
         LWC lwc = LWC.getInstance();
-        List<Limit> limits = new LinkedList<Limit>();
+        List<Limit> limits = new LinkedList<>();
 
         // get all of their own limits
         String playerName = player.getName().toLowerCase();
@@ -587,7 +585,7 @@ public class LimitsV2 extends JavaModule {
      * @return
      */
     private List<Limit> findLimits(String node) {
-        List<Limit> limits = new LinkedList<Limit>();
+        List<Limit> limits = new LinkedList<>();
         List<String> keys = configuration.getKeys(node);
 
         for (String key : keys) {

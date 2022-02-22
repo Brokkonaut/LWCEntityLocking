@@ -101,10 +101,20 @@ import com.griefcraft.util.Statistics;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
-
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -121,19 +131,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class LWC {
 
@@ -189,7 +186,7 @@ public class LWC {
     /**
      * Protection configuration cache
      */
-    private final Map<String, String> protectionConfigurationCache = new HashMap<String, String>();
+    private final Map<String, String> protectionConfigurationCache = new HashMap<>();
 
     public LWC(LWCPlugin plugin) {
         this.plugin = plugin;
@@ -431,7 +428,7 @@ public class LWC {
         BlockFace[] faces = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH,
                 BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
         List<Block> ignoreList = Arrays.asList(ignore);
-        List<Protection> found = new ArrayList<Protection>();
+        List<Protection> found = new ArrayList<>();
 
         for (BlockFace face : faces) {
             Protection protection;
@@ -1039,14 +1036,14 @@ public class LWC {
             boolean shouldRemoveBlocks) {
         List<Integer> exemptedBlocks = configuration.getIntList(
                 "optional.exemptBlocks", new ArrayList<Integer>());
-        List<Integer> toRemove = new LinkedList<Integer>();
+        List<Integer> toRemove = new LinkedList<>();
         List<Block> removeBlocks = null;
         int totalProtections = physicalDatabase.getProtectionCount();
         int completed = 0;
         int count = 0;
 
         if (shouldRemoveBlocks) {
-            removeBlocks = new LinkedList<Block>();
+            removeBlocks = new LinkedList<>();
         }
 
         if (where != null && !where.trim().isEmpty()) {
@@ -1255,7 +1252,7 @@ public class LWC {
 
     /**
      * Find a protection for an entity
-     * 
+     *
      * @param entity
      *            the maybe protected entity
      * @return
@@ -1577,7 +1574,7 @@ public class LWC {
             return protectionConfigurationCache.get(cacheKey);
         }
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         String materialName = normalizeMaterialName(material);
 

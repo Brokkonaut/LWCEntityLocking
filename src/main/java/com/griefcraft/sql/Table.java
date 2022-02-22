@@ -31,7 +31,6 @@ package com.griefcraft.sql;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.sql.Database.Type;
 import com.griefcraft.util.Statistics;
-
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class Table {
         this.database = database;
         this.name = name;
 
-        columns = new ArrayList<Column>();
+        columns = new ArrayList<>();
     }
 
     /**

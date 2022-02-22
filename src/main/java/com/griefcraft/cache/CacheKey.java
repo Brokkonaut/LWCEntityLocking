@@ -17,10 +17,12 @@ public final class CacheKey {
         this.hashCode = ((Objects.hashCode(world) * 17 + x) * 23 + y) * 43 + z;
     }
 
+    @Override
     public final int hashCode() {
         return hashCode;
     }
 
+    @Override
     public final boolean equals(Object obj) {
         if (obj.getClass() != CacheKey.class) {
             return false;

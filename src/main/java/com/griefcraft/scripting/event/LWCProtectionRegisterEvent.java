@@ -48,10 +48,12 @@ public class LWCProtectionRegisterEvent extends LWCPlayerEvent implements Cancel
         return block;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }

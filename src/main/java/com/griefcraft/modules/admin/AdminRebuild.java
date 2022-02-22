@@ -34,15 +34,13 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.util.Colors;
-
+import java.util.Iterator;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Rebuild a LWC database re: Feb 15 2012 incident

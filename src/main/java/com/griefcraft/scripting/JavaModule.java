@@ -59,53 +59,66 @@ public class JavaModule implements Module {
      */
     public final static Result DEFAULT = Result.DEFAULT;
 
+    @Override
     public void load(LWC lwc) {
     }
 
+    @Override
     public void onReload(LWCReloadEvent event) {
 
     }
 
+    @Override
     public void onAccessRequest(LWCAccessEvent event) {
 
     }
 
+    @Override
     public void onDropItem(LWCDropItemEvent event) {
 
     }
 
+    @Override
     public void onCommand(LWCCommandEvent event) {
 
     }
 
+    @Override
     public void onRedstone(LWCRedstoneEvent event) {
 
     }
 
+    @Override
     public void onDestroyProtection(LWCProtectionDestroyEvent event) {
 
     }
 
+    @Override
     public void onProtectionInteract(LWCProtectionInteractEvent event) {
 
     }
 
+    @Override
     public void onBlockInteract(LWCBlockInteractEvent event) {
 
     }
 
+    @Override
     public void onRegisterProtection(LWCProtectionRegisterEvent event) {
 
     }
 
+    @Override
     public void onPostRegistration(LWCProtectionRegistrationPostEvent event) {
 
     }
 
+    @Override
     public void onPostRemoval(LWCProtectionRemovePostEvent event) {
 
     }
 
+    @Override
     public void onSendLocale(LWCSendLocaleEvent event) {
 
     }

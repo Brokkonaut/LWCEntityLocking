@@ -28,6 +28,10 @@
 
 package com.griefcraft.sql;
 
+import com.griefcraft.lwc.LWC;
+import com.griefcraft.scripting.ModuleException;
+import com.griefcraft.util.Statistics;
+import com.griefcraft.util.config.Configuration;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -36,11 +40,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.scripting.ModuleException;
-import com.griefcraft.util.Statistics;
-import com.griefcraft.util.config.Configuration;
 
 public abstract class Database {
 
@@ -77,7 +76,7 @@ public abstract class Database {
      * <p/>
      * Since SQLite JDBC doesn't cache them.. we do it ourselves :S
      */
-    private Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
+    private Map<String, PreparedStatement> statementCache = new HashMap<>();
 
     /**
      * The connection to the database

@@ -35,11 +35,10 @@ import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.Colors;
 import com.griefcraft.util.StringUtil;
-import org.bukkit.command.CommandSender;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.bukkit.command.CommandSender;
 
 public class AdminQuery extends JavaModule {
 

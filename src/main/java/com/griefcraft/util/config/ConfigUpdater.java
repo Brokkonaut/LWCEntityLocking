@@ -29,7 +29,6 @@
 package com.griefcraft.util.config;
 
 import com.griefcraft.lwc.LWC;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public class ConfigUpdater {
     /**
      * The cache for the reference config files
      */
-    private final Map<String, Configuration> referenceConfigFileCache = new HashMap<String, Configuration>();
+    private final Map<String, Configuration> referenceConfigFileCache = new HashMap<>();
 
     /**
      * Load the reference config files in the local jar file. The key in the map is the
@@ -150,18 +149,18 @@ public class ConfigUpdater {
 
     /**
      * Get all of the nodes in a configuration file up to 1 node down from the root
-     * 
+     *
      * <pre>
      * root -> node -> node -> subnode -> subnode
      * </pre>
-     * 
+     *
      * In this case, the subnodes are not returned (the root and nodes however, are)
      *
      * @param configuration
      * @return
      */
     private List<String> getKeysDepth2(Configuration configuration) {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<>();
 
         // go through the root
         for (String key : configuration.getKeys(null)) {

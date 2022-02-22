@@ -39,12 +39,11 @@ import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.util.Colors;
 import com.griefcraft.util.TimeUtil;
+import java.util.Date;
+import java.util.List;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.Date;
-import java.util.List;
 
 public class HistoryModule extends JavaModule {
 

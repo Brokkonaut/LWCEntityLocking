@@ -30,7 +30,6 @@ package com.griefcraft.cache;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
-
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -106,13 +105,13 @@ public class ProtectionCache {
         this.lwc = lwc;
         this.capacity = lwc.getConfiguration().getInt("core.cacheSize", 10000);
 
-        this.references = new LRUCache<Protection, Object>(capacity);
-        this.byCacheKey = new WeakLRUCache<CacheKey, Protection>(capacity);
-        this.byId = new WeakLRUCache<Integer, Protection>(capacity);
-        this.byKnownBlock = new WeakLRUCache<CacheKey, Protection>(capacity);
-        this.byKnownNulls = new LRUCache<CacheKey, Object>(Math.min(10000,
+        this.references = new LRUCache<>(capacity);
+        this.byCacheKey = new WeakLRUCache<>(capacity);
+        this.byId = new WeakLRUCache<>(capacity);
+        this.byKnownBlock = new WeakLRUCache<>(capacity);
+        this.byKnownNulls = new LRUCache<>(Math.min(10000,
                 capacity)); // enforce a min size so we have a known buffer
-        this.directByKnownNulls = new LRUCache<CacheKey, Object>(Math.min(10000,
+        this.directByKnownNulls = new LRUCache<>(Math.min(10000,
                 capacity));
     }
 

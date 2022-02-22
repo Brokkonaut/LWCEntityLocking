@@ -34,17 +34,15 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCInfo;
 import com.griefcraft.scripting.MetaData;
 import com.griefcraft.sql.Database;
-
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.plugin.Plugin;
-
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Map;
 
 public class Statistics {
 

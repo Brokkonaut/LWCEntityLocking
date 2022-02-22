@@ -36,17 +36,16 @@ import com.griefcraft.util.matchers.DoorMatcher;
 import com.griefcraft.util.matchers.DoubleChestMatcher;
 import com.griefcraft.util.matchers.GravityMatcher;
 import com.griefcraft.util.matchers.WallMatcher;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.block.data.type.Chest.Type;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Searches for blocks that can potentially be a protection
@@ -76,12 +75,12 @@ public class ProtectionFinder {
     /**
      * All of the matched blocks
      */
-    private final List<BlockState> blocks = new LinkedList<BlockState>();
+    private final List<BlockState> blocks = new LinkedList<>();
 
     /**
      * All of the blocks that are protectables
      */
-    private final List<BlockState> protectables = new LinkedList<BlockState>();
+    private final List<BlockState> protectables = new LinkedList<>();
 
     public ProtectionFinder(LWC lwc) {
         this.lwc = lwc;

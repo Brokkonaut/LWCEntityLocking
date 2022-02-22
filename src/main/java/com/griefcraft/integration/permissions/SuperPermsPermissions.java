@@ -30,11 +30,10 @@ package com.griefcraft.integration.permissions;
 
 import com.griefcraft.integration.IPermissions;
 import com.griefcraft.lwc.LWC;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class SuperPermsPermissions implements IPermissions {
 
@@ -51,9 +50,10 @@ public class SuperPermsPermissions implements IPermissions {
     }
 
     // modified implementation by ZerothAngel ( https://github.com/Hidendra/LWC/issues/88#issuecomment-2017807 )
+    @Override
     public List<String> getGroups(Player player) {
         LWC.getInstance();
-        List<String> groups = new ArrayList<String>();
+        List<String> groups = new ArrayList<>();
 
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             if (pai.getPermission().startsWith(groupPrefix)) {

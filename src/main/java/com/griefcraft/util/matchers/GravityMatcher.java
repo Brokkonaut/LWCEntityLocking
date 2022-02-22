@@ -29,15 +29,13 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-
+import java.util.EnumSet;
+import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
-
-import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * Matches blocks such as the sign post
@@ -53,6 +51,7 @@ public class GravityMatcher implements ProtectionFinder.Matcher {
             Material.GRAY_BANNER, Material.LIGHT_GRAY_BANNER, Material.CYAN_BANNER, Material.PURPLE_BANNER,
             Material.BLUE_BANNER, Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER);
 
+    @Override
     public boolean matches(ProtectionFinder finder) {
         Block block = finder.getBaseBlock().getBlock();
 

@@ -30,7 +30,6 @@ package com.griefcraft.migration;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.modules.pluginsupport.WorldGuard;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -48,6 +47,7 @@ public class ConfigPost300 implements MigrationUtility {
     // e.g locale->core.locale
     private static Map<String, String> mappings = null;
 
+    @Override
     public void run() {
         LWC lwc = LWC.getInstance();
         File configFile = new File("plugins/LWC/lwc.properties");
@@ -131,7 +131,7 @@ public class ConfigPost300 implements MigrationUtility {
 
     // populate the mappings table with well the mappings
     private static void populate() {
-        mappings = new HashMap<String, String>();
+        mappings = new HashMap<>();
 
         mappings.put("allow-block-destruction", "protections.allowBlockDestruction");
         mappings.put("auto-update", "core.autoUpdate");

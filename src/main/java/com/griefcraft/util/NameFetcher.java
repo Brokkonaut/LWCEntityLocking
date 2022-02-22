@@ -6,9 +6,6 @@
 package com.griefcraft.util;
 
 import com.google.common.collect.ImmutableList;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 public class NameFetcher implements Callable<Map<UUID, String>> {
     private static final String PROFILE_URL = "https://sessionserver.mojang.com/session/minecraft/profile/";
@@ -27,8 +26,9 @@ public class NameFetcher implements Callable<Map<UUID, String>> {
         this.uuids = ImmutableList.copyOf(uuids);
     }
 
+    @Override
     public Map<UUID, String> call() throws Exception {
-        Map<UUID, String> uuidStringMap = new HashMap<UUID, String>();
+        Map<UUID, String> uuidStringMap = new HashMap<>();
         for (UUID uuid : uuids) {
             HttpURLConnection connection = (HttpURLConnection) new URL(PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
             connection.setConnectTimeout(5000);

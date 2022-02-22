@@ -168,6 +168,7 @@ public final class Version implements Comparable<Object> {
         return version.compareTo(this) == 0;
     }
 
+    @Override
     public int compareTo(Object o) {
         if (!(o instanceof Version)) {
             return 0;

@@ -42,7 +42,8 @@ import com.griefcraft.scripting.event.LWCBlockInteractEvent;
 import com.griefcraft.scripting.event.LWCDropItemEvent;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.util.UUIDRegistry;
-
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -54,16 +55,16 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
@@ -86,9 +87,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.Set;
-import java.util.UUID;
 
 public class LWCPlayerListener implements Listener {
 
@@ -451,7 +449,7 @@ public class LWCPlayerListener implements Listener {
         // if the initiator is the same as the source it is a dropper i.e.
         // depositing items
         if (event.getInitiator() == event.getSource()) {
-            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource == true) {
+            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource) {
                 result = lastHopperResult;
                 // plugin.getLogger().info("Hopper == lasthopper");
             } else {
@@ -463,7 +461,7 @@ public class LWCPlayerListener implements Listener {
                 // plugin.getLogger().info("Hopper != lasthopper");
             }
         } else {
-            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource == false) {
+            if (Objects.equal(lastHopper, event.getInitiator()) && !lastHopperWasSource) {
                 result = lastHopperResult;
                 // plugin.getLogger().info("Hopper == lasthopper");
             } else {
@@ -587,14 +585,14 @@ public class LWCPlayerListener implements Listener {
     /*
      * @EventHandler public void onPlayerChat(PlayerChatEvent event) { if
      * (event.isCancelled() || !LWC.ENABLED) { return; }
-     * 
+     *
      * LWC lwc = plugin.getLWC(); if
      * (!lwc.getConfiguration().getBoolean("core.filterunlock", true)) { return;
      * }
-     * 
+     *
      * // We want to block messages starting with cunlock incase someone screws
      * up /cunlock password. String message = event.getMessage();
-     * 
+     *
      * if (message.startsWith("cunlock") || message.startsWith("lcunlock") ||
      * message.startsWith(".cunlock")) { event.setCancelled(true);
      * lwc.sendLocale(event.getPlayer(), "lwc.blockedmessage"); } }

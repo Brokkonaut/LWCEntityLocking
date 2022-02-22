@@ -31,7 +31,6 @@ package com.griefcraft.migration;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.sql.Database.Type;
 import com.griefcraft.sql.PhysDB;
-
 import java.io.File;
 import java.util.logging.Logger;
 
@@ -43,6 +42,7 @@ public class MySQLPost200 implements MigrationUtility {
     /**
      * Check for required SQLite->MySQL conversion
      */
+    @Override
     public void run() {
         LWC lwc = LWC.getInstance();
         PhysDB physicalDatabase = lwc.getPhysicalDatabase();

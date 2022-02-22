@@ -36,12 +36,6 @@ import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.sql.Database;
 import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.Colors;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayDeque;
@@ -50,6 +44,10 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 
 public class AdminCleanup extends JavaModule {
 
@@ -108,6 +106,7 @@ public class AdminCleanup extends JavaModule {
             this.silent = silent;
         }
 
+        @Override
         public void run() {
             ArrayDeque<Integer> protectionsToRemove = new ArrayDeque<>();
             ArrayDeque<ProtectionAndMaterial> protectionsToSave = new ArrayDeque<>();
@@ -119,7 +118,7 @@ public class AdminCleanup extends JavaModule {
 
                 // the list of protections work off of. We batch updates to the world
                 // so we can more than 20 results/second.
-                final List<Protection> protections = new ArrayList<Protection>(BATCH_SIZE);
+                final List<Protection> protections = new ArrayList<>(BATCH_SIZE);
 
                 // TODO separate stream logic to somewhere else :)
                 // Create a new database connection, we are just reading
@@ -158,6 +157,7 @@ public class AdminCleanup extends JavaModule {
 
                     // Check the blocks
                     Future<ArrayList<Integer>> getBlocks = Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<ArrayList<Integer>>() {
+                        @Override
                         public ArrayList<Integer> call() throws Exception {
                             ArrayList<Integer> toRemove = null;
                             for (Protection protection : protections) {
@@ -170,7 +170,7 @@ public class AdminCleanup extends JavaModule {
                                     // remove protections not found in the world
                                     if (block == null || !lwc.isProtectable(block)) {
                                         if (toRemove == null) {
-                                            toRemove = new ArrayList<Integer>();
+                                            toRemove = new ArrayList<>();
                                         }
                                         toRemove.add(protection.getId());
 
@@ -217,6 +217,7 @@ public class AdminCleanup extends JavaModule {
                 final int totalToRemove = protectionsToRemove.size();
                 while (!protectionsToRemove.isEmpty()) {
                     Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
+                        @Override
                         public Void call() throws Exception {
                             final StringBuilder builder = new StringBuilder();
 
@@ -252,6 +253,7 @@ public class AdminCleanup extends JavaModule {
                 final int totalToSave = protectionsToSave.size();
                 while (!protectionsToSave.isEmpty()) {
                     Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
+                        @Override
                         public Void call() throws Exception {
                             int oldDone = totalToSave - protectionsToSave.size();
                             long startTime = System.nanoTime();

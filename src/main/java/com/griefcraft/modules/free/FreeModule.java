@@ -159,6 +159,7 @@ public class FreeModule extends JavaModule {
 
             // our callback (remove all of their protections :p)
             Runnable callback = new Runnable() {
+                @Override
                 public void run() {
                     // Get all of the player's protections
                     for (Protection protection : lwc.getPhysicalDatabase().loadProtectionsByPlayer(player.getUniqueId().toString())) {

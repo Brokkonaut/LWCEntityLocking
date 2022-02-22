@@ -1,14 +1,12 @@
 package com.griefcraft.lwc;
 
+import com.google.common.base.Preconditions;
+import com.griefcraft.bukkit.EntityBlock;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map.Entry;
-
 import org.bukkit.Material;
-
-import com.google.common.base.Preconditions;
-import com.griefcraft.bukkit.EntityBlock;
 
 public class BlockMap {
     private static BlockMap instance = new BlockMap();

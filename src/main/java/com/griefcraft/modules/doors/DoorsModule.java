@@ -28,9 +28,6 @@
 
 package com.griefcraft.modules.doors;
 
-import java.util.HashSet;
-import java.util.UUID;
-
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Flag;
@@ -39,7 +36,8 @@ import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.util.config.Configuration;
 import com.griefcraft.util.matchers.DoorMatcher;
-
+import java.util.HashSet;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -94,7 +92,7 @@ public class DoorsModule extends JavaModule {
     @Override
     public void load(LWC lwc) {
         this.lwc = lwc;
-        this.hasInteractedThisTick = new HashSet<UUID>();
+        this.hasInteractedThisTick = new HashSet<>();
         lwc.getPlugin().getServer().getScheduler().scheduleSyncRepeatingTask(lwc.getPlugin(), new Runnable() {
 
             @Override
@@ -189,6 +187,7 @@ public class DoorsModule extends JavaModule {
             // Create the task
             // If we are set to close the door after a set period, let's create a sync task for it
             lwc.getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(lwc.getPlugin(), new Runnable() {
+                @Override
                 public void run() {
 
                     // Essentially all we need to do is reset the door states

@@ -31,9 +31,6 @@ package com.griefcraft.modules.admin;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
-
-import org.bukkit.command.CommandSender;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.command.CommandSender;
 
 public class AdminPurgeBanned extends JavaModule {
 
@@ -82,7 +80,7 @@ public class AdminPurgeBanned extends JavaModule {
      */
     @SuppressWarnings("resource")
     private List<String> loadBannedPlayers() {
-        List<String> banned = new ArrayList<String>();
+        List<String> banned = new ArrayList<>();
 
         File file = new File("banned-players.txt");
 

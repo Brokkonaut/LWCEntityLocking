@@ -28,6 +28,8 @@
 
 package com.griefcraft.modules.modify;
 
+import static com.griefcraft.util.StringUtil.join;
+
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Action;
 import com.griefcraft.model.LWCPlayer;
@@ -36,14 +38,11 @@ import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCBlockInteractEvent;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.griefcraft.util.StringUtil.join;
 
 public class ModifyModule extends JavaModule {
 

@@ -39,6 +39,7 @@ import org.bukkit.entity.Player;
 
 public class ConfirmModule extends JavaModule {
 
+    @Override
     public void onCommand(LWCCommandEvent event) {
         if (event.isCancelled()) {
             return;

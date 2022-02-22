@@ -38,14 +38,6 @@ import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.locale.LWCResourceBundle;
 import com.griefcraft.util.locale.LocaleClassLoader;
 import com.griefcraft.util.locale.UTF8Control;
-
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,6 +46,12 @@ import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.jar.JarFile;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class LWCPlugin extends JavaPlugin {
 
@@ -193,6 +191,7 @@ public class LWCPlugin extends JavaPlugin {
         return false;
     }
 
+    @Override
     public void onDisable() {
         LWC.ENABLED = false;
 
@@ -328,7 +327,7 @@ public class LWCPlugin extends JavaPlugin {
 
     /**
      * Gets the message parser
-     * 
+     *
      * @return
      */
     public MessageParser getMessageParser() {

@@ -32,13 +32,12 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.util.Colors;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class CreditsModule extends JavaModule {
 
@@ -64,6 +63,7 @@ public class CreditsModule extends JavaModule {
 
     private class CreditsTask implements Runnable {
 
+        @Override
         public void run() {
             while (LWC.ENABLED) {
                 synchronized (scrolling) {

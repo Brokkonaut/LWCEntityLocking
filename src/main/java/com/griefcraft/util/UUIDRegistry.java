@@ -1,21 +1,20 @@
 package com.griefcraft.util;
 
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 public class UUIDRegistry {
 
     /**
      * Temporal caches
      */
-    private static final Map<String, PlayerInfo> nameToUUIDCache = new HashMap<String, PlayerInfo>();
-    private static final Map<UUID, PlayerInfo> UUIDToNameCache = new HashMap<UUID, PlayerInfo>();
+    private static final Map<String, PlayerInfo> nameToUUIDCache = new HashMap<>();
+    private static final Map<UUID, PlayerInfo> UUIDToNameCache = new HashMap<>();
 
     static class PlayerInfo {
 

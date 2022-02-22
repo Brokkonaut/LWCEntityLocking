@@ -47,10 +47,12 @@ public class LWCSendLocaleEvent extends LWCPlayerEvent implements Cancellable {
         return locale;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }

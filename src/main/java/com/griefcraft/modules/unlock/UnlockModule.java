@@ -28,6 +28,9 @@
 
 package com.griefcraft.modules.unlock;
 
+import static com.griefcraft.util.StringUtil.encrypt;
+import static com.griefcraft.util.StringUtil.join;
+
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Action;
 import com.griefcraft.model.LWCPlayer;
@@ -36,9 +39,6 @@ import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import static com.griefcraft.util.StringUtil.encrypt;
-import static com.griefcraft.util.StringUtil.join;
 
 public class UnlockModule extends JavaModule {
 

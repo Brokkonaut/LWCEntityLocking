@@ -32,9 +32,7 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
 import com.griefcraft.util.UUIDRegistry;
-
 import java.util.UUID;
-
 import org.bukkit.command.CommandSender;
 
 public class AdminTransfer extends JavaModule {

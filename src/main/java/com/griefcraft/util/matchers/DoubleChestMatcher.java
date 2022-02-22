@@ -28,17 +28,17 @@
 
 package com.griefcraft.util.matchers;
 
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-
 import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.ProtectionFinder;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 
 /**
  * Matches double chests
  */
 public class DoubleChestMatcher implements ProtectionFinder.Matcher {
 
+    @Override
     public boolean matches(ProtectionFinder finder) {
         BlockState baseBlockState = finder.getBaseBlock();
         Block otherHalf = BlockUtil.findAdjacentDoubleChest(baseBlockState.getBlock());

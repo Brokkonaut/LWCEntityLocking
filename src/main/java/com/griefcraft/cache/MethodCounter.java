@@ -13,7 +13,7 @@ public class MethodCounter {
     /**
      * A map of the counts
      */
-    private final Map<String, VariableInteger> counts = new HashMap<String, VariableInteger>();
+    private final Map<String, VariableInteger> counts = new HashMap<>();
 
     /**
      * Increment a method in the counts
@@ -82,10 +82,11 @@ public class MethodCounter {
      * @return
      */
     private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order) {
-        ArrayList<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+        ArrayList<Map.Entry<String, Integer>> list = new ArrayList<>(unsortMap.entrySet());
 
         // Sorting the list based on values
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            @Override
             public int compare(Map.Entry<String, Integer> o1,
                     Map.Entry<String, Integer> o2) {
                 if (order) {
@@ -98,7 +99,7 @@ public class MethodCounter {
         });
 
         // Maintaining insertion order with the help of LinkedList
-        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> sortedMap = new LinkedHashMap<>();
         for (Map.Entry<String, Integer> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
