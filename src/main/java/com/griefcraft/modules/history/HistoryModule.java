@@ -218,7 +218,7 @@ public class HistoryModule extends JavaModule {
             lwc.sendLocale(sender, "lwc.history.details.econcharge", "charge", history.getDouble("charge"), "moneyname", lwc.getCurrency().getMoneyName(),
                     "discount",
                     // Rest your eyes and avoid the line two lines below
-                    // Its format: Yes|No (ID)  -- (ID) is only shown if Yes is shown.
+                    // Its format: Yes|No (ID) -- (ID) is only shown if Yes is shown.
                     ((history.hasKey("discount") ? (Colors.Red + "Yes") : (Colors.Yellow + "No")) + Colors.Yellow + " " + /* Discount id */ (history.hasKey("discountId") ? ("(" + history.getString("discountId") + ")") : "")));
         }
 

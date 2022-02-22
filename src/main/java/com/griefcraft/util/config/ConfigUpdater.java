@@ -54,8 +54,7 @@ public class ConfigUpdater {
             "master",
             "groups",
             "players",
-            "defaults"
-    );
+            "defaults");
 
     /**
      * The cache for the reference config files
@@ -68,7 +67,7 @@ public class ConfigUpdater {
      *
      * @return
      */
-	private Map<String, Configuration> loadReferenceConfigFiles() throws IOException {
+    private Map<String, Configuration> loadReferenceConfigFiles() throws IOException {
         if (referenceConfigFileCache.size() > 0) {
             return referenceConfigFileCache;
         }
@@ -151,13 +150,11 @@ public class ConfigUpdater {
 
     /**
      * Get all of the nodes in a configuration file up to 1 node down from the root
+     * 
      * <pre>
-     * root
-     *    -> node
-     *    -> node
-     *        -> subnode
-     *        -> subnode
+     * root -> node -> node -> subnode -> subnode
      * </pre>
+     * 
      * In this case, the subnodes are not returned (the root and nodes however, are)
      *
      * @param configuration

@@ -91,7 +91,8 @@ public class Statistics {
     /**
      * Obtain an entity count of a Entity class.
      *
-     * @param clazz If null, all entities are counted
+     * @param clazz
+     *            If null, all entities are counted
      * @return
      */
     public static int getEntityCount(Class<? extends Entity> clazz) {
@@ -170,8 +171,8 @@ public class Statistics {
         sender.sendMessage("  Entities: " + Colors.Green + "Hit: " + formatNumber(entityCacheHit) + " + " + formatNumber(entityCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(entityCacheMiss) + " + " + formatNumber(entityCacheMissNull));
         sender.sendMessage("  Profile: ");
         sendMethodCounter(sender, cache.getMethodCounter());
-        // sender.sendMessage("  Reads: " + formatNumber(cache.getReads()) + " | " + String.format("%.2f", getAverage(cache.getReads())) + " / second");
-        // sender.sendMessage("  Writes: " + formatNumber(cache.getWrites()) + " | " + String.format("%.2f", getAverage(cache.getWrites())) + " / second");
+        // sender.sendMessage(" Reads: " + formatNumber(cache.getReads()) + " | " + String.format("%.2f", getAverage(cache.getReads())) + " / second");
+        // sender.sendMessage(" Writes: " + formatNumber(cache.getWrites()) + " | " + String.format("%.2f", getAverage(cache.getWrites())) + " / second");
     }
 
     private static void sendMethodCounter(CommandSender sender, MethodCounter counter) {
@@ -185,7 +186,6 @@ public class Statistics {
         }
 
     }
-
 
     /**
      * Format a number
@@ -242,7 +242,6 @@ public class Statistics {
     public static long getEntityCacheMissNull() {
         return entityCacheMissNull;
     }
-
 
     public static void addBlockCacheHit() {
         blockCacheHit++;

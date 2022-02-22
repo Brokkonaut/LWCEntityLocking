@@ -117,7 +117,7 @@ public class CreditsModule extends JavaModule {
 
     @Override
     public void load(LWC lwc) {
-        credits = new String[]{
+        credits = new String[] {
                 Colors.Green + "LWC, a Protection mod developed by Hidendra ....",
                 "Serving Minecraft loyally since September 2010 ....",
                 " ",

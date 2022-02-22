@@ -104,7 +104,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             BlockFace existingFace = ((Directional) blockData).getFacing();
             if (blockData instanceof Switch) {
                 Switch switcher = (Switch) blockData;
-                if (switcher.getAttachedFace()!= AttachedFace.WALL) {
+                if (switcher.getAttachedFace() != AttachedFace.WALL) {
                     existingFace = switcher.getAttachedFace() == AttachedFace.FLOOR ? BlockFace.UP : BlockFace.DOWN;
                 }
             }

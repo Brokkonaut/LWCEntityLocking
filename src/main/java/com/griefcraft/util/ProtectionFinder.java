@@ -247,7 +247,8 @@ public class ProtectionFinder {
      * Load the protection for the calculated protectables.
      * Returns NULL if no protection was found.
      *
-     * @param noAutoCache if a match is found, don't cache it to be the protection we use
+     * @param noAutoCache
+     *            if a match is found, don't cache it to be the protection we use
      * @return
      */
     public Protection loadProtection(boolean noAutoCache) {
@@ -273,7 +274,8 @@ public class ProtectionFinder {
      * Try and load a protection for a given block. If succeded, cache it locally
      *
      * @param block
-     * @param noAutoCache if a match is found, don't cache it to be the protection we use
+     * @param noAutoCache
+     *            if a match is found, don't cache it to be the protection we use
      * @return
      */
     protected Result tryLoadProtection(BlockState block, boolean noAutoCache) {
@@ -422,6 +424,10 @@ public class ProtectionFinder {
 
     }
 
-    private enum Result { E_FOUND, E_ABORT, E_NOT_FOUND }
+    private enum Result {
+        E_FOUND,
+        E_ABORT,
+        E_NOT_FOUND
+    }
 
 }

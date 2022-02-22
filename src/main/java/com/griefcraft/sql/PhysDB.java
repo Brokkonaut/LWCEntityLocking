@@ -270,7 +270,7 @@ public class PhysDB extends Database {
         if (loaded) {
             return;
         }
-        
+
         databaseVersion = 0;
         loadDatabaseVersion();
         entityLockingDatabaseVersion = 0;
@@ -2297,7 +2297,7 @@ public class PhysDB extends Database {
                 ResultSet rs = statement.executeQuery("SELECT blockId FROM " + prefix + "protections LIMIT 1");
                 rs.close();
             } catch (SQLException e) {
-                 return; // no protectiosn table, no update
+                return; // no protectiosn table, no update
             }
             ResultSet rs = statement.executeQuery("SELECT id FROM " + prefix + "blocks LIMIT 1");
             rs.close();

@@ -48,7 +48,7 @@ public class ConfigPost300 implements MigrationUtility {
     // e.g locale->core.locale
     private static Map<String, String> mappings = null;
 
-	public void run() {
+    public void run() {
         LWC lwc = LWC.getInstance();
         File configFile = new File("plugins/LWC/lwc.properties");
 

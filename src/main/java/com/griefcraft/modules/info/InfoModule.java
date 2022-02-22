@@ -62,30 +62,29 @@ public class InfoModule extends JavaModule {
 
         lwc.sendLocale(player, "lwc.info", "owner", protection.getFormattedOwnerPlayerName(), "type", type);
 
-//        if (event.canAdmin()) {
-            if (protection.getType() == Protection.Type.PRIVATE || protection.getType() == Protection.Type.DONATION || protection.getType() == Protection.Type.SHOWCASE) {
-                lwc.sendLocale(player, "lwc.acl", "size", protection.getPermissions().size());
-                int index = 0;
-                for (Permission permission : protection.getPermissions()) {
-                    if (index >= 9) {
-                        break;
-                    }
-
-                    player.sendMessage(permission.toString());
-                    index ++;
+        // if (event.canAdmin()) {
+        if (protection.getType() == Protection.Type.PRIVATE || protection.getType() == Protection.Type.DONATION || protection.getType() == Protection.Type.SHOWCASE) {
+            lwc.sendLocale(player, "lwc.acl", "size", protection.getPermissions().size());
+            int index = 0;
+            for (Permission permission : protection.getPermissions()) {
+                if (index >= 9) {
+                    break;
                 }
 
-                if (index == 0 && event.canAdmin()) {
-                    lwc.sendLocale(player, "lwc.acl.empty");
-                } else if (index >= 9) {
-                    lwc.sendLocale(player, "lwc.acl.limitreached");
-                }
-                if (index > 0)
-                {
-                    player.sendMessage("");
-                }
+                player.sendMessage(permission.toString());
+                index++;
             }
-//        }
+
+            if (index == 0 && event.canAdmin()) {
+                lwc.sendLocale(player, "lwc.acl.empty");
+            } else if (index >= 9) {
+                lwc.sendLocale(player, "lwc.acl.limitreached");
+            }
+            if (index > 0) {
+                player.sendMessage("");
+            }
+        }
+        // }
 
         if (lwc.isAdmin(player)) {
             lwc.sendLocale(player, "protection.interact.info.raw", "raw", protection.toString());

@@ -55,7 +55,7 @@ public class LimitsV2 extends JavaModule {
     private static final Set<Material> SIGNS = EnumSet.of(Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
             Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.ACACIA_SIGN,
             Material.BIRCH_SIGN, Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN);
-            
+
     /**
      * The limit represented by unlimited
      */
@@ -163,7 +163,7 @@ public class LimitsV2 extends JavaModule {
         public int getProtectionCount(Player player, Material material) {
             LWC lwc = LWC.getInstance();
             int count = 0;
-            for(Material m : SIGNS) {
+            for (Material m : SIGNS) {
                 count += lwc.getPhysicalDatabase().getProtectionCount(player.getName(), m);
             }
             return count;
@@ -265,8 +265,10 @@ public class LimitsV2 extends JavaModule {
     /**
      * Sends the list of limits to the player
      *
-     * @param sender the commandsender to send the limits to
-     * @param target the player limits are being shown for, can be null
+     * @param sender
+     *            the commandsender to send the limits to
+     * @param target
+     *            the player limits are being shown for, can be null
      * @param limits
      */
     public void sendLimits(CommandSender sender, Player target, List<Limit> limits) {
@@ -312,14 +314,15 @@ public class LimitsV2 extends JavaModule {
      * Checks if a player has reached their protection limit
      *
      * @param player
-     * @param material the material type the player has interacted with
+     * @param material
+     *            the material type the player has interacted with
      * @return
      */
     public boolean hasReachedLimit(Player player, Material material) {
         Limit limit = getEffectiveLimit(player, material);
 
         // if they don't have a limit it's not possible to reach it ^^
-        //  ... but if it's null, what the hell did the server owner do?
+        // ... but if it's null, what the hell did the server owner do?
         if (limit == null) {
             return false;
         }
@@ -565,14 +568,16 @@ public class LimitsV2 extends JavaModule {
             for (String player : configuration.getKeys("players")) {
                 playerLimits.put(player.toLowerCase(), findLimits("players." + player));
             }
-        } catch (NullPointerException e) { }
+        } catch (NullPointerException e) {
+        }
 
         // add all of the group limits
         try {
             for (String group : configuration.getKeys("groups")) {
                 groupLimits.put(group.toLowerCase(), findLimits("groups." + group));
             }
-        } catch (NullPointerException e) { }
+        } catch (NullPointerException e) {
+        }
     }
 
     /**

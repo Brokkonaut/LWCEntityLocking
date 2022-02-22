@@ -40,12 +40,12 @@ import com.griefcraft.util.ProtectionFinder;
 public class DoubleChestMatcher implements ProtectionFinder.Matcher {
 
     public boolean matches(ProtectionFinder finder) {
-    	BlockState baseBlockState = finder.getBaseBlock();
-    	Block otherHalf = BlockUtil.findAdjacentDoubleChest(baseBlockState.getBlock());
-    	if(otherHalf != null) {
-    	    finder.addBlock(otherHalf);
-    	    return true;
-    	}
+        BlockState baseBlockState = finder.getBaseBlock();
+        Block otherHalf = BlockUtil.findAdjacentDoubleChest(baseBlockState.getBlock());
+        if (otherHalf != null) {
+            finder.addBlock(otherHalf);
+            return true;
+        }
         return false;
     }
 

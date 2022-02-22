@@ -181,11 +181,11 @@ public class LWC {
      * The currency handler
      */
     private ICurrency currency;
-    
+
     private EnumSet<EntityType> protectableEntites = EnumSet.noneOf(EntityType.class);
-    
+
     private EnumSet<Material> protectableBlocks = EnumSet.noneOf(Material.class);
-    
+
     /**
      * Protection configuration cache
      */
@@ -312,33 +312,33 @@ public class LWC {
         Permission.Access access = Permission.Access.NONE;
 
         switch (protection.getType()) {
-        case PUBLIC:
-        case PASSWORD:
-        case PRIVATE:
-        case DONATION:
-        case SHOWCASE:
-            if (protection.isOwner(player)) {
-                return true;
-            }
-
-            if (protection.getAccess(player.getUniqueId().toString(),
-                    Permission.Type.PLAYER) == Permission.Access.ADMIN) {
-                return true;
-            }
-
-            if (protection.getAccess(player.getName(), Permission.Type.PLAYER) == Permission.Access.ADMIN) {
-                return true;
-            }
-
-            for (String groupName : permissions.getGroups(player)) {
-                if (protection.getAccess(groupName, Permission.Type.GROUP) == Permission.Access.ADMIN) {
+            case PUBLIC:
+            case PASSWORD:
+            case PRIVATE:
+            case DONATION:
+            case SHOWCASE:
+                if (protection.isOwner(player)) {
                     return true;
                 }
-            }
 
-            break;
-        default:
-            break;
+                if (protection.getAccess(player.getUniqueId().toString(),
+                        Permission.Type.PLAYER) == Permission.Access.ADMIN) {
+                    return true;
+                }
+
+                if (protection.getAccess(player.getName(), Permission.Type.PLAYER) == Permission.Access.ADMIN) {
+                    return true;
+                }
+
+                for (String groupName : permissions.getGroups(player)) {
+                    if (protection.getAccess(groupName, Permission.Type.GROUP) == Permission.Access.ADMIN) {
+                        return true;
+                    }
+                }
+
+                break;
+            default:
+                break;
         }
 
         // call the canAccessProtection hook
@@ -503,7 +503,7 @@ public class LWC {
 
         // multi-world, update old protections
         if ((protection.getWorld() == null || !block.getWorld()
-                        .getName().equals(protection.getWorld()))) {
+                .getName().equals(protection.getWorld()))) {
             protection.setWorld(block.getWorld().getName());
             protection.save();
         }
@@ -623,56 +623,56 @@ public class LWC {
         Permission.Access access = Permission.Access.NONE;
 
         switch (protection.getType()) {
-        case PUBLIC:
-        case DONATION:
-        case SHOWCASE:
-            return true;
-
-        case PASSWORD:
-            if (wrapPlayer(player).isProtectionAccessible(protection)) {
+            case PUBLIC:
+            case DONATION:
+            case SHOWCASE:
                 return true;
-            }
-            // fallthrough intended!
-        case PRIVATE:
-            if (protection.isOwner(player)) {
-                return true;
-            }
 
-            if (protection.getAccess(player.getUniqueId().toString(),
-                    Permission.Type.PLAYER).ordinal() >= Permission.Access.PLAYER
-                    .ordinal()) {
-                return true;
-            }
-
-            if (protection.getAccess(player.getName(), Permission.Type.PLAYER)
-                    .ordinal() >= Permission.Access.PLAYER.ordinal()) {
-                return true;
-            }
-
-            // Check for item keys
-            for (Permission permission : protection.getPermissions()) {
-                if (permission.getType() != Permission.Type.ITEM) {
-                    continue;
-                }
-
-                // Get the item they need to have
-
-                // Are they wielding it?
-                if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
+            case PASSWORD:
+                if (wrapPlayer(player).isProtectionAccessible(protection)) {
                     return true;
                 }
-            }
+                // fallthrough intended!
+            case PRIVATE:
+                if (protection.isOwner(player)) {
+                    return true;
+                }
 
-            for (String groupName : permissions.getGroups(player)) {
-                if (protection.getAccess(groupName, Permission.Type.GROUP)
+                if (protection.getAccess(player.getUniqueId().toString(),
+                        Permission.Type.PLAYER).ordinal() >= Permission.Access.PLAYER
+                                .ordinal()) {
+                    return true;
+                }
+
+                if (protection.getAccess(player.getName(), Permission.Type.PLAYER)
                         .ordinal() >= Permission.Access.PLAYER.ordinal()) {
                     return true;
                 }
-            }
 
-            break;
-        default:
-            break;
+                // Check for item keys
+                for (Permission permission : protection.getPermissions()) {
+                    if (permission.getType() != Permission.Type.ITEM) {
+                        continue;
+                    }
+
+                    // Get the item they need to have
+
+                    // Are they wielding it?
+                    if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
+                        return true;
+                    }
+                }
+
+                for (String groupName : permissions.getGroups(player)) {
+                    if (protection.getAccess(groupName, Permission.Type.GROUP)
+                            .ordinal() >= Permission.Access.PLAYER.ordinal()) {
+                        return true;
+                    }
+                }
+
+                break;
+            default:
+                break;
         }
 
         // call the canAccessProtection hook
@@ -715,56 +715,56 @@ public class LWC {
         Permission.Access access = Permission.Access.NONE;
 
         switch (protection.getType()) {
-        case PUBLIC:
-            return true;
-
-        case PASSWORD:
-            if (wrapPlayer(player).isProtectionAccessible(protection)) {
+            case PUBLIC:
                 return true;
-            }
-            // fallthrough intended!
-        case PRIVATE:
-        case DONATION:
-        case SHOWCASE:
-            if (protection.isOwner(player)) {
-                return true;
-            }
 
-            if (protection.getAccess(player.getUniqueId().toString(),
-                    Permission.Type.PLAYER).ordinal() >= Permission.Access.PLAYER
-                    .ordinal()) {
-                return true;
-            }
-
-            if (protection.getAccess(player.getName(), Permission.Type.PLAYER)
-                    .ordinal() >= Permission.Access.PLAYER.ordinal()) {
-                return true;
-            }
-
-            // Check for item keys
-            for (Permission permission : protection.getPermissions()) {
-                if (permission.getType() != Permission.Type.ITEM) {
-                    continue;
-                }
-
-                // Get the item they need to have
-
-                // Are they wielding it?
-                if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
+            case PASSWORD:
+                if (wrapPlayer(player).isProtectionAccessible(protection)) {
                     return true;
                 }
-            }
+                // fallthrough intended!
+            case PRIVATE:
+            case DONATION:
+            case SHOWCASE:
+                if (protection.isOwner(player)) {
+                    return true;
+                }
 
-            for (String groupName : permissions.getGroups(player)) {
-                if (protection.getAccess(groupName, Permission.Type.GROUP)
+                if (protection.getAccess(player.getUniqueId().toString(),
+                        Permission.Type.PLAYER).ordinal() >= Permission.Access.PLAYER
+                                .ordinal()) {
+                    return true;
+                }
+
+                if (protection.getAccess(player.getName(), Permission.Type.PLAYER)
                         .ordinal() >= Permission.Access.PLAYER.ordinal()) {
                     return true;
                 }
-            }
 
-            break;
-        default:
-            break;
+                // Check for item keys
+                for (Permission permission : protection.getPermissions()) {
+                    if (permission.getType() != Permission.Type.ITEM) {
+                        continue;
+                    }
+
+                    // Get the item they need to have
+
+                    // Are they wielding it?
+                    if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType().name().equals(permission.getName())) {
+                        return true;
+                    }
+                }
+
+                for (String groupName : permissions.getGroups(player)) {
+                    if (protection.getAccess(groupName, Permission.Type.GROUP)
+                            .ordinal() >= Permission.Access.PLAYER.ordinal()) {
+                        return true;
+                    }
+                }
+
+                break;
+            default:
+                break;
         }
 
         // call the canAccessProtection hook
@@ -920,7 +920,7 @@ public class LWC {
             firstLine = false;
         }
     }
-    
+
     /**
      * Send a locale to a player or console
      *
@@ -1320,7 +1320,7 @@ public class LWC {
             return physicalDatabase.loadProtection(block.getWorld().getName(),
                     block.getX(), block.getY(), block.getZ());
         }
-        
+
         // Create a protection finder
         ProtectionFinder finder = new ProtectionFinder(this);
 
@@ -1421,9 +1421,9 @@ public class LWC {
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
-        
+
         String value = configuration.getString("protections." + node);
-        
+
         String temp = configuration.getString("protections.entities." + state.name().toLowerCase()
                 + "." + node);
 
@@ -1555,7 +1555,7 @@ public class LWC {
      * @return
      */
     public String resolveProtectionConfiguration(Block block, String node) {
-        if(block == null) {
+        if (block == null) {
             return null;
         }
         return resolveProtectionConfiguration(block.getType(), node);
@@ -1650,9 +1650,9 @@ public class LWC {
         // check any major conversions
         new MySQLPost200().run();
 
-        preloadProtectables();        
+        preloadProtectables();
         BlockMap.instance().init();
-        
+
         // precache protections
         physicalDatabase.precache();
 
@@ -1894,7 +1894,7 @@ public class LWC {
             }
         }
     }
-    
+
     private void preloadProtectables() {
         protectableBlocks.clear();
         protectableEntites.clear();

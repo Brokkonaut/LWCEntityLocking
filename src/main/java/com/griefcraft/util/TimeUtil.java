@@ -83,7 +83,7 @@ public class TimeUtil {
      * Convert a given time in seconds to a more readable format
      *
      * @param time
-     * @return the time in a more readable format (e.g 2 days 5 hours 1 minute 34  seconds)
+     * @return the time in a more readable format (e.g 2 days 5 hours 1 minute 34 seconds)
      */
     public static String timeToString(long time) {
         String str = "";

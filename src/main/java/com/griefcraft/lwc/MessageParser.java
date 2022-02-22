@@ -43,5 +43,4 @@ public interface MessageParser {
      */
     public String parseMessage(String key, Object... args);
 
-
 }

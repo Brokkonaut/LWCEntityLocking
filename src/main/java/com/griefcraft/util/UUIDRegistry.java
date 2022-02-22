@@ -69,7 +69,7 @@ public class UUIDRegistry {
             return null;
         }
 
-        boolean foundInCache = UUIDToNameCache.containsKey(uuid); 
+        boolean foundInCache = UUIDToNameCache.containsKey(uuid);
         if (foundInCache) {
             PlayerInfo cacheEntry = UUIDToNameCache.get(uuid);
             if (cacheEntry != null) {
@@ -92,10 +92,10 @@ public class UUIDRegistry {
             updateCache(uuid, offlinePlayer.getName());
             return offlinePlayer.getName();
         }
-        
-        // Don't query mojang if a uuid is cached as not mapped 
+
+        // Don't query mojang if a uuid is cached as not mapped
         if (foundInCache) {
-            return null; 
+            return null;
         }
 
         // Third way: use the web API
@@ -137,15 +137,15 @@ public class UUIDRegistry {
             if (isValidUUID(name)) {
                 return UUID.fromString(name);
             }
-            
+
             // First way: if they're on the server already
             Player player = Bukkit.getPlayerExact(name);
             if (player != null) {
                 updateCache(player.getUniqueId(), player.getName());
                 return player.getUniqueId();
             }
-            
-            // Don't query mojang or do expensive lookups if a name is cached as not mapped 
+
+            // Don't query mojang or do expensive lookups if a name is cached as not mapped
             if (foundInCache) {
                 return null;
             }
@@ -204,7 +204,7 @@ public class UUIDRegistry {
             return name;
         }
     }
-    
+
     public static String getNameOrUUID(String name) {
         if (isValidUUID(name)) {
             String formattedName = getName(UUID.fromString(name));

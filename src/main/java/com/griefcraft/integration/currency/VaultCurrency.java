@@ -81,11 +81,11 @@ public class VaultCurrency implements ICurrency {
         return economy.currencyNameSingular();
     }
 
-	public double getBalance(Player player) {
+    public double getBalance(Player player) {
         return economy.getBalance(player);
     }
 
-	public boolean canAfford(Player player, double money) {
+    public boolean canAfford(Player player, double money) {
         return economy.has(player, money);
     }
 
@@ -93,12 +93,12 @@ public class VaultCurrency implements ICurrency {
         return false;
     }
 
-	public double addMoney(Player player, double money) {
+    public double addMoney(Player player, double money) {
         economy.depositPlayer(player, money);
         return getBalance(player);
     }
 
-	public double removeMoney(Player player, double money) {
+    public double removeMoney(Player player, double money) {
         economy.withdrawPlayer(player, money);
         return getBalance(player);
     }

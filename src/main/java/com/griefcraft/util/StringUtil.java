@@ -190,8 +190,10 @@ public class StringUtil {
     /**
      * Transform a string into one char
      *
-     * @param str The string to transform
-     * @param chr The char to transform all chars to (ie '*')
+     * @param str
+     *            The string to transform
+     * @param chr
+     *            The char to transform all chars to (ie '*')
      * @return the transformed string
      */
     public static String transform(String str, char chr) {
@@ -207,12 +209,13 @@ public class StringUtil {
     /**
      * Convert a byte array to hex
      *
-     * @param hash the hash to convert
+     * @param hash
+     *            the hash to convert
      * @return the converted hash
      */
     private static String byteArray2Hex(byte[] hash) {
         @SuppressWarnings("resource")
-		Formatter formatter = new Formatter();
+        Formatter formatter = new Formatter();
         for (final byte b : hash) {
             formatter.format("%02x", b);
         }

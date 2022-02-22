@@ -28,7 +28,6 @@
 
 package com.griefcraft.scripting;
 
-
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCInfo;
 import com.griefcraft.scripting.event.LWCAccessEvent;
@@ -195,6 +194,7 @@ public class ModuleLoader {
 
     /**
      * Register a module into the fast cache
+     * 
      * @param module
      */
     private void registerFastCache(Module module) {
@@ -336,7 +336,7 @@ public class ModuleLoader {
                     module.onDropItem((LWCDropItemEvent) event);
                 } else if (type == Event.DESTROY_PROTECTION) {
                     module.onDestroyProtection((LWCProtectionDestroyEvent) event);
-                }else if (type == Event.REGISTER_PROTECTION) {
+                } else if (type == Event.REGISTER_PROTECTION) {
                     module.onRegisterProtection((LWCProtectionRegisterEvent) event);
                 } else if (type == Event.POST_REMOVAL) {
                     module.onPostRemoval((LWCProtectionRemovePostEvent) event);

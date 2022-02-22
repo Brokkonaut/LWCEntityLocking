@@ -42,7 +42,7 @@ public class BlockMap {
                 mat = Material.getMaterial(name, true);
                 if (name.equals("BURNING_FURNACE")) {
                     mat = Material.FURNACE;
-                } else if(name.equals("STANDING_BANNER")) {
+                } else if (name.equals("STANDING_BANNER")) {
                     mat = Material.AIR;
                 }
                 if (mat == null || mat == Material.AIR) {

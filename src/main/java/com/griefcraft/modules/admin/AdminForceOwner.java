@@ -152,7 +152,6 @@ public class AdminForceOwner extends JavaModule {
             return;
         }
 
-
         LWCPlayer player = lwc.wrapPlayer(sender);
         Action action = new Action();
         action.setName("forceowner");

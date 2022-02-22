@@ -49,7 +49,9 @@ public interface Module {
 
     // Results returned by methods
     public enum Result {
-        ALLOW, CANCEL, DEFAULT
+        ALLOW,
+        CANCEL,
+        DEFAULT
     }
 
     /**

@@ -321,7 +321,7 @@ public class LWCBlockListener implements Listener {
             event.setCancelled(true);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockFade(BlockFadeEvent event) {
         if (!LWC.ENABLED) {

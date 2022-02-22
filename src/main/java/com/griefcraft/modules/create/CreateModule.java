@@ -48,7 +48,7 @@ import org.bukkit.entity.Player;
 
 public class CreateModule extends JavaModule {
 
-	@Override
+    @Override
     public void onBlockInteract(LWCBlockInteractEvent event) {
         if (event.getResult() != Result.DEFAULT) {
             return;
@@ -194,8 +194,8 @@ public class CreateModule extends JavaModule {
                     String hiddenPass = StringUtil.transform(data, '*');
                     lwc.sendLocale(player, "protection.create.password", "password", hiddenPass);
                     break;
-			default:
-				break;
+                default:
+                    break;
             }
         } catch (IllegalArgumentException e) {
             // Invalid protection type!

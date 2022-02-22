@@ -122,7 +122,7 @@ public class LimitsModule extends JavaModule {
      * @param block
      * @return true if the player reached their limit
      */
-	public boolean hasReachedLimit(Player player, Block block) {
+    public boolean hasReachedLimit(Player player, Block block) {
         if (configuration == null) {
             return false;
         }
@@ -202,7 +202,7 @@ public class LimitsModule extends JavaModule {
      * @param blockId
      * @return
      */
-	public int mapProtectionLimit(Player player, Material block) {
+    public int mapProtectionLimit(Player player, Material block) {
         if (configuration == null) {
             return 0;
         }
@@ -251,8 +251,8 @@ public class LimitsModule extends JavaModule {
                     limit = resolveInteger(player, "limit");
                 }
                 break;
-		default:
-			break;
+            default:
+                break;
 
         }
 
@@ -261,6 +261,7 @@ public class LimitsModule extends JavaModule {
 
     /**
      * Resolve a configuration node for a player. Tries nodes in this order:
+     * 
      * <pre>
      * players.PLAYERNAME.node
      * groups.GROUPNAME.node
@@ -394,7 +395,7 @@ public class LimitsModule extends JavaModule {
         LWC lwc = event.getLWC();
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        
+
         if (hasReachedLimit(player, block)) {
             lwc.sendLocale(player, "protection.exceeded");
             event.setCancelled(true);

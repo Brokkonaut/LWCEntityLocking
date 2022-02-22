@@ -19,7 +19,7 @@ public class BlockUtil {
         if (!(blockData instanceof Chest)) {
             return null;
         }
-        
+
         Chest chestData = (Chest) blockData;
         if (chestData.getType() != Chest.Type.SINGLE) {
             BlockFace chestFace = chestData.getFacing();

@@ -64,28 +64,32 @@ public class Action {
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * @param protection the Protection to set
+     * @param protection
+     *            the Protection to set
      */
     public void setProtection(Protection protection) {
         this.protection = protection;
     }
 
     /**
-     * @param data the data to set
+     * @param data
+     *            the data to set
      */
     public void setData(String data) {
         this.data = data;
     }
 
     /**
-     * @param player the player to set
+     * @param player
+     *            the player to set
      */
     public void setPlayer(LWCPlayer player) {
         this.player = player;

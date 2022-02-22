@@ -43,7 +43,7 @@ import java.util.List;
 
 public class LimitsSetup extends JavaModule {
 
-	@Override
+    @Override
     public void onCommand(LWCCommandEvent event) {
         if (event.isCancelled()) {
             return;
@@ -204,7 +204,8 @@ public class LimitsSetup extends JavaModule {
                     return key;
                 }
             }
-        } catch (NullPointerException e) { }
+        } catch (NullPointerException e) {
+        }
 
         // Not found, so we assume we're creating a new one
         return player;

@@ -88,7 +88,7 @@ public class DoorsModule extends JavaModule {
      * The current action to use, default to toggling the door open and closed
      */
     private Action action = Action.TOGGLE;
-    
+
     private HashSet<UUID> hasInteractedThisTick;
 
     @Override
@@ -96,10 +96,10 @@ public class DoorsModule extends JavaModule {
         this.lwc = lwc;
         this.hasInteractedThisTick = new HashSet<UUID>();
         lwc.getPlugin().getServer().getScheduler().scheduleSyncRepeatingTask(lwc.getPlugin(), new Runnable() {
-            
+
             @Override
             public void run() {
-                if(!hasInteractedThisTick.isEmpty()) {
+                if (!hasInteractedThisTick.isEmpty()) {
                     hasInteractedThisTick.clear();
                 }
             }
@@ -133,7 +133,7 @@ public class DoorsModule extends JavaModule {
 
         // The BOTTOM half of the other side of the double door
         Block doubleDoorBlock = null;
-        
+
         // special handling for doors
         if (DoorMatcher.PROTECTABLES_DOORS.contains(block.getType())) {
             // Are we looking at the top half?
@@ -161,8 +161,8 @@ public class DoorsModule extends JavaModule {
                 }
             }
         }
-        
-        if(!hasInteractedThisTick.add(event.getPlayer().getUniqueId())) {
+
+        if (!hasInteractedThisTick.add(event.getPlayer().getUniqueId())) {
             event.setResult(CANCEL);
             event.getEvent().setCancelled(true);
             return;
@@ -171,7 +171,7 @@ public class DoorsModule extends JavaModule {
         // toggle the other side of the door open
         boolean opensWhenClicked = (DoorMatcher.WOODEN_DOORS.contains(block.getType()) || DoorMatcher.FENCE_GATES.contains(block.getType()) || DoorMatcher.TRAPDOORS.contains(block.getType()));
         changeDoorStates(true, (opensWhenClicked ? null : block) /* opens when clicked */, doubleDoorBlock);
-        if(!opensWhenClicked && ! event.getPlayer().isSneaking()) {
+        if (!opensWhenClicked && !event.getPlayer().isSneaking()) {
             event.getEvent().setCancelled(true); // cancel to avoid things like block placing
         }
 
@@ -207,15 +207,17 @@ public class DoorsModule extends JavaModule {
      * <p/>
      * Note that the blocks given must be the bottom block of the door.
      *
-     * @param allowDoorToOpen If FALSE, and the door is currently CLOSED, it will NOT be opened!
-     * @param doors Blocks given must be the bottom block of the door
+     * @param allowDoorToOpen
+     *            If FALSE, and the door is currently CLOSED, it will NOT be opened!
+     * @param doors
+     *            Blocks given must be the bottom block of the door
      */
     private void changeDoorStates(boolean allowDoorToOpen, Block... doors) {
         for (Block door : doors) {
             if (door == null || !(door.getBlockData() instanceof Openable)) {
                 continue;
             }
-            
+
             Openable doorBlock = (Openable) door.getBlockData();
 
             boolean wasClosed = !doorBlock.isOpen();
@@ -256,7 +258,7 @@ public class DoorsModule extends JavaModule {
 
                 // Only change the block above it if it is something we can open or close
                 if (type == topHalf.getType()) {
-                    Openable topHalfData = (Openable)topHalf.getBlockData();
+                    Openable topHalfData = (Openable) topHalf.getBlockData();
                     topHalfData.setOpen(doorBlock.isOpen());
                     topHalf.setBlockData(topHalfData);
                 }

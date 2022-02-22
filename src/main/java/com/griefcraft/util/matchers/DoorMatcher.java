@@ -54,8 +54,8 @@ public class DoorMatcher implements ProtectionFinder.Matcher {
     private static final BlockFace[] faces = new BlockFace[] { BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH };
 
     public boolean matches(ProtectionFinder finder) {
-    	BlockState baseBlockState = finder.getBaseBlock();
-    	Block block = baseBlockState.getBlock();
+        BlockState baseBlockState = finder.getBaseBlock();
+        Block block = baseBlockState.getBlock();
         // Get the block above the base block
         Block aboveBaseBlock = block.getRelative(BlockFace.UP);
 
@@ -92,7 +92,7 @@ public class DoorMatcher implements ProtectionFinder.Matcher {
         }
 
         // Match the block UNDER the door
-        if(PROTECTABLES_DOORS.contains(aboveAboveBaseBlock.getType()) && PROTECTABLES_DOORS.contains(aboveBaseBlock.getType())) {
+        if (PROTECTABLES_DOORS.contains(aboveAboveBaseBlock.getType()) && PROTECTABLES_DOORS.contains(aboveBaseBlock.getType())) {
             finder.addBlock(aboveAboveBaseBlock);
             finder.addBlock(aboveBaseBlock);
             findPressurePlate(finder, aboveBaseBlock);

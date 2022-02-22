@@ -44,7 +44,7 @@ public final class Version implements Comparable<Object> {
     /**
      * Release levels that can be used
      */
-    public final static String[] releaseLevels = new String[]{
+    public final static String[] releaseLevels = new String[] {
             "release", "alpha", "beta", "rc"
     };
 

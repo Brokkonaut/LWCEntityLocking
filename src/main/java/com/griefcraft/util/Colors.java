@@ -52,7 +52,6 @@ public class Colors {
     public static final String White = "\u00A7f";
     public static final String Yellow = "\u00A7e";
 
-
     public static final String Bold = "\u00A7l";
     public static final String Strikethrough = "\u00A7m";
     public static final String Italic = "\u00A7o";

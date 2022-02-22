@@ -112,7 +112,6 @@ public class LWCPlayerListener implements Listener {
         lastEntityInteract = null;
     }
 
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent e) {
         Entity entity = e.getEntity();

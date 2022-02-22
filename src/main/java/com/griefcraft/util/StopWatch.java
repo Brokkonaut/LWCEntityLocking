@@ -58,13 +58,16 @@ import java.util.List;
  * Simple stop watch, allowing for timing of a number of tasks,
  * exposing total running time and running time for each named task.
  * <p/>
- * <p>Conceals use of <code>System.currentTimeMillis()</code>, improving the
+ * <p>
+ * Conceals use of <code>System.currentTimeMillis()</code>, improving the
  * readability of application code and reducing the likelihood of calculation errors.
  * <p/>
- * <p>Note that this object is not designed to be thread-safe and does not
+ * <p>
+ * Note that this object is not designed to be thread-safe and does not
  * use synchronization.
  * <p/>
- * <p>This class is normally used to verify performance during proof-of-concepts
+ * <p>
+ * This class is normally used to verify performance during proof-of-concepts
  * and in development, rather than as part of production applications.
  *
  * @author Rod Johnson
@@ -111,7 +114,6 @@ public class StopWatch {
      */
     private long totalTimeMillis;
 
-
     /**
      * Construct a new stop watch. Does not start any task.
      */
@@ -123,9 +125,10 @@ public class StopWatch {
      * Construct a new stop watch with the given id.
      * Does not start any task.
      *
-     * @param id identifier for this stop watch.
-     *           Handy when we have output from multiple stop watches
-     *           and need to distinguish between them.
+     * @param id
+     *            identifier for this stop watch.
+     *            Handy when we have output from multiple stop watches
+     *            and need to distinguish between them.
      */
     public StopWatch(String id) {
         this.id = id;
@@ -139,7 +142,6 @@ public class StopWatch {
     public void setKeepTaskList(boolean keepTaskList) {
         this.keepTaskList = keepTaskList;
     }
-
 
     /**
      * Start an unnamed task. The results are undefined if {@link #stop()}
@@ -155,7 +157,8 @@ public class StopWatch {
      * Start a named task. The results are undefined if {@link #stop()}
      * or timing methods are called without invoking this method.
      *
-     * @param taskName the name of the task to start
+     * @param taskName
+     *            the name of the task to start
      * @see #stop()
      */
     public void start(String taskName) throws IllegalStateException {
@@ -195,7 +198,6 @@ public class StopWatch {
     public boolean isRunning() {
         return this.running;
     }
-
 
     /**
      * Return the time taken by the last task.
@@ -237,7 +239,6 @@ public class StopWatch {
         }
         return this.taskList.toArray(new TaskInfo[this.taskList.size()]);
     }
-
 
     /**
      * Return a short description of the total running time.
@@ -324,7 +325,6 @@ public class StopWatch {
         }
         return sb.toString();
     }
-
 
     /**
      * Inner class to hold data about one task executed within the stop watch.

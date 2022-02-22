@@ -42,8 +42,10 @@ public class DatabaseMigrator {
     /**
      * Converts the current database to the given database type
      *
-     * @param fromDatabase The database to convert from
-     * @param toDatabase The database to convert to - does not need to be initialized; new PhysDB(type) is fine
+     * @param fromDatabase
+     *            The database to convert from
+     * @param toDatabase
+     *            The database to convert to - does not need to be initialized; new PhysDB(type) is fine
      * @return true if the conversion was most likely successful
      */
     public boolean migrate(PhysDB fromDatabase, PhysDB toDatabase) {

@@ -28,7 +28,6 @@
 
 package com.griefcraft.sql;
 
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -143,7 +142,8 @@ public abstract class Database {
                 if (stmt != null) {
                     stmt.close();
                 }
-            } catch (SQLException e) { }
+            } catch (SQLException e) {
+            }
         }
     }
 
@@ -189,7 +189,7 @@ public abstract class Database {
      *
      * @return if the connection was succesful
      */
-	public boolean connect() throws Exception {
+    public boolean connect() throws Exception {
         if (connection != null) {
             return true;
         }
@@ -220,7 +220,7 @@ public abstract class Database {
             properties.put("user", lwc.getConfiguration().getString("database.username"));
             properties.put("password", lwc.getConfiguration().getString("database.password"));
         }
-        
+
         statementCache.clear();
 
         // Connect to the database
@@ -287,7 +287,8 @@ public abstract class Database {
     /**
      * Log a string to stdout
      *
-     * @param str The string to log
+     * @param str
+     *            The string to log
      */
     public void log(String str) {
         LWC.getInstance().log(str);

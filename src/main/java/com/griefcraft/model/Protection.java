@@ -63,7 +63,9 @@ public class Protection {
     /**
      * The protection type
      *
-     * <p>Ordering <b>must NOT change</b> as ordinal values are used</p>
+     * <p>
+     * Ordering <b>must NOT change</b> as ordinal values are used
+     * </p>
      */
     public enum Type {
 
@@ -335,7 +337,7 @@ public class Protection {
      * @return
      */
     @SuppressWarnings("unchecked")
-	public void encodeRights() {
+    public void encodeRights() {
         // create the root
         JSONArray root = new JSONArray();
 
@@ -353,7 +355,7 @@ public class Protection {
      * Encode the protection flags to JSON
      */
     @SuppressWarnings("unchecked")
-	public void encodeFlags() {
+    public void encodeFlags() {
         JSONArray root = new JSONArray();
 
         for (Flag flag : flags.values()) {
@@ -611,7 +613,7 @@ public class Protection {
      *
      * @return
      */
-	public boolean isBlockInWorld() {
+    public boolean isBlockInWorld() {
         Material storedBlockId = getBlockMaterial();
         Block block = getBlock();
 
@@ -632,7 +634,7 @@ public class Protection {
     public int getBlockId() {
         return blockId;
     }
-    
+
     public Material getBlockMaterial() {
         return blockMaterial;
     }
@@ -882,12 +884,12 @@ public class Protection {
 
         saveNow(); // LWC.getInstance().getDatabaseThread().addProtection(this);
     }
-    
+
     public void saveLastAccessed() {
         if (removed) {
             return;
         }
-        
+
         LWC.getInstance().getPhysicalDatabase().saveProtectionLastAccessed(this);
     }
 
@@ -957,7 +959,7 @@ public class Protection {
     public Player getBukkitOwner() {
         return Bukkit.getServer().getPlayer(owner);
     }
-    
+
     public void uncacheBlock() {
         cachedBlock = null;
     }
@@ -969,7 +971,7 @@ public class Protection {
         if (cachedBlock != null) {
             return cachedBlock;
         }
-        if(getBlockId() == EntityBlock.ENTITY_BLOCK_ID){
+        if (getBlockId() == EntityBlock.ENTITY_BLOCK_ID) {
             return null;
         }
 
@@ -1008,7 +1010,7 @@ public class Protection {
 
         return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockMaterial)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
     }
-    
+
     public String toShortString() {
         // format the last accessed time
         String lastAccessed = TimeUtil.timeToString((System.currentTimeMillis() / 1000L) - this.lastAccessed);
@@ -1035,7 +1037,7 @@ public class Protection {
     public boolean isEntity() {
         return isEntity;
     }
-    
+
     public void setModified() {
         modified = true;
     }

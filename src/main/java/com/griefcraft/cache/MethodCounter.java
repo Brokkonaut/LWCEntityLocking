@@ -87,7 +87,7 @@ public class MethodCounter {
         // Sorting the list based on values
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
             public int compare(Map.Entry<String, Integer> o1,
-                               Map.Entry<String, Integer> o2) {
+                    Map.Entry<String, Integer> o2) {
                 if (order) {
                     return o1.getValue().compareTo(o2.getValue());
                 } else {

@@ -66,7 +66,8 @@ public class AdminPurge extends JavaModule {
         String players = StringUtil.join(args, shouldRemoveBlocks ? 2 : 1);
 
         for (String toRemove : players.split(" ")) {
-            if (toRemove.contains("'")) continue; // bad me
+            if (toRemove.contains("'"))
+                continue; // bad me
 
             // Remove all of them
             lwc.fastRemoveProtectionsByPlayer(sender, toRemove, shouldRemoveBlocks);
