@@ -31,7 +31,6 @@ package com.griefcraft.util.config;
 import com.griefcraft.lwc.LWC;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -69,36 +68,36 @@ public class ConfigUpdater {
      *
      * @return
      */
-    @SuppressWarnings("resource")
 	private Map<String, Configuration> loadReferenceConfigFiles() throws IOException {
         if (referenceConfigFileCache.size() > 0) {
             return referenceConfigFileCache;
         }
 
         // Load our jar file
-        ZipFile jarFile = new ZipFile(URLDecoder.decode(LWC.getInstance().getPlugin().getFile().getPath(), "UTF-8"));
+        try (ZipFile jarFile = new ZipFile(LWC.getInstance().getPlugin().getFile())) {
 
-        // Begin loading the files
-        Enumeration<? extends ZipEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry file = entries.nextElement();
-            String name = file.getName();
+            // Begin loading the files
+            Enumeration<? extends ZipEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry file = entries.nextElement();
+                String name = file.getName();
 
-            // We only want config dir
-            if (!name.startsWith("config/") || !name.endsWith(".yml")) {
-                continue;
+                // We only want config dir
+                if (!name.startsWith("config/") || !name.endsWith(".yml")) {
+                    continue;
+                }
+
+                // Get just the name
+                String realName = name.substring(name.indexOf('/') + 1);
+
+                // Insert it
+                Configuration configuration = new Configuration(null);
+                configuration.load(jarFile.getInputStream(file));
+                referenceConfigFileCache.put(realName, configuration);
             }
 
-            // Get just the name
-            String realName = name.substring(name.indexOf('/') + 1);
-
-            // Insert it
-            Configuration configuration = new Configuration(null);
-            configuration.load(jarFile.getInputStream(file));
-            referenceConfigFileCache.put(realName, configuration);
+            return referenceConfigFileCache;
         }
-
-        return referenceConfigFileCache;
     }
 
     /**

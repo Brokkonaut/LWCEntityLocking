@@ -231,7 +231,6 @@ public class LWCPlugin extends JavaPlugin {
 	/**
 	 * Load LWC localizations
 	 */
-	@SuppressWarnings("resource")
 	public void loadLocales() {
 		LWCResourceBundle locale;
 		String localization = getCurrentLocale();
@@ -244,35 +243,29 @@ public class LWCPlugin extends JavaPlugin {
 			ResourceBundle defaultBundle;
 
 			// Open the LWC jar file
-			JarFile file = new JarFile(getFile());
+			try (JarFile file = new JarFile(getFile())) {
 
-			// Attempt to load the default locale
-			defaultBundle = new PropertyResourceBundle(new InputStreamReader(
-					file.getInputStream(file
-							.getJarEntry("lang/lwc_en.properties")), "UTF-8"));
-			locale = new LWCResourceBundle(defaultBundle);
+				// Attempt to load the default locale
+				defaultBundle = new PropertyResourceBundle(new InputStreamReader(file.getInputStream(file.getJarEntry("lang/lwc_en.properties")), "UTF-8"));
+				locale = new LWCResourceBundle(defaultBundle);
 
-			try {
-				optionalBundle = ResourceBundle.getBundle("lwc", new Locale(
-						localization), new LocaleClassLoader(),
-						new UTF8Control());
-			} catch (MissingResourceException e) {
-			}
+				try {
+					optionalBundle = ResourceBundle.getBundle("lwc", new Locale(localization), new LocaleClassLoader(), new UTF8Control());
+				} catch (MissingResourceException e) {
+				}
 
-			if (optionalBundle != null) {
-				locale.addExtensionBundle(optionalBundle);
-			}
+				if (optionalBundle != null) {
+					locale.addExtensionBundle(optionalBundle);
+				}
 
-			// and now check if a bundled locale the same as the server's locale
-			// exists
-			try {
-				optionalBundle = new PropertyResourceBundle(
-						new InputStreamReader(file.getInputStream(file
-								.getJarEntry("lang/lwc_" + localization
-										+ ".properties")), "UTF-8"));
-			} catch (MissingResourceException e) {
-			} catch (NullPointerException e) {
-				// file wasn't found :p - that's ok
+				// and now check if a bundled locale the same as the server's locale
+				// exists
+				try {
+					optionalBundle = new PropertyResourceBundle(new InputStreamReader(file.getInputStream(file.getJarEntry("lang/lwc_" + localization + ".properties")), "UTF-8"));
+				} catch (MissingResourceException e) {
+				} catch (NullPointerException e) {
+					// file wasn't found :p - that's ok
+				}
 			}
 
 			// ensure both bundles aren't the same

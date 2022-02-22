@@ -815,7 +815,6 @@ public class PhysDB extends Database {
      * @param set
      * @return
      */
-    @SuppressWarnings("unchecked")
     public Protection resolveProtection(ResultSet set) {
         try {
             Protection protection = new Protection();
