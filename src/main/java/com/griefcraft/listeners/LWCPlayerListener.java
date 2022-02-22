@@ -48,7 +48,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Hopper;
 import org.bukkit.block.Lectern;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
