@@ -15,12 +15,14 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
 
 public class EntityBlock implements Block {
     public static final int ENTITY_BLOCK_ID = 5000;
@@ -271,5 +273,30 @@ public class EntityBlock implements Block {
     @Override
     public Collection<ItemStack> getDrops(ItemStack tool, Entity entity) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public boolean applyBoneMeal(BlockFace arg0) {
+        return false;
+    }
+
+    @Override
+    public boolean canPlace(BlockData arg0) {
+        return false;
+    }
+
+    @Override
+    public float getBreakSpeed(Player arg0) {
+        return 0;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape() {
+        return null;
+    }
+
+    @Override
+    public boolean isPreferredTool(ItemStack arg0) {
+        return false;
     }
 }

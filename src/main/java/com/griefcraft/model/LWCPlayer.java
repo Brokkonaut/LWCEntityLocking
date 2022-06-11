@@ -447,4 +447,15 @@ public class LWCPlayer implements CommandSender {
     public Spigot spigot() {
         return player.spigot();
     }
+
+    @Override
+    public void sendMessage(UUID target, String message) {
+        player.sendMessage(target, message);
+        
+    }
+
+    @Override
+    public void sendMessage(UUID target, String... message) {
+        player.sendMessage(target, message);
+    }
 }
