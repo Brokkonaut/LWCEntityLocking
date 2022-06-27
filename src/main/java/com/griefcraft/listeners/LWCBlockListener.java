@@ -45,6 +45,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -371,9 +372,25 @@ public class LWCBlockListener implements Listener {
         LWC lwc = plugin.getLWC();
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
+        Location location = block.getLocation();
 
         ProtectionCache cache = lwc.getProtectionCache();
-        CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
+        CacheKey cacheKey = ProtectionCache.cacheKey(location);
+
+        if (lwc.isProtectable(event.getBlockReplacedState())) {
+            Protection existingProtection = lwc.findProtection(block);
+            if (!lwc.canAdminProtection(player, existingProtection)) {
+                // they can't access the protection ..
+                event.setCancelled(true);
+                return;
+            }
+        } else {
+            // remove stale protection
+            Protection existingProtection = lwc.getPhysicalDatabase().loadProtection(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+            if (existingProtection != null) {
+                existingProtection.remove();
+            }
+        }
 
         // In the event they place a block, remove any known nulls there
         if (cache.isKnownNull(cacheKey)) {
