@@ -135,7 +135,7 @@ public class LWCEntityListener implements Listener {
     }
 
     private void entityCreatedByPlayer(Entity entity, Player player) {
-        if (!LWC.ENABLED) {
+        if (!LWC.ENABLED || player == null) {
             return;
         }
         LWC lwc = plugin.getLWC();
