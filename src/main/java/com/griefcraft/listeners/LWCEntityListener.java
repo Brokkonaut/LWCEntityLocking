@@ -53,9 +53,11 @@ import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -84,11 +86,19 @@ public class LWCEntityListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onEntityPlace(EntityPlaceEvent event) {
+        Player player = event.getPlayer();
+        Entity entity = event.getEntity();
+
+        entityCreatedByPlayer(entity, player);
+    }
+    
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onHangingPlace(HangingPlaceEvent event) {
         Player player = event.getPlayer();
-        Entity block = event.getEntity();
+        Entity entity = event.getEntity();
 
-        entityCreatedByPlayer(block, player);
+        entityCreatedByPlayer(entity, player);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -157,6 +167,10 @@ public class LWCEntityListener implements Listener {
         // Is it okay?
         if (type == null) {
             player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
+            return;
+        }
+        
+        if(plugin.getLWC().findProtection(entity) != null) {
             return;
         }
 
