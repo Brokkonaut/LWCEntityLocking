@@ -50,9 +50,13 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class LimitsV2 extends JavaModule {
 
-    private static final Set<Material> SIGNS = EnumSet.of(Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
-            Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.ACACIA_SIGN,
-            Material.BIRCH_SIGN, Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN);
+    private static final Set<Material> SIGNS = EnumSet.of(
+            Material.MANGROVE_WALL_SIGN, Material.CRIMSON_WALL_SIGN, Material.WARPED_WALL_SIGN,
+            Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN, Material.DARK_OAK_WALL_SIGN,
+            Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN,
+            Material.MANGROVE_SIGN, Material.CRIMSON_SIGN, Material.WARPED_SIGN,
+            Material.ACACIA_SIGN, Material.BIRCH_SIGN, Material.DARK_OAK_SIGN,
+            Material.JUNGLE_SIGN, Material.OAK_SIGN);
 
     /**
      * The limit represented by unlimited

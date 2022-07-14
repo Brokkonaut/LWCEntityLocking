@@ -49,7 +49,8 @@ public class GravityMatcher implements ProtectionFinder.Matcher {
             Material.ACACIA_BUTTON, Material.WHITE_BANNER, Material.ORANGE_BANNER, Material.MAGENTA_BANNER,
             Material.LIGHT_BLUE_BANNER, Material.YELLOW_BANNER, Material.LIME_BANNER, Material.PINK_BANNER,
             Material.GRAY_BANNER, Material.LIGHT_GRAY_BANNER, Material.CYAN_BANNER, Material.PURPLE_BANNER,
-            Material.BLUE_BANNER, Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER);
+            Material.BLUE_BANNER, Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER,
+            Material.WARPED_SIGN, Material.CRIMSON_SIGN, Material.MANGROVE_SIGN);
 
     @Override
     public boolean matches(ProtectionFinder finder) {

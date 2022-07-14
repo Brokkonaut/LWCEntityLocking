@@ -56,7 +56,8 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             Material.LIGHT_GRAY_WALL_BANNER, Material.CYAN_WALL_BANNER, Material.PURPLE_WALL_BANNER, Material.BLUE_WALL_BANNER, //
             Material.BROWN_WALL_BANNER, Material.GREEN_WALL_BANNER, Material.RED_WALL_BANNER, Material.BLACK_WALL_BANNER, //
             Material.STONE_BUTTON, Material.LEVER, //
-            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON, Material.ACACIA_BUTTON);
+            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON,
+            Material.ACACIA_BUTTON, Material.WARPED_WALL_SIGN, Material.CRIMSON_WALL_SIGN, Material.MANGROVE_WALL_SIGN);
 
     /**
      * Possible faces around the base block that protections could be at
