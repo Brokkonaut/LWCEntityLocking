@@ -31,6 +31,7 @@ package com.griefcraft.model;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.cache.CacheKey;
 import com.griefcraft.cache.ProtectionCache;
+import com.griefcraft.cache.StringCache;
 import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
@@ -739,7 +740,7 @@ public class Protection {
             return;
         }
 
-        this.world = world;
+        this.world = StringCache.intern(world);
         this.modified = true;
         this.cacheKey = null;
     }

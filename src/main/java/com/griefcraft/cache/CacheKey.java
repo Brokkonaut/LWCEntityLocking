@@ -10,7 +10,7 @@ public final class CacheKey {
     private final int hashCode;
 
     public CacheKey(String world, int x, int y, int z) {
-        this.world = StringCache.intern(world);
+        this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -24,10 +24,9 @@ public final class CacheKey {
 
     @Override
     public final boolean equals(Object obj) {
-        if (obj.getClass() != CacheKey.class) {
+        if (!(obj instanceof CacheKey o)) {
             return false;
         }
-        CacheKey o = (CacheKey) obj;
-        return o.world == world && o.x == x && o.y == y && o.z == z;
+        return Objects.equals(o.world, world) && o.x == x && o.y == y && o.z == z;
     }
 }
