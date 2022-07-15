@@ -10,7 +10,7 @@ public final class CacheKey {
     private final int hashCode;
 
     public CacheKey(String world, int x, int y, int z) {
-        this.world = world == null ? null : world.intern();
+        this.world = StringCache.intern(world);
         this.x = x;
         this.y = y;
         this.z = z;
