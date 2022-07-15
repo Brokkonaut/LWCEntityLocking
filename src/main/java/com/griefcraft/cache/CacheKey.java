@@ -10,7 +10,7 @@ public final class CacheKey {
     private final int hashCode;
 
     public CacheKey(String world, int x, int y, int z) {
-        this.world = world;
+        this.world = world == null ? null : world.intern();
         this.x = x;
         this.y = y;
         this.z = z;
@@ -28,6 +28,6 @@ public final class CacheKey {
             return false;
         }
         CacheKey o = (CacheKey) obj;
-        return Objects.equals(o.world, world) && o.x == x && o.y == y && o.z == z;
+        return o.world == world && o.x == x && o.y == y && o.z == z;
     }
 }
