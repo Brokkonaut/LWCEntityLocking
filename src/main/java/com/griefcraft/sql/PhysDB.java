@@ -849,7 +849,7 @@ public class PhysDB extends Database {
             // check for oh so beautiful data!
             String data = set.getString("data");
 
-            if (data == null || data.trim().isEmpty()) {
+            if (data == null || data.isBlank()) {
                 return protection;
             }
 
@@ -870,7 +870,6 @@ public class PhysDB extends Database {
 
             // obtain the root
             JSONObject root = (JSONObject) object;
-            protection.getData().putAll(root);
 
             // Attempt to parse rights
             Object rights = root.get("rights");
@@ -1864,7 +1863,8 @@ public class PhysDB extends Database {
             statement.setInt(2, protection.getType().ordinal());
             statement.setInt(3, protection.getBlockId());
             statement.setString(4, protection.getWorld());
-            statement.setString(5, protection.getData().toJSONString());
+            JSONObject data = protection.getData();
+            statement.setString(5, data == null ? null : data.toJSONString());
             statement.setString(6, protection.getOwner());
             statement.setString(7, protection.getPassword());
             statement.setInt(8, protection.getX());

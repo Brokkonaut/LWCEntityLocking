@@ -539,7 +539,7 @@ public class LWC {
                 if (protection.isRealOwner(player)) {
                     owner = parser.parseMessage("you");
                 } else {
-                    owner = UUIDRegistry.getNameOrUUID(protection.getOwner());
+                    owner = protection.getOwnerName();
                 }
 
                 String blockName = materialToString(block);
@@ -575,13 +575,13 @@ public class LWC {
             if (type == Protection.Type.PASSWORD) {
                 sendLocale(player, "protection.general.locked.password",
                         "block", materialToString(block), "owner",
-                        protection.getOwner());
+                        protection.getOwnerName());
             } else if ((type == Protection.Type.PRIVATE
                     || type == Protection.Type.DONATION
                     || type == Protection.Type.SHOWCASE) && !messageSent) {
                 sendLocale(player, "protection.general.locked.private",
                         "block", materialToString(block), "owner",
-                        protection.getOwner());
+                        protection.getOwnerName());
             }
         }
 
@@ -1010,7 +1010,7 @@ public class LWC {
         List<Protection> protections = physicalDatabase.loadProtectionsByPlayerAlsoIfNotOwner(oldplayer);
         for (Protection p : protections) {
             if (p.getOwner() != null && p.getOwner().equalsIgnoreCase(oldPlayerString)) {
-                p.setOwner(newplayeridstring);
+                p.setOwner(newplayerid);
             }
             for (Permission perm : p.getPermissions()) {
                 if (perm.getType() == Permission.Type.PLAYER && perm.getName() != null && perm.getName().equalsIgnoreCase(oldPlayerString)) {

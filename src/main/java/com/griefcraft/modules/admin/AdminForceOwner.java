@@ -131,7 +131,7 @@ public class AdminForceOwner extends JavaModule {
                 UUID uuid = UUIDRegistry.getUUID(newOwner);
 
                 if (uuid != null) {
-                    protection.setOwner(uuid.toString());
+                    protection.setOwner(uuid);
                 } else {
                     protection.setOwner(newOwner);
                 }

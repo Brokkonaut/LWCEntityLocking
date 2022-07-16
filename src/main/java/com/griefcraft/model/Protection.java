@@ -40,6 +40,7 @@ import com.griefcraft.util.ProtectionFinder;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.TimeUtil;
 import com.griefcraft.util.UUIDRegistry;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -129,17 +131,17 @@ public class Protection {
     /**
      * All of the history items associated with this protection
      */
-    private final Set<History> historyCache = new HashSet<>();
+    private Set<History> historyCache = null;
 
     /**
      * List of the permissions rights for the protection
      */
-    private final Set<Permission> permissions = new HashSet<>();
+    private Set<Permission> permissions = null;
 
     /**
      * List of flags enabled on the protection
      */
-    private final Map<Flag.Type, Flag> flags = new HashMap<>();
+    private Map<Flag.Type, Flag> flags = null;
 
     /**
      * The block id
@@ -152,11 +154,6 @@ public class Protection {
     private String password;
 
     /**
-     * JSON data for the protection
-     */
-    private final JSONObject data = new JSONObject();
-
-    /**
      * Unique id (in sql)
      */
     private int id;
@@ -164,7 +161,12 @@ public class Protection {
     /**
      * The owner of the chest
      */
-    private String owner;
+    private UUID owner;
+    
+    /**
+     * The owner of the chest (name based)
+     */
+    private String legacyOwner;
 
     /**
      * The protection type
@@ -199,7 +201,7 @@ public class Protection {
     /**
      * The time the protection was created
      */
-    private String creation;
+    private long creation;
 
     /**
      * Immutable flag for the protection. When removed, this bool is switched to true and any setters
@@ -241,8 +243,8 @@ public class Protection {
 
         Protection other = (Protection) object;
 
-        return id == other.id && x == other.x && y == other.y && z == other.z && (owner != null && owner.equals(other.owner)) &&
-                (world != null && world.equals(other.world));
+        return id == other.id && x == other.x && y == other.y && z == other.z && Objects.equals(owner, other.owner) &&
+                Objects.equals(legacyOwner, other.legacyOwner) && Objects.equals(world, other.world);
     }
 
     @Override
@@ -258,9 +260,7 @@ public class Protection {
         hash *= 37 + z;
 
         // and for good measure, to *guarantee* no collisions
-        if (creation != null) {
-            hash *= 37 + creation.hashCode();
-        }
+        hash *= 37 + creation;
 
         return hash;
     }
@@ -277,27 +277,28 @@ public class Protection {
 
         boolean res = false;
 
-        if (!UUIDRegistry.isValidUUID(owner)) {
-            UUID uuid = UUIDRegistry.getUUID(owner);
+        if (legacyOwner != null) {
+            UUID uuid = UUIDRegistry.getUUID(legacyOwner);
 
             if (uuid != null) {
-                setOwner(uuid.toString());
+                setOwner(uuid);
                 res = true;
             }
         }
 
-        for (Permission permission : permissions) {
-            if (permission.getType() == Permission.Type.PLAYER && !UUIDRegistry.isValidUUID(permission.getName())) {
-                UUID uuid = UUIDRegistry.getUUID(permission.getName());
+        if (permissions != null) {
+            for (Permission permission : permissions) {
+                if (permission.getType() == Permission.Type.PLAYER && !UUIDRegistry.isValidUUID(permission.getName())) {
+                    UUID uuid = UUIDRegistry.getUUID(permission.getName());
 
-                if (uuid != null) {
-                    permission.setName(uuid.toString());
-                    modified = true;
-                    res = true;
+                    if (uuid != null) {
+                        permission.setName(uuid.toString());
+                        modified = true;
+                        res = true;
+                    }
                 }
             }
         }
-
         return res;
     }
 
@@ -307,16 +308,16 @@ public class Protection {
      * @return true if the protection requires conversion
      */
     public boolean needsUUIDConversion() {
-        if (!UUIDRegistry.isValidUUID(owner)) {
+        if (legacyOwner != null) {
             return true;
         }
-
-        for (Permission permission : permissions) {
-            if (permission.getType() == Permission.Type.PLAYER && !UUIDRegistry.isValidUUID(permission.getName())) {
-                return true;
+        if (permissions != null) {
+            for (Permission permission : permissions) {
+                if (permission.getType() == Permission.Type.PLAYER && !UUIDRegistry.isValidUUID(permission.getName())) {
+                    return true;
+                }
             }
         }
-
         return false;
     }
 
@@ -327,43 +328,7 @@ public class Protection {
      * @return
      */
     public String getFormattedOwnerPlayerName() {
-        return UUIDRegistry.formatPlayerName(owner);
-    }
-
-    /**
-     * Encode the AccessRights to JSON
-     *
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public void encodeRights() {
-        // create the root
-        JSONArray root = new JSONArray();
-
-        // add all of the permissions to the root
-        for (Permission permission : permissions) {
-            if (permission != null) {
-                root.add(permission.encodeToJSON());
-            }
-        }
-
-        data.put("rights", root);
-    }
-
-    /**
-     * Encode the protection flags to JSON
-     */
-    @SuppressWarnings("unchecked")
-    public void encodeFlags() {
-        JSONArray root = new JSONArray();
-
-        for (Flag flag : flags.values()) {
-            if (flag != null) {
-                root.add(flag.getData());
-            }
-        }
-
-        data.put("flags", root);
+        return owner != null ? UUIDRegistry.formatPlayerName(owner) : UUIDRegistry.formatPlayerName(legacyOwner);
     }
 
     /**
@@ -372,6 +337,9 @@ public class Protection {
      * @param history
      */
     public void checkHistory(History history) {
+        if (historyCache == null) {
+            historyCache = new HashSet<>();
+        }
         if (!historyCache.contains(history)) {
             historyCache.add(history);
         }
@@ -404,10 +372,10 @@ public class Protection {
             return false;
         }
 
-        if (UUIDRegistry.isValidUUID(owner)) {
-            return UUID.fromString(owner).equals(player.getUniqueId());
+        if (owner != null) {
+            return owner.equals(player.getUniqueId());
         } else {
-            return owner.equalsIgnoreCase(player.getName());
+            return legacyOwner != null && legacyOwner.equalsIgnoreCase(player.getName());
         }
     }
 
@@ -427,6 +395,9 @@ public class Protection {
         history.setZ(z);
 
         // add it to the cache
+        if (historyCache == null) {
+            historyCache = new HashSet<>();
+        }
         historyCache.add(history);
 
         return history;
@@ -437,7 +408,8 @@ public class Protection {
      */
     public Set<History> getRelatedHistory() {
         // cache the database's history if we don't have any yet
-        if (historyCache.size() == 0) {
+        if (historyCache == null) {
+            historyCache = new HashSet<>();
             historyCache.addAll(LWC.getInstance().getPhysicalDatabase().loadHistory(this));
         }
 
@@ -471,7 +443,7 @@ public class Protection {
      * @return
      */
     public boolean hasFlag(Flag.Type type) {
-        return flags.containsKey(type);
+        return flags != null && flags.containsKey(type);
     }
 
     /**
@@ -481,7 +453,7 @@ public class Protection {
      * @return
      */
     public Flag getFlag(Flag.Type type) {
-        return flags.get(type);
+        return flags != null ? flags.get(type) : null;
     }
 
     /**
@@ -494,7 +466,9 @@ public class Protection {
         if (removed || flag == null) {
             return false;
         }
-
+        if (flags == null) {
+            flags = new HashMap<>();
+        }
         if (!flags.containsKey(flag.getType())) {
             flags.put(flag.getType(), flag);
             modified = true;
@@ -511,11 +485,14 @@ public class Protection {
      * @return
      */
     public void removeFlag(Flag flag) {
-        if (removed) {
+        if (removed || flag == null || flags == null) {
             return;
         }
 
         flags.remove(flag.getType());
+        if (flags.isEmpty()) {
+            flags = null;
+        }
         this.modified = true;
     }
 
@@ -527,12 +504,13 @@ public class Protection {
      * @return the permissions the player has
      */
     public Permission.Access getAccess(String name, Permission.Type type) {
-        for (Permission permission : permissions) {
-            if (permission.getType() == type && permission.getName().equalsIgnoreCase(name)) {
-                return permission.getAccess();
+        if (permissions != null) {
+            for (Permission permission : permissions) {
+                if (permission.getType() == type && permission.getName().equalsIgnoreCase(name)) {
+                    return permission.getAccess();
+                }
             }
         }
-
         return Permission.Access.NONE;
     }
 
@@ -540,20 +518,25 @@ public class Protection {
      * @return the list of permissions
      */
     public List<Permission> getPermissions() {
-        return Collections.unmodifiableList(new ArrayList<>(permissions));
+        return permissions == null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(permissions));
     }
 
     /**
      * Remove temporary permissions rights from the protection
      */
     public void removeTemporaryPermissions() {
-        Iterator<Permission> iter = permissions.iterator();
+        if (permissions != null) {
+            Iterator<Permission> iter = permissions.iterator();
 
-        while (iter.hasNext()) {
-            Permission permission = iter.next();
+            while (iter.hasNext()) {
+                Permission permission = iter.next();
 
-            if (permission.isVolatile()) {
-                iter.remove();
+                if (permission.isVolatile()) {
+                    iter.remove();
+                }
+            }
+            if (permissions.isEmpty()) {
+                permissions = null;
             }
         }
     }
@@ -572,6 +555,9 @@ public class Protection {
         removePermissions(permission.getName(), permission.getType());
 
         // now we can safely add it
+        if (permissions == null) {
+            permissions = new HashSet<>();
+        }
         permissions.add(permission);
         modified = true;
     }
@@ -583,7 +569,7 @@ public class Protection {
      * @param type
      */
     public void removePermissions(String name, Permission.Type type) {
-        if (removed) {
+        if (removed || permissions == null || type == null) {
             return;
         }
 
@@ -597,13 +583,16 @@ public class Protection {
                 modified = true;
             }
         }
+        if (permissions.isEmpty()) {
+            permissions = null;
+        }
     }
 
     /**
      * Remove all of the permissions
      */
     public void removeAllPermissions() {
-        permissions.clear();
+        permissions = null;
         modified = true;
     }
 
@@ -627,6 +616,33 @@ public class Protection {
     }
 
     public JSONObject getData() {
+        JSONObject data = null;
+        if (permissions != null && !permissions.isEmpty()) {
+            // create the root
+            JSONArray root = new JSONArray();
+
+            // add all of the permissions to the root
+            for (Permission permission : permissions) {
+                if (permission != null) {
+                    root.add(permission.encodeToJSON());
+                }
+            }
+            data = new JSONObject();
+            data.put("rights", root);
+        }
+
+        if (flags != null && !flags.isEmpty()) {
+            JSONArray root = new JSONArray();
+            for (Flag flag : flags.values()) {
+                if (flag != null) {
+                    root.add(flag.getData());
+                }
+            }
+            if (data == null) {
+                data = new JSONObject();
+            }
+            data.put("flags", root);
+        }
         return data;
     }
 
@@ -643,15 +659,35 @@ public class Protection {
     }
 
     public String getCreation() {
-        return creation;
+        return new Timestamp(creation).toString();
     }
 
+    public long getCreationTime() {
+        return creation;
+    }
+    
+    public void setCreationTime(long time) {
+        creation = time;
+    }
+    
     public int getId() {
         return id;
     }
 
     public String getOwner() {
+        return owner != null ? owner.toString() : legacyOwner;
+    }
+
+    public String getOwnerName() {
+        return owner != null ? UUIDRegistry.getName(owner) : legacyOwner;
+    }
+
+    public UUID getOwnerUUID() {
         return owner;
+    }
+
+    public boolean hasSameOwner(Protection other) {
+        return Objects.equals(owner, other.owner) && Objects.equals(legacyOwner, other.legacyOwner);
     }
 
     public Type getType() {
@@ -704,7 +740,7 @@ public class Protection {
             return;
         }
 
-        this.creation = creation;
+        this.creation = Timestamp.valueOf(creation).getTime();
         this.modified = true;
     }
 
@@ -721,7 +757,23 @@ public class Protection {
         if (removed) {
             return;
         }
+        if (UUIDRegistry.isValidUUID(owner)) {
+            this.owner = UUID.fromString(owner);
+            this.legacyOwner = null;
+        } else {
+            this.owner = null;
+            this.legacyOwner = owner;
+        }
+        this.modified = true;
+    }
 
+
+    public void setOwner(UUID owner) {
+        if (removed) {
+            return;
+        }
+
+        this.legacyOwner = null;
         this.owner = owner;
         this.modified = true;
     }
@@ -900,10 +952,6 @@ public class Protection {
             return;
         }
 
-        // encode JSON objects
-        encodeRights();
-        encodeFlags();
-
         // only save the protection if it was modified
         if (modified && !removing) {
             LWC.getInstance().getPhysicalDatabase().saveProtection(this);
@@ -956,7 +1004,7 @@ public class Protection {
      * @return the Bukkit Player object of the owner
      */
     public Player getBukkitOwner() {
-        return Bukkit.getServer().getPlayer(owner);
+        return owner != null ? Bukkit.getServer().getPlayer(owner) : Bukkit.getServer().getPlayer(legacyOwner);
     }
 
     public void uncacheBlock() {
@@ -991,9 +1039,10 @@ public class Protection {
     public String toString() {
         // format the flags prettily
         String flagStr = "";
-
-        for (Flag flag : flags.values()) {
-            flagStr += flag.toString() + ",";
+        if (flags != null) {
+            for (Flag flag : flags.values()) {
+                flagStr += flag.toString() + ",";
+            }
         }
 
         if (flagStr.endsWith(",")) {
@@ -1006,8 +1055,10 @@ public class Protection {
         if (!lastAccessed.equals("Not yet known")) {
             lastAccessed += " ago";
         }
+        
+        String creationString = new Timestamp(creation).toString();
 
-        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockMaterial)) : "Not yet cached"), id, world, x, y, z, creation, flagStr, lastAccessed);
+        return String.format("%s %s" + Colors.White + " " + Colors.Green + "Id=%d Location=[%s %d,%d,%d] Created=%s Flags=%s LastAccessed=%s", typeToString(), (blockId > 0 ? (LWC.materialToString(blockMaterial)) : "Not yet cached"), id, world, x, y, z, creationString, flagStr, lastAccessed);
     }
 
     public String toShortString() {
@@ -1017,8 +1068,10 @@ public class Protection {
         if (!lastAccessed.equals("Not yet known")) {
             lastAccessed += " ago";
         }
+        
+        String creationString = new Timestamp(creation).toString();
 
-        return String.format(Colors.Green + "Created: %s; LastAccessed: %s", creation, lastAccessed);
+        return String.format(Colors.Green + "Created: %s; LastAccessed: %s", creationString, lastAccessed);
     }
 
     /**

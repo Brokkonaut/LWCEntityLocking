@@ -545,7 +545,7 @@ public class LWCPlayerListener implements Listener {
             if (initiatorProtection != null) {
                 // if they're owned by the same person then we can allow the
                 // move
-                if (protection.getOwner().equals(initiatorProtection.getOwner())) {
+                if (protection.hasSameOwner(initiatorProtection)) {
                     return false;
                 }
             }

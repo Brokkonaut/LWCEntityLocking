@@ -184,6 +184,23 @@ public class UUIDRegistry {
     }
 
     /**
+     * Attempts to format a player's name, which is an UUID. If the 
+     * UUID is unknown, then "Unknown (uuid)" will be returned.
+     *
+     * @param name
+     * @return
+     */
+    public static String formatPlayerName(UUID player) {
+        String formattedName = getName(player);
+
+        if (formattedName == null) {
+            return "Unknown (" + player + ")";
+        } else {
+            return formattedName + " (" + player + ")";
+        }
+    }
+
+    /**
      * Attempts to format a player's name, which can be a name or a UUID. If the owner is a UUID and then
      * UUID is unknown, then "Unknown (uuid)" will be returned.
      *

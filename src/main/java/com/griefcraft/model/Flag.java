@@ -137,7 +137,7 @@ public class Flag {
         // let's do a range check
         Type[] values = Type.values();
 
-        if (ordinal > values.length) {
+        if (ordinal >= values.length) {
             return null;
         }
 
