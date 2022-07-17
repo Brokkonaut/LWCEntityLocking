@@ -79,7 +79,7 @@ public class Table {
     /**
      * Create the table
      */
-    public void execute() {
+    public void execute() throws SQLException {
         StringBuilder buffer = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
 
         // do the prefix, if we're using MySQL
@@ -135,20 +135,9 @@ public class Table {
         buffer.append(";");
 
         // execute it directly to the database
-        Statement statement = null;
-        try {
-            statement = database.getConnection().createStatement();
-            statement.executeUpdate(buffer.toString());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        Statement statement = database.getConnection().createStatement();
+        statement.executeUpdate(buffer.toString());
+        statement.close();
 
         // database.log("Synched table " + prefix + name + " (" + columns.size() + " columns)");
 

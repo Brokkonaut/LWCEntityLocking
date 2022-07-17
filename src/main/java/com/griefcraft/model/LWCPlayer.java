@@ -367,7 +367,7 @@ public class LWCPlayer implements CommandSender {
     }
 
     @Override
-    public void sendMessage(String[] s) {
+    public void sendMessage(String... s) {
         for (String _s : s) {
             sendMessage(_s);
         }

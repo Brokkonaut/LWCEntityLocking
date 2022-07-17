@@ -33,6 +33,7 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.sql.PhysDB;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DatabaseMigrator {
@@ -49,8 +50,6 @@ public class DatabaseMigrator {
      */
     public boolean migrate(PhysDB fromDatabase, PhysDB toDatabase) {
         try {
-            toDatabase.getConnection().setAutoCommit(false);
-
             // some prelim data
             int startProtections = toDatabase.getProtectionCount();
             int protectionCount = fromDatabase.getProtectionCount();
@@ -65,7 +64,6 @@ public class DatabaseMigrator {
                     protection.saveNow();
                 }
 
-                toDatabase.getConnection().commit();
                 if (expectedProtections != (protectionCount = fromDatabase.getProtectionCount())) {
                     logger.info("Weird, only " + protectionCount + " protections are in the database? Continuing...");
                 }
@@ -88,10 +86,9 @@ public class DatabaseMigrator {
                 }
             }
 
-            fromDatabase.getConnection().close();
-            toDatabase.getConnection().setAutoCommit(true);
+            fromDatabase.dispose();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Exception while migrating the database", e);
             return false;
         }
 

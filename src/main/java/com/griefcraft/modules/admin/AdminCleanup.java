@@ -33,13 +33,10 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.JavaModule;
 import com.griefcraft.scripting.event.LWCCommandEvent;
-import com.griefcraft.sql.Database;
-import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.Colors;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -120,39 +117,19 @@ public class AdminCleanup extends JavaModule {
                 // so we can more than 20 results/second.
                 final List<Protection> protections = new ArrayList<>(BATCH_SIZE);
 
-                // TODO separate stream logic to somewhere else :)
-                // Create a new database connection, we are just reading
-                PhysDB database = new PhysDB();
-                database.connect();
-                database.load();
+                List<Protection> allProtections = lwc.getPhysicalDatabase().loadProtectionsOrderedByChunk();
+                Iterator<Protection> allProtectionIterator = allProtections.iterator();
 
                 // amount of protections
-                int totalProtections = database.getProtectionCount();
-
-                Statement resultStatement = database.getConnection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-                if (database.getType() == Database.Type.MySQL) {
-                    resultStatement.setFetchSize(BATCH_SIZE);
-                }
-
-                String prefix = lwc.getPhysicalDatabase().getPrefix();
-                ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed, x>>4 AS xshift4,z>>4 AS zshift4 FROM " + prefix + "protections ORDER BY xshift4,zshift4");
+                int totalProtections = allProtections.size();
                 int checked = 0;
-                boolean hasMore = true;
-                while (hasMore) {
+                while (allProtectionIterator.hasNext()) {
                     while (Runtime.getRuntime().maxMemory() * 100 / (Runtime.getRuntime().freeMemory() + Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory()) < 5) {
                         Thread.sleep(5000);
                     }
-                    while (hasMore && protections.size() < BATCH_SIZE) {
+                    while (allProtectionIterator.hasNext() && protections.size() < BATCH_SIZE) {
                         // Wait until we have BATCH_SIZE protections
-                        if (result.next()) {
-                            Protection tprotection = database.resolveProtection(result);
-                            if (tprotection != null) {
-                                protections.add(tprotection);
-                            }
-                        } else {
-                            hasMore = false;
-                        }
+                        protections.add(allProtectionIterator.next());
                     }
 
                     // Check the blocks
@@ -208,41 +185,24 @@ public class AdminCleanup extends JavaModule {
                     protections.clear();
                 }
 
-                // close the sql statements
-                result.close();
-                resultStatement.close();
-                database.dispose();
-
                 // flush deleted protections
                 final int totalToRemove = protectionsToRemove.size();
                 while (!protectionsToRemove.isEmpty()) {
                     Bukkit.getScheduler().callSyncMethod(lwc.getPlugin(), new Callable<Void>() {
                         @Override
                         public Void call() throws Exception {
-                            final StringBuilder builder = new StringBuilder();
-
-                            // the database prefix
-                            String prefix = lwc.getPhysicalDatabase().getPrefix();
-
-                            // create the statement to use
-                            Statement statement = lwc.getPhysicalDatabase().getConnection().createStatement();
-
                             int count = 0;
+                            ArrayDeque<Integer> batchRemove = new ArrayDeque<>();
                             while (!protectionsToRemove.isEmpty() && count < 20000) {
                                 int protectionId = protectionsToRemove.removeFirst();
-                                if (count == 0) {
-                                    builder.append("DELETE FROM ").append(prefix).append("protections WHERE id IN (").append(protectionId);
-                                } else {
-                                    builder.append(",").append(protectionId);
-                                }
+                                batchRemove.add(protectionId);
                                 count++;
                             }
-                            builder.append(")");
-                            statement.executeUpdate(builder.toString());
+                            if(!batchRemove.isEmpty()) {
+                                lwc.getPhysicalDatabase().batchDeleteProtections(batchRemove);
+                            }
 
                             sender.sendMessage(Colors.Green + "REMOVED " + (totalToRemove - protectionsToRemove.size()) + " / " + totalToRemove);
-
-                            statement.close();
 
                             return null;
                         }

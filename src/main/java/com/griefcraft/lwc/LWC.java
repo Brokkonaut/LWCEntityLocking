@@ -39,8 +39,6 @@ import com.griefcraft.integration.permissions.SuperPermsPermissions;
 import com.griefcraft.integration.permissions.VaultPermissions;
 import com.griefcraft.migration.ConfigPost300;
 import com.griefcraft.migration.MySQLPost200;
-import com.griefcraft.model.Flag;
-import com.griefcraft.model.History;
 import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Permission;
 import com.griefcraft.model.Protection;
@@ -55,7 +53,6 @@ import com.griefcraft.modules.admin.AdminForceOwner;
 import com.griefcraft.modules.admin.AdminLocale;
 import com.griefcraft.modules.admin.AdminPurge;
 import com.griefcraft.modules.admin.AdminPurgeBanned;
-import com.griefcraft.modules.admin.AdminQuery;
 import com.griefcraft.modules.admin.AdminRebuild;
 import com.griefcraft.modules.admin.AdminReload;
 import com.griefcraft.modules.admin.AdminRemove;
@@ -101,15 +98,10 @@ import com.griefcraft.util.Statistics;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -1034,16 +1026,10 @@ public class LWC {
      */
     public int fastRemoveProtections(CommandSender sender, String where,
             boolean shouldRemoveBlocks) {
-        List<Integer> exemptedBlocks = configuration.getIntList(
-                "optional.exemptBlocks", new ArrayList<Integer>());
-        List<Integer> toRemove = new LinkedList<>();
         List<Block> removeBlocks = null;
-        int totalProtections = physicalDatabase.getProtectionCount();
-        int completed = 0;
-        int count = 0;
 
         if (shouldRemoveBlocks) {
-            removeBlocks = new LinkedList<>();
+            removeBlocks = new ArrayList<>();
         }
 
         if (where != null && !where.trim().isEmpty()) {
@@ -1051,138 +1037,25 @@ public class LWC {
         }
 
         sender.sendMessage("Loading protections via STREAM mode");
-
-        try {
-            Statement resultStatement = physicalDatabase.getConnection()
-                    .createStatement(ResultSet.TYPE_FORWARD_ONLY,
-                            ResultSet.CONCUR_READ_ONLY);
-
-            if (physicalDatabase.getType() == Database.Type.MySQL) {
-                resultStatement.setFetchSize(Integer.MIN_VALUE);
-            }
-
-            String prefix = physicalDatabase.getPrefix();
-            ResultSet result = resultStatement
-                    .executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM "
-                            + prefix + "protections" + where);
-
-            while (result.next()) {
-                Protection protection = physicalDatabase
-                        .resolveProtection(result);
-                World world = protection.getBukkitWorld();
-
-                // check if the protection is exempt from being removed
-                if (protection.hasFlag(Flag.Type.EXEMPTION)
-                        || exemptedBlocks.contains(protection.getBlockId())) {
-                    continue;
-                }
-
-                count++;
-
-                if (count % 100000 == 0 || count == totalProtections
-                        || count == 1) {
-                    sender.sendMessage(Colors.Red + count + " / "
-                            + totalProtections);
-                }
-
-                if (world == null) {
-                    continue;
-                }
-
-                // remove the protection
-                toRemove.add(protection.getId());
-
-                // remove the block ?
-                if (shouldRemoveBlocks) {
-                    removeBlocks.add(protection.getBlock());
-                }
-
-                // Remove it from the cache if it's in there
-                Protection cached = protectionCache.getProtection(protection
-                        .getCacheKey());
-                if (cached != null) {
-                    cached.removeCache();
-                }
-
-                completed++;
-            }
-
-            // Close the streaming statement
-            result.close();
-            resultStatement.close();
-
-            // flush all of the queries
-            fullRemoveProtections(sender, toRemove);
-
+        List<Protection> protections = physicalDatabase.streamDeleteProtections(where, sender);
+        for(Protection protection : protections) {
+            // remove the block ?
             if (shouldRemoveBlocks) {
-                removeBlocks(sender, removeBlocks);
+                removeBlocks.add(protection.getBlock());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            // Remove it from the cache if it's in there
+            Protection cached = protectionCache.getProtection(protection.getCacheKey());
+            if (cached != null) {
+                cached.removeCache();
+            }
         }
 
-        return completed;
-    }
-
-    /**
-     * Push removal changes to the database
-     *
-     * @param sender
-     * @param toRemove
-     */
-    private void fullRemoveProtections(CommandSender sender,
-            List<Integer> toRemove) throws SQLException {
-        StringBuilder deleteProtectionsQuery = new StringBuilder();
-        StringBuilder deleteHistoryQuery = new StringBuilder();
-        int total = toRemove.size();
-        int count = 0;
-
-        // iterate over the items to remove
-        Iterator<Integer> iter = toRemove.iterator();
-
-        // the database prefix
-        String prefix = getPhysicalDatabase().getPrefix();
-
-        // create the statement to use
-        Statement statement = getPhysicalDatabase().getConnection()
-                .createStatement();
-
-        while (iter.hasNext()) {
-            int protectionId = iter.next();
-
-            if (count % 10000 == 0) {
-                deleteProtectionsQuery.append("DELETE FROM ").append(prefix)
-                        .append("protections WHERE id IN (")
-                        .append(protectionId);
-                deleteHistoryQuery
-                        .append("UPDATE ")
-                        .append(prefix)
-                        .append("history SET status = "
-                                + History.Status.INACTIVE.ordinal()
-                                + " WHERE protectionId IN(")
-                        .append(protectionId);
-            } else {
-                deleteProtectionsQuery.append(",").append(protectionId);
-                deleteHistoryQuery.append(",").append(protectionId);
-            }
-
-            if (count % 10000 == 9999 || count == (total - 1)) {
-                deleteProtectionsQuery.append(")");
-                deleteHistoryQuery.append(")");
-                statement.executeUpdate(deleteProtectionsQuery.toString());
-                statement.executeUpdate(deleteHistoryQuery.toString());
-                deleteProtectionsQuery.setLength(0);
-                deleteHistoryQuery.setLength(0);
-
-                sender.sendMessage(Colors.Green + "REMOVED " + (count + 1)
-                        + " / " + total);
-            }
-
-            count++;
-            physicalDatabase.decrementProtectionCount();
+        if (shouldRemoveBlocks) {
+            removeBlocks(sender, removeBlocks);
         }
 
-        statement.close();
+        return protections.size();
     }
 
     /**
@@ -1691,7 +1564,6 @@ public class LWC {
         registerModule(new AdminRemove());
         registerModule(new AdminReport());
         registerModule(new AdminVersion());
-        registerModule(new AdminQuery());
         registerModule(new AdminPurgeBanned());
         registerModule(new AdminExpire());
         registerModule(new AdminDump());

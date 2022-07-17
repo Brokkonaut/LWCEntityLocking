@@ -40,6 +40,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 
 public abstract class Database {
 
@@ -64,6 +65,14 @@ public abstract class Database {
             return null;
         }
 
+    }
+
+    public static interface SQLRunnable {
+        public void run() throws SQLException;
+    }
+
+    public static interface SQLCallable<T> {
+        public T call() throws SQLException;
     }
 
     /**
@@ -128,43 +137,11 @@ public abstract class Database {
      * Ping the database to keep the connection alive
      */
     public void pingDatabase() {
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
+        runAndIgnoreException(() -> {
+            Statement stmt = connection.createStatement();
             stmt.executeQuery("SELECT 1;");
             stmt.close();
-        } catch (SQLException e) {
-            log("Keepalive packet (ping) failed!");
-            e.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-            }
-        }
-    }
-
-    /**
-     * Set the value of auto commit
-     *
-     * @param autoCommit
-     * @return TRUE if successful, FALSE if exception was thrown
-     */
-    public boolean setAutoCommit(boolean autoCommit) {
-        try {
-            // Commit the database if we are setting auto commit back to true
-            if (autoCommit) {
-                connection.commit();
-            }
-
-            connection.setAutoCommit(autoCommit);
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        });
     }
 
     /**
@@ -188,7 +165,7 @@ public abstract class Database {
      *
      * @return if the connection was succesful
      */
-    public boolean connect() throws Exception {
+    public boolean connect() throws SQLException {
         if (connection != null) {
             return true;
         }
@@ -199,14 +176,14 @@ public abstract class Database {
         }
 
         // Load the driver class
-        if (currentType == Type.MySQL) {
-            try {
+        try {
+            if (currentType == Type.MySQL) {
                 Class.forName("com.mysql.cj.jdbc.Driver");
-            } catch (ClassNotFoundException ignored) {
-                Class.forName("com.mysql.jdbc.Driver");
+            } else {
+                Class.forName("org.sqlite.JDBC");
             }
-        } else {
-            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            LWC.getInstance().getPlugin().getLogger().log(Level.SEVERE, "Could not load the database driver!", e);
         }
 
         // Create the properties to pass to the driver
@@ -215,16 +192,16 @@ public abstract class Database {
         // if we're using mysql, append the database info
         if (currentType == Type.MySQL) {
             LWC lwc = LWC.getInstance();
-            properties.put("autoReconnect", "true");
+            // properties.put("autoReconnect", "true");
             properties.put("user", lwc.getConfiguration().getString("database.username"));
             properties.put("password", lwc.getConfiguration().getString("database.password"));
         }
 
         statementCache.clear();
-
-        // Connect to the database
         try {
+            // Connect to the database
             connection = DriverManager.getConnection("jdbc:" + currentType.toString().toLowerCase() + ":" + getDatabasePath(), properties);
+            connection.setAutoCommit(false);
             connected = true;
             return true;
         } catch (SQLException e) {
@@ -233,7 +210,7 @@ public abstract class Database {
             if (e.getCause() != null) {
                 log("Connection failure cause: " + e.getCause().getMessage());
             }
-            return false;
+            throw e;
         }
     }
 
@@ -251,17 +228,123 @@ public abstract class Database {
         connection = null;
     }
 
+    protected <T> T runAndIgnoreException(SQLCallable<T> callable) {
+        try {
+            return run(callable);
+        } catch (SQLException ignored) {
+        }
+        return null;
+    }
+
+    protected <T> T runAndLogException(SQLCallable<T> callable) {
+        try {
+            return run(callable);
+        } catch (SQLException e) {
+            LWC.getInstance().getPlugin().getLogger().log(Level.SEVERE, "Database Exception", e);
+        }
+        return null;
+    }
+
+    protected <T> T runAndThrowModuleExceptionIfFailing(SQLCallable<T> callable) {
+        try {
+            return run(callable);
+        } catch (SQLException e) {
+            throw new ModuleException(e);
+        }
+    }
+
+    protected synchronized <T> T run(SQLCallable<T> callable) throws SQLException {
+        int fails = 0;
+        while (true) {
+            try {
+                if (connection == null || connection.isClosed()) {
+                    connect();
+                }
+                T rv = callable.call();
+                connection.commit();
+                return rv;
+            } catch (SQLException e) {
+                fails += 1;
+                if (connection != null) {
+                    try {
+                        if (!connection.isClosed()) {
+                            connection.rollback();
+                        }
+                    } catch (SQLException ex) {
+                        // ignore
+                    }
+                }
+                dispose();
+                if (fails >= 3) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    protected void runAndIgnoreException(SQLRunnable runnable) {
+        try {
+            run(runnable);
+        } catch (SQLException ignored) {
+        }
+    }
+
+    protected void runAndLogException(SQLRunnable runnable) {
+        try {
+            run(runnable);
+        } catch (SQLException e) {
+            LWC.getInstance().getPlugin().getLogger().log(Level.SEVERE, "Database Exception", e);
+        }
+    }
+
+    protected void runAndThrowModuleExceptionIfFailing(SQLRunnable runnable) {
+        try {
+            run(runnable);
+        } catch (SQLException e) {
+            throw new ModuleException(e);
+        }
+    }
+
+    protected synchronized void run(SQLRunnable runnable) throws SQLException {
+        int fails = 0;
+        while (true) {
+            try {
+                if (connection == null || connection.isClosed()) {
+                    connect();
+                }
+                runnable.run();
+                connection.commit();
+                return;
+            } catch (SQLException e) {
+                fails += 1;
+                if (connection != null) {
+                    try {
+                        if (!connection.isClosed()) {
+                            connection.rollback();
+                        }
+                    } catch (SQLException ex) {
+                        // ignore
+                    }
+                }
+                dispose();
+                if (fails >= 3) {
+                    throw e;
+                }
+            }
+        }
+    }
+
     /**
      * @return the connection to the database
      */
-    public Connection getConnection() {
+    protected Connection getConnection() {
         return connection;
     }
 
     /**
      * @return the path where the database file should be saved
      */
-    public String getDatabasePath() {
+    protected String getDatabasePath() {
         Configuration lwcConfiguration = LWC.getInstance().getConfiguration();
 
         if (currentType == Type.MySQL) {
@@ -289,7 +372,7 @@ public abstract class Database {
      * @param str
      *            The string to log
      */
-    public void log(String str) {
+    protected void log(String str) {
         LWC.getInstance().log(str);
     }
 
@@ -299,7 +382,7 @@ public abstract class Database {
      * @param sql
      * @return
      */
-    public PreparedStatement prepare(String sql) {
+    protected PreparedStatement prepare(String sql) throws SQLException {
         return prepare(sql, false);
     }
 
@@ -310,7 +393,7 @@ public abstract class Database {
      * @param returnGeneratedKeys
      * @return
      */
-    public PreparedStatement prepare(String sql, boolean returnGeneratedKeys) {
+    protected PreparedStatement prepare(String sql, boolean returnGeneratedKeys) throws SQLException {
         if (connection == null) {
             return null;
         }
@@ -320,7 +403,6 @@ public abstract class Database {
             return statementCache.get(sql);
         }
 
-        try {
             PreparedStatement preparedStatement;
 
             if (returnGeneratedKeys) {
@@ -333,11 +415,6 @@ public abstract class Database {
             Statistics.addQuery();
 
             return preparedStatement;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     /**
@@ -346,7 +423,7 @@ public abstract class Database {
      * @param table
      * @param column
      */
-    public boolean addColumn(String table, String column, String type) {
+    protected boolean addColumn(String table, String column, String type) {
         return executeUpdateNoException("ALTER TABLE " + table + " ADD " + column + " " + type);
     }
 
@@ -356,7 +433,7 @@ public abstract class Database {
      * @param table
      * @param column
      */
-    public boolean dropColumn(String table, String column) {
+    protected boolean dropColumn(String table, String column) {
         return executeUpdateNoException("ALTER TABLE " + table + " DROP COLUMN " + column);
     }
 
@@ -366,7 +443,7 @@ public abstract class Database {
      * @param table
      * @param newName
      */
-    public boolean renameTable(String table, String newName) {
+    protected boolean renameTable(String table, String newName) {
         return executeUpdateNoException("ALTER TABLE " + table + " RENAME TO " + newName);
     }
 
@@ -375,7 +452,7 @@ public abstract class Database {
      *
      * @param table
      */
-    public boolean dropTable(String table) {
+    protected boolean dropTable(String table) {
         return executeUpdateNoException("DROP TABLE " + table);
     }
 
@@ -385,7 +462,7 @@ public abstract class Database {
      * @param query
      * @return true if an exception was thrown
      */
-    public boolean executeUpdateNoException(String query) {
+    protected boolean executeUpdateNoException(String query) {
         Statement statement = null;
         boolean exception = false;
 
