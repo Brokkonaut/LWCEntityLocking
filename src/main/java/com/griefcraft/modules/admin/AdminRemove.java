@@ -71,7 +71,7 @@ public class AdminRemove extends JavaModule {
             return;
         }
 
-        Protection protection = lwc.getPhysicalDatabase().loadProtection(protectionId);
+        Protection protection = lwc.getProtectionCache().getProtectionById(protectionId);
 
         if (protection != null) {
             protection.remove();

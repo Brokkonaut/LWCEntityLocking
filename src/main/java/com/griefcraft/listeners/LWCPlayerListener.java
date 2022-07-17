@@ -526,11 +526,6 @@ public class LWCPlayerListener implements Listener {
             return false;
         }
 
-        // High-intensity zone: increase protection cache if it's full,
-        // otherwise
-        // the database will be getting rammed
-        lwc.getProtectionCache().increaseIfNecessary();
-
         // Attempt to load the protection at that location/entity
         Protection protection = entityHolder == null ? lwc.findProtection(location) : lwc.findProtection(entityHolder);
 
@@ -636,7 +631,7 @@ public class LWCPlayerListener implements Listener {
 
         try {
             Set<String> actions = lwcPlayer.getActionNames();
-            Protection protection = lwc.findProtection(block.getLocation());
+            Protection protection = lwc.findProtection(block);
             Module.Result result;
             boolean canAccess = protection == null || lwc.canAccessProtection(player, protection);
 
@@ -796,32 +791,12 @@ public class LWCPlayerListener implements Listener {
 
         // Location of the container
         Location location;
-        InventoryHolder holder = null;
-
-        try {
-            holder = event.getInventory().getHolder();
-        } catch (AbstractMethodError e) {
-            lwc.log("Caught issue with Bukkit's Inventory.getHolder() method! This is occuring NEAR the player: " + player.getName());
-            lwc.log("This player is located at: " + player.getLocation().toString());
-            lwc.log("This should be reported to the Bukkit developers.");
-            e.printStackTrace();
-            return;
-        }
-
-        try {
-            if (holder instanceof BlockState) {
-                location = ((BlockState) holder).getLocation();
-            } else if (holder instanceof DoubleChest) {
-                location = ((DoubleChest) holder).getLocation();
-            } else {
-                return;
-            }
-        } catch (Exception e) {
-            Location ploc = player.getLocation();
-            String holderName = holder != null ? holder.getClass().getSimpleName() : "Unknown Block";
-            lwc.log("Exception with getting the location of a " + holderName + " has occurred NEAR the player: " + player.getName() + " [" + ploc.getBlockX() + " " + ploc.getBlockY() + " " + ploc.getBlockZ() + "]");
-            lwc.log("The exact location of the block is not possible to obtain. This is caused by a Minecraft or Bukkit exception normally.");
-            e.printStackTrace();
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof BlockState) {
+            location = ((BlockState) holder).getLocation();
+        } else if (holder instanceof DoubleChest) {
+            location = ((DoubleChest) holder).getLocation();
+        } else {
             return;
         }
 

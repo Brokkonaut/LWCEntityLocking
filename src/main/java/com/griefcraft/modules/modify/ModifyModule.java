@@ -142,7 +142,7 @@ public class ModifyModule extends JavaModule {
             int protectionId = Integer.parseInt(matcher.group(1));
 
             // load the protection
-            Protection protection = lwc.getPhysicalDatabase().loadProtection(protectionId);
+            Protection protection = lwc.getProtectionCache().getProtectionById(protectionId);
 
             // Does it even exist?
             if (protection == null) {

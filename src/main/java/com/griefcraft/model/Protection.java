@@ -36,7 +36,6 @@ import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.scripting.event.LWCProtectionRemovePostEvent;
 import com.griefcraft.util.Colors;
-import com.griefcraft.util.ProtectionFinder;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.TimeUtil;
 import com.griefcraft.util.UUIDRegistry;
@@ -220,11 +219,6 @@ public class Protection {
     private boolean modified = false;
 
     /**
-     * The protection finder used to find this protection
-     */
-    private ProtectionFinder finder;
-
-    /**
      * The block the protection is at. Saves world calls and allows better concurrency
      */
     private Block cachedBlock;
@@ -234,6 +228,8 @@ public class Protection {
     private Material blockMaterial;
 
     private boolean isEntity;
+    
+    private List<CacheKey> additionalProtectedBlocks;
 
     @Override
     public boolean equals(Object object) {
@@ -837,24 +833,6 @@ public class Protection {
     }
 
     /**
-     * Sets the protection finder used to create this protection
-     *
-     * @param finder
-     */
-    public void setProtectionFinder(ProtectionFinder finder) {
-        this.finder = finder;
-    }
-
-    /**
-     * Gets the protection finder used the create this protection
-     *
-     * @return the ProtectionFinder used to create this protection
-     */
-    public ProtectionFinder getProtectionFinder() {
-        return finder;
-    }
-
-    /**
      * Remove the protection from the database
      */
     public void remove() {
@@ -899,30 +877,6 @@ public class Protection {
     public void removeCache() {
         LWC lwc = LWC.getInstance();
         lwc.getProtectionCache().removeProtection(this);
-        radiusRemoveCache();
-    }
-
-    /**
-     * Remove blocks around the protection in a radius of 3, to account for broken known / null blocks
-     */
-    public void radiusRemoveCache() {
-        ProtectionCache cache = LWC.getInstance().getProtectionCache();
-
-        for (int x = -3; x <= 3; x++) {
-            for (int y = -3; y <= 3; y++) {
-                for (int z = -3; z <= 3; z++) {
-                    CacheKey cacheKey = ProtectionCache.cacheKey(world, this.x + x, this.y + y, this.z + z);
-
-                    // get the protection for that entry
-                    Protection protection = cache.getProtection(cacheKey);
-
-                    // the ifnull compensates for the block being in the null cache. It will remove it from that.
-                    if ((protection != null && id == protection.getId()) || protection == null) {
-                        cache.remove(cacheKey);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -1092,5 +1046,20 @@ public class Protection {
 
     public void setModified() {
         modified = true;
+    }
+
+    public void addAdditionalBlock(CacheKey other) {
+        if (additionalProtectedBlocks == null) {
+            additionalProtectedBlocks = new ArrayList<>();
+        }
+        additionalProtectedBlocks.add(other);
+    }
+    
+    public List<CacheKey> getAdditionalProtectedBlocks() {
+        return additionalProtectedBlocks;
+    }
+    
+    public void clearAdditionalProtectedBlocks() {
+        additionalProtectedBlocks = null;
     }
 }

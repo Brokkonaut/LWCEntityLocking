@@ -28,22 +28,16 @@
 
 package com.griefcraft.util.matchers;
 
-import com.griefcraft.util.ProtectionFinder;
 import java.util.EnumSet;
 import java.util.Set;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.FaceAttachable.AttachedFace;
-import org.bukkit.block.data.type.Switch;
 
 /**
  * Matches wall entities
  * TODO fix buttons and levers
  */
-public class WallMatcher implements ProtectionFinder.Matcher {
+public class WallMatcher {
 
     /**
      * Blocks that can be attached to the wall and be protected.
@@ -63,57 +57,6 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * Possible faces around the base block that protections could be at
      */
     public static final BlockFace[] POSSIBLE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN };
-
-    @Override
-    public boolean matches(ProtectionFinder finder) {
-        // The block we are working on
-        Block block = finder.getBaseBlock().getBlock();
-
-        // Match wall signs to the wall it's attached to
-        for (BlockFace blockFace : POSSIBLE_FACES) {
-            Block face; // the relative block
-
-            if ((face = block.getRelative(blockFace)) != null) {
-                // Try and match it
-                Block matched = tryMatchBlock(face, blockFace);
-
-                // We found something ..! Try and load the protection
-                if (matched != null) {
-                    finder.addBlock(matched);
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Try and match a wall block
-     *
-     * @param block
-     * @param matchingFace
-     * @return
-     */
-    private Block tryMatchBlock(Block block, BlockFace matchingFace) {
-        // Blocks such as wall signs
-        if (PROTECTABLES_WALL.contains(block.getType())) {
-            BlockData blockData = block.getBlockData();
-            if (!(blockData instanceof Directional)) {
-                return null;
-            }
-            BlockFace existingFace = ((Directional) blockData).getFacing();
-            if (blockData instanceof Switch) {
-                Switch switcher = (Switch) blockData;
-                if (switcher.getAttachedFace() != AttachedFace.WALL) {
-                    existingFace = switcher.getAttachedFace() == AttachedFace.FLOOR ? BlockFace.UP : BlockFace.DOWN;
-                }
-            }
-            if (existingFace == matchingFace) {
-                return block;
-            }
-        }
-        return null;
-    }
+    public static final BlockFace[] SIDE_FACES = new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
 
 }

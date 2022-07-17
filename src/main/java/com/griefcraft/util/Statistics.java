@@ -153,18 +153,7 @@ public class Statistics {
 
         ProtectionCache cache = lwc.getProtectionCache();
 
-        double cachePercentFilled = ((double) cache.size() / cache.totalCapacity()) * 100;
-
-        String cacheColour = Colors.Green;
-        if (cachePercentFilled > 75 && cachePercentFilled < 85) {
-            cacheColour = Colors.Yellow;
-        } else if (cachePercentFilled > 85 && cachePercentFilled < 95) {
-            cacheColour = Colors.Rose;
-        } else if (cachePercentFilled > 95) {
-            cacheColour = Colors.Red;
-        }
-
-        sender.sendMessage("  Usage: " + cacheColour + String.format("%.2f", cachePercentFilled) + "% " + Colors.White + " ( " + cache.size() + "/" + cache.totalCapacity() + " [" + cache.capacity() + "+" + cache.adaptiveCapacity() + "] )");
+        sender.sendMessage("  Usage: " + Colors.Green + Colors.White + cache.size());
         sender.sendMessage("  Blocks: " + Colors.Green + "Hit: " + formatNumber(blockCacheHit) + " + " + formatNumber(blockCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(blockCacheMiss) + " + " + formatNumber(blockCacheMissNull));
         sender.sendMessage("  Entities: " + Colors.Green + "Hit: " + formatNumber(entityCacheHit) + " + " + formatNumber(entityCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(entityCacheMiss) + " + " + formatNumber(entityCacheMissNull));
         sender.sendMessage("  Profile: ");

@@ -763,21 +763,6 @@ public class PhysDB extends Database {
     }
 
     /**
-     * Load protections using a specific type
-     *
-     * @param type
-     * @return the Protection object
-     */
-    public List<Protection> loadProtectionsUsingType(Protection.Type type) {
-        return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE type = ?");
-            statement.setInt(1, type.ordinal());
-
-            return resolveProtections(statement);
-        });
-    }
-
-    /**
      * Resolve one protection from a ResultSet. The ResultSet is not closed.
      *
      * @param set
@@ -927,41 +912,15 @@ public class PhysDB extends Database {
         LWC lwc = LWC.getInstance();
         ProtectionCache cache = lwc.getProtectionCache();
 
+        List<Protection> protections = loadProtections();
+
         // clear the cache incase we're working on a dirty cache
         cache.clear();
-
-        int precacheSize = lwc.getConfiguration().getInt("core.precache", -1);
-
-        if (precacheSize == -1) {
-            precacheSize = lwc.getConfiguration().getInt("core.cacheSize", 10000);
-        }
-        int finalPrecacheSize = precacheSize;
-
-        List<Protection> protections = runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections ORDER BY id DESC LIMIT ?");
-            statement.setInt(1, finalPrecacheSize);
-            statement.setFetchSize(10);
-
-            // scrape the protections from the result set now
-            return resolveProtections(statement);
-        });
 
         // throw all of the protections in
         for (Protection protection : protections) {
             cache.addProtection(protection);
         }
-    }
-
-    /**
-     * Load a protection at the given coordinates
-     *
-     * @param x
-     * @param y
-     * @param z
-     * @return the Protection object
-     */
-    public Protection loadProtection(String worldName, int x, int y, int z) {
-        return loadProtection(worldName, x, y, z, false);
     }
 
     /**
@@ -1740,6 +1699,8 @@ public class PhysDB extends Database {
             protectionCount = 0;
             statement.close();
         });
+        
+        precache();
     }
 
     /**

@@ -101,7 +101,7 @@ public class LWCBlockListener implements Listener {
             return;
         }
 
-        Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block);
 
         if (protection == null) {
             return;
@@ -152,7 +152,7 @@ public class LWCBlockListener implements Listener {
             return;
         }
 
-        Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block);
 
         if (protection == null) {
             return;
@@ -182,14 +182,14 @@ public class LWCBlockListener implements Listener {
         }
 
         ProtectionCache cache = lwc.getProtectionCache();
-        CacheKey cacheKey = ProtectionCache.cacheKey(block.getLocation());
+        CacheKey cacheKey = ProtectionCache.cacheKey(block);
 
         // In the event they place a block, remove any known nulls there
         if (cache.isKnownNull(cacheKey)) {
             cache.remove(cacheKey);
         }
 
-        Protection protection = lwc.findProtection(block.getLocation());
+        Protection protection = lwc.findProtection(block);
 
         if (protection == null) {
             return;
@@ -209,21 +209,15 @@ public class LWCBlockListener implements Listener {
 
             if (doubleChest != null) {
                 // if they destroyed the protected block we want to move it aye?
+                lwc.getProtectionCache().removeProtection(protection);
+                
                 protection.setBlockMaterial(doubleChest.getType());
                 protection.setX(doubleChest.getX());
                 protection.setY(doubleChest.getY());
                 protection.setZ(doubleChest.getZ());
                 protection.saveNow();
 
-                // Repair the cache
-                protection.radiusRemoveCache();
-
-                if (protection.getProtectionFinder() != null) {
-                    protection.getProtectionFinder().removeBlock(block.getState());
-                }
-
                 lwc.getProtectionCache().addProtection(protection);
-
                 return;
             }
         }
@@ -372,10 +366,9 @@ public class LWCBlockListener implements Listener {
         LWC lwc = plugin.getLWC();
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
-        Location location = block.getLocation();
 
         ProtectionCache cache = lwc.getProtectionCache();
-        CacheKey cacheKey = ProtectionCache.cacheKey(location);
+        CacheKey cacheKey = ProtectionCache.cacheKey(block);
 
         if (lwc.isProtectable(event.getBlockReplacedState())) {
             Protection existingProtection = lwc.findProtection(block);
@@ -386,7 +379,7 @@ public class LWCBlockListener implements Listener {
             }
         } else {
             // remove stale protection
-            Protection existingProtection = lwc.getPhysicalDatabase().loadProtection(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+            Protection existingProtection = cache.getProtection(block);
             if (existingProtection != null) {
                 existingProtection.remove();
             }
@@ -428,19 +421,12 @@ public class LWCBlockListener implements Listener {
         Block block = event.getBlockPlaced();
 
         // Update the cache if a protection is matched here
-        Protection current = lwc.findProtection(block.getLocation());
+        Protection current = lwc.findProtection(block);
         if (current != null) {
             if (!current.isBlockInWorld()) {
                 // Corrupted protection
                 lwc.log("Removing corrupted protection: " + current);
                 current.remove();
-            } else {
-                if (current.getProtectionFinder() != null) {
-                    current.getProtectionFinder().fullMatchBlocks();
-                    lwc.getProtectionCache().addProtection(current);
-                }
-
-                return;
             }
         }
 
@@ -481,7 +467,7 @@ public class LWCBlockListener implements Listener {
         Block connectedChest = BlockUtil.findAdjacentDoubleChest(block);
         if (connectedChest != null) {
             // They're placing it beside a chest, check if it's already protected
-            if (lwc.findProtection(connectedChest.getLocation()) != null) {
+            if (lwc.findProtection(connectedChest) != null) {
                 return;
             }
         }

@@ -120,7 +120,7 @@ public class AdminForceOwner extends JavaModule {
             try {
                 int protectionId = Integer.parseInt(args[2]);
 
-                Protection protection = lwc.getPhysicalDatabase().loadProtection(protectionId);
+                Protection protection = lwc.getProtectionCache().getProtectionById(protectionId);
 
                 // No protection found
                 if (protection == null) {

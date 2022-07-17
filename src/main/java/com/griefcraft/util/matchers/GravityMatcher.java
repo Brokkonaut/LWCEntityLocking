@@ -28,19 +28,14 @@
 
 package com.griefcraft.util.matchers;
 
-import com.griefcraft.util.ProtectionFinder;
 import java.util.EnumSet;
 import java.util.Set;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
 
 /**
  * Matches blocks such as the sign post
  */
-public class GravityMatcher implements ProtectionFinder.Matcher {
+public class GravityMatcher {
 
     public static final Set<Material> PROTECTABLES_POSTS = EnumSet.of(Material.ACACIA_SIGN, Material.BIRCH_SIGN,
             Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN, Material.SPRUCE_SIGN, Material.RAIL,
@@ -51,22 +46,5 @@ public class GravityMatcher implements ProtectionFinder.Matcher {
             Material.GRAY_BANNER, Material.LIGHT_GRAY_BANNER, Material.CYAN_BANNER, Material.PURPLE_BANNER,
             Material.BLUE_BANNER, Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER,
             Material.WARPED_SIGN, Material.CRIMSON_SIGN, Material.MANGROVE_SIGN);
-
-    @Override
-    public boolean matches(ProtectionFinder finder) {
-        Block block = finder.getBaseBlock().getBlock();
-
-        // Easy to match, just try to match the block above the base block :P
-        Block up = block.getRelative(BlockFace.UP);
-
-        if (PROTECTABLES_POSTS.contains(up.getType())) {
-            BlockData upData = up.getBlockData();
-            if (!(upData instanceof Directional) || ((Directional) upData).getFacing() == BlockFace.DOWN) {
-                finder.addBlock(up);
-                return true;
-            }
-        }
-        return false;
-    }
 
 }

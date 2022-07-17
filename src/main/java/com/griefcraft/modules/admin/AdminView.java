@@ -64,7 +64,7 @@ public class AdminView extends JavaModule {
         }
 
         int protectionId = Integer.parseInt(args[1]);
-        Protection protection = lwc.getPhysicalDatabase().loadProtection(protectionId);
+        Protection protection = lwc.getProtectionCache().getProtectionById(protectionId);
 
         if (protection == null) {
             lwc.sendLocale(sender, "protection.admin.view.noexist");

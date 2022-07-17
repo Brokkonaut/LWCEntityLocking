@@ -160,7 +160,7 @@ public class History {
     public Protection getProtection() {
         // attempt to load the protection if it hasn't been loaded yet
         if (protection == null) {
-            this.protection = LWC.getInstance().getPhysicalDatabase().loadProtection(protectionId);
+            this.protection = LWC.getInstance().getProtectionCache().getProtectionById(protectionId);
         }
 
         return protection;

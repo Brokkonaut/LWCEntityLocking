@@ -43,7 +43,6 @@ import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Permission;
 import com.griefcraft.model.Protection;
 import com.griefcraft.model.Protection.Type;
-import com.griefcraft.modules.admin.AdminCache;
 import com.griefcraft.modules.admin.AdminCleanup;
 import com.griefcraft.modules.admin.AdminClear;
 import com.griefcraft.modules.admin.AdminDump;
@@ -93,17 +92,23 @@ import com.griefcraft.sql.Database;
 import com.griefcraft.sql.PhysDB;
 import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.Colors;
-import com.griefcraft.util.ProtectionFinder;
 import com.griefcraft.util.Statistics;
 import com.griefcraft.util.StringUtil;
 import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
+import com.griefcraft.util.matchers.BedMatcher;
+import com.griefcraft.util.matchers.DoorMatcher;
+import com.griefcraft.util.matchers.GravityMatcher;
+import com.griefcraft.util.matchers.WallMatcher;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -115,6 +120,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.FaceAttachable;
+import org.bukkit.block.data.FaceAttachable.AttachedFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -249,23 +258,8 @@ public class LWC {
      * @return
      */
     public boolean canAccessProtection(Player player, Block block) {
-        Protection protection = findProtection(block.getLocation());
-
+        Protection protection = findProtection(block);
         return protection != null && canAccessProtection(player, protection);
-    }
-
-    /**
-     * Check if a player has the ability to access a protection
-     *
-     * @param player
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     */
-    public boolean canAccessProtection(Player player, int x, int y, int z) {
-        return canAccessProtection(player, physicalDatabase.loadProtection(
-                player.getWorld().getName(), x, y, z));
     }
 
     /**
@@ -276,8 +270,7 @@ public class LWC {
      * @return
      */
     public boolean canAdminProtection(Player player, Block block) {
-        Protection protection = findProtection(block.getLocation());
-
+        Protection protection = findProtection(block);
         return protection != null && canAdminProtection(player, protection);
     }
 
@@ -427,7 +420,7 @@ public class LWC {
             Block adjacentBlock = block.getRelative(face);
 
             if (!ignoreList.contains(adjacentBlock)
-                    && (protection = findProtection(adjacentBlock.getLocation())) != null) {
+                    && (protection = findProtection(adjacentBlock)) != null) {
                 found.add(protection);
             }
         }
@@ -1050,6 +1043,7 @@ public class LWC {
                 cached.removeCache();
             }
         }
+        getPhysicalDatabase().precache();
 
         if (shouldRemoveBlocks) {
             removeBlocks(sender, removeBlocks);
@@ -1133,14 +1127,7 @@ public class LWC {
     public Protection findProtection(Entity entity) {
         int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
         CacheKey cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
-        if (protectionCache.isKnownNull(cacheKey)) {
-            return null;
-        }
-        Protection protection = physicalDatabase.loadProtection(entity.getWorld().getName(), A, A, A);
-        if (protection == null) {
-            protectionCache.addKnownNull(cacheKey);
-        }
-        return protection;
+        return protectionCache.getProtection(cacheKey);
     }
 
     /**
@@ -1158,7 +1145,7 @@ public class LWC {
 
         Protection protection = protectionCache.getProtection(cacheKey);
 
-        return protection != null ? protection : findProtection(location.getBlock().getState());
+        return protection != null ? protection : findProtection(location.getBlock());
     }
 
     /**
@@ -1167,74 +1154,152 @@ public class LWC {
      * @param block
      * @return
      */
-    public Protection findProtection(Block block) {
-        return findProtection(block.getState());
-    }
-
     public Protection findProtection(BlockState block) {
         if (block instanceof EntityBlock) {
             return findProtection(((EntityBlock) block).getEntity());
         }
-        // If the block type is AIR, then we have a problem .. but attempt to
-        // load a protection anyway
-        // Note: this call stems from a very old bug in Bukkit that likely does
-        // not exist anymore at all
-        // but is kept just incase. At one point getBlock() in Bukkit would
-        // sometimes say a block
-        // is an eir block even though the client and server sees it differently
-        // (ie a chest).
-        // This was of course very problematic!
-        if (block.getType() == Material.AIR) {
-            // We won't be able to match any other blocks anyway, so the least
-            // we can do is attempt to load a protection
-            return physicalDatabase.loadProtection(block.getWorld().getName(),
-                    block.getX(), block.getY(), block.getZ());
-        }
-
-        // Create a protection finder
-        ProtectionFinder finder = new ProtectionFinder(this);
-
-        // Search for a protection
-        boolean result = finder.matchBlocks(block);
-
-        Protection found = null;
-
-        // We're done, load the possibly loaded protection
-        if (result) {
-            found = finder.loadProtection();
-        }
-
-        if (found == null) {
-            protectionCache.addKnownNull(ProtectionCache.cacheKey(block
-                    .getLocation()));
-        }
-
-        return found;
+        return findProtection(block.getBlock());
     }
 
-    /**
-     * Find a protection linked to the block at [x, y, z]
-     *
-     * @param world
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     */
-
-    public boolean blockEquals(BlockState block, BlockState block2) {
-        return block.getType() == block2.getType()
-                && block.getX() == block2.getX()
-                && block.getY() == block2.getY()
-                && block.getZ() == block2.getZ();
+    public Protection findProtection(Block block) {
+        return findProtection(block, null);
     }
 
-    public Protection findProtection(World world, int x, int y, int z) {
-        if (world == null) {
+    private Protection findProtection(Block block, Set<CacheKey> checkedBlocks) {
+        // fast path
+        CacheKey cacheKey = ProtectionCache.cacheKey(block);
+        Protection protection = protectionCache.getProtection(cacheKey);
+        if (protection != null) {
+            return protection;
+        }
+        if (protectionCache.isKnownNull(cacheKey)) {
             return null;
         }
 
-        return findProtection(new Location(world, x, y, z));
+        // scan
+        ArrayDeque<Block> blockCheckQueue = new ArrayDeque<>();
+        Set<CacheKey> enqeueuedBlocks = new HashSet<>();
+        HashMap<Block, Block> previousBlocks = new HashMap<>();
+        blockCheckQueue.addLast(block);
+        enqeueuedBlocks.add(cacheKey);
+        Block foundProtectedBlock = null;
+
+        while (!blockCheckQueue.isEmpty()) {
+            Block toCheck = blockCheckQueue.removeFirst();
+
+            cacheKey = ProtectionCache.cacheKey(toCheck);
+            protection = protectionCache.getProtection(cacheKey);
+            if (protection != null) {
+                foundProtectedBlock = toCheck;
+                break; // we found a protection!
+            }
+            if (protectionCache.isKnownNull(cacheKey)) {
+                continue; // we do not have to check this block anymore
+            }
+
+            // try matching
+            Block otherHalf = null;
+            Material material = toCheck.getType();
+            if (material == Material.CHEST || material == Material.TRAPPED_CHEST) {
+                // find adjacent chest
+                if (enqueue(otherHalf = BlockUtil.findAdjacentDoubleChest(block), blockCheckQueue, enqeueuedBlocks)) {
+                    previousBlocks.put(otherHalf, block);
+                }
+            } else if (DoorMatcher.PROTECTABLES_DOORS.contains(material)) {
+                // find other door half
+                if (enqueue(otherHalf = BlockUtil.findAdjacentDoorHalf(block), blockCheckQueue, enqeueuedBlocks)) {
+                    previousBlocks.put(otherHalf, block);
+                }
+            } else if (BedMatcher.BEDS.contains(material)) {
+                // other bed half
+                if (enqueue(otherHalf = BlockUtil.findAdjacentBedPart(block), blockCheckQueue, enqeueuedBlocks)) {
+                    previousBlocks.put(otherHalf, block);
+                }
+            }
+            boolean isPressurePlate = DoorMatcher.PRESSURE_PLATES.contains(material);
+
+            // the sides:
+            // might be protected by a door or something
+            // otherwise it may be something protected that would fall off this block
+            for (BlockFace face : WallMatcher.SIDE_FACES) {
+                Block relative = block.getRelative(face);
+                Material relativeMaterial = relative.getType();
+                if (isPressurePlate && DoorMatcher.REDSTONE_OPENABLE.contains(relativeMaterial)) {
+                    if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) {
+                        previousBlocks.put(relative, block);
+                    }
+                } else if (WallMatcher.PROTECTABLES_WALL.contains(relativeMaterial)) {
+                    BlockData relativeData = relative.getBlockData();
+                    if (relativeData instanceof FaceAttachable faceAttachableData) { // lever, button
+                        if (faceAttachableData.getAttachedFace() == AttachedFace.WALL) {
+                            if (relativeData instanceof Directional directionalData) {
+                                if (directionalData.getFacing() == face) {
+                                    if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) {
+                                        previousBlocks.put(relative, block);
+                                    }
+                                }
+                            }
+                        }
+                    } else if (relativeData instanceof Directional directionalData) { // wall_sign, wall_banner
+                        if (directionalData.getFacing() == face.getOppositeFace()) {
+                            if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) {
+                                previousBlocks.put(relative, block);
+                            }
+                        }
+                    } else { // ?
+                        if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) {
+                            previousBlocks.put(relative, block);
+                        }
+                    }
+                }
+            }
+            {
+                Block relative = block.getRelative(BlockFace.UP);
+                Material relativeMaterial = relative.getType();
+                if (GravityMatcher.PROTECTABLES_POSTS.contains(relativeMaterial)) {
+                    BlockData relativeData = relative.getBlockData();
+                    if (relativeData instanceof FaceAttachable faceAttachableData) { // lever, button
+                        if (faceAttachableData.getAttachedFace() == AttachedFace.FLOOR) {
+                            if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) {
+                                previousBlocks.put(relative, block);
+                            }
+                        }
+                    } else {
+                        if (enqueue(relative, blockCheckQueue, enqeueuedBlocks)) { // sign, banner
+                            previousBlocks.put(relative, block);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (protection != null) {
+            // if we found a protection, go all way back - every block on the way is protected
+            Block blockToAdd = previousBlocks.get(foundProtectedBlock);
+            while (blockToAdd != null) {
+                protectionCache.addProtection(protection);
+                protection.addAdditionalBlock(ProtectionCache.cacheKey(blockToAdd));
+                blockToAdd = previousBlocks.get(blockToAdd);
+            }
+        } else {
+            // if we found no protection all checked blocks are known nulls!
+            for (CacheKey unprotectedCacheKey : checkedBlocks) {
+                protectionCache.addKnownNull(unprotectedCacheKey);
+            }
+        }
+        return protection;
+    }
+
+    private boolean enqueue(Block block, ArrayDeque<Block> blockCheckQueue, Set<CacheKey> enqeueuedBlocks) {
+        if (block != null) {
+            CacheKey blockKey = ProtectionCache.cacheKey(block);
+            if (!enqeueuedBlocks.contains(blockKey) && !protectionCache.isKnownNull(blockKey)) {
+                blockCheckQueue.add(block);
+                enqeueuedBlocks.add(blockKey);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1552,7 +1617,6 @@ public class LWC {
 
         // admin commands
         registerModule(new BaseAdminModule());
-        registerModule(new AdminCache());
         registerModule(new AdminTransfer());
         registerModule(new AdminCleanup());
         registerModule(new AdminClear());
