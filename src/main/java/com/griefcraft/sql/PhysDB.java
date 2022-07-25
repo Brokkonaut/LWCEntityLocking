@@ -659,35 +659,32 @@ public class PhysDB extends Database {
     public void loadDatabaseVersion() {
         databaseVersion = runAndLogException(() -> {
             int databaseVersion = -1;
-            try {
-                if (!hasInternalTable()) {
-                    return -1;
-                }
 
-                PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
-                statement.setString(1, "version");
+            if (!hasInternalTable()) {
+                return -1;
+            }
 
-                // Execute it
-                ResultSet set = statement.executeQuery();
+            PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
+            statement.setString(1, "version");
 
-                // load the version
-                if (set.next()) {
-                    databaseVersion = Integer.parseInt(set.getString("value"));
-                } else {
-                    throw new IllegalStateException("Internal is empty");
-                }
+            // Execute it
+            ResultSet set = statement.executeQuery();
 
-                // close everything
-                set.close();
-            } catch (SQLException e) {
+            // load the version
+            if (set.next()) {
+                databaseVersion = Integer.parseInt(set.getString("value"));
+            } else {
                 // Doesn't exist, create it
-                PreparedStatement statement = prepare("INSERT INTO " + prefix + "internal (name, value) VALUES(?, ?)");
+                statement = prepare("INSERT INTO " + prefix + "internal (name, value) VALUES(?, ?)");
                 statement.setString(1, "version");
                 statement.setInt(2, databaseVersion);
 
                 // ok
                 statement.executeUpdate();
             }
+
+            // close everything
+            set.close();
 
             return databaseVersion;
         });
@@ -699,35 +696,32 @@ public class PhysDB extends Database {
     public void loadEntityLockingDatabaseVersion() {
         entityLockingDatabaseVersion = runAndLogException(() -> {
             int entityLockingDatabaseVersion = -1;
-            try {
-                if (!hasInternalTable()) {
-                    return -1;
-                }
 
-                PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
-                statement.setString(1, "entityversion");
+            if (!hasInternalTable()) {
+                return -1;
+            }
 
-                // Execute it
-                ResultSet set = statement.executeQuery();
+            PreparedStatement statement = prepare("SELECT value FROM " + prefix + "internal WHERE name = ?");
+            statement.setString(1, "entityversion");
 
-                // load the version
-                if (set.next()) {
-                    entityLockingDatabaseVersion = Integer.parseInt(set.getString("value"));
-                } else {
-                    throw new IllegalStateException("Internal is empty");
-                }
+            // Execute it
+            ResultSet set = statement.executeQuery();
 
-                // close everything
-                set.close();
-            } catch (SQLException e) {
+            // load the version
+            if (set.next()) {
+                entityLockingDatabaseVersion = Integer.parseInt(set.getString("value"));
+            } else {
                 // Doesn't exist, create it
-                PreparedStatement statement = prepare("INSERT INTO " + prefix + "internal (name, value) VALUES(?, ?)");
+                statement = prepare("INSERT INTO " + prefix + "internal (name, value) VALUES(?, ?)");
                 statement.setString(1, "entityversion");
                 statement.setInt(2, entityLockingDatabaseVersion);
 
                 // ok
                 statement.executeUpdate();
             }
+
+            // close everything
+            set.close();
 
             return entityLockingDatabaseVersion;
         });
