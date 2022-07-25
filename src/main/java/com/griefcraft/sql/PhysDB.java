@@ -527,7 +527,6 @@ public class PhysDB extends Database {
 
         if (databaseVersion == 7) {
             doUpdatedDatabaseVersion7();
-            dropColumn(prefix + "protections", "rights");
 
             incrementDatabaseVersion();
         }
@@ -2178,6 +2177,9 @@ public class PhysDB extends Database {
             statement.executeUpdate("ALTER TABLE `" + prefix + "protections` CHANGE `date` `date` VARCHAR(50)");
             statement.executeUpdate("ALTER TABLE `" + prefix + "history` CHANGE `owner` `owner` VARCHAR(36)");
             statement.close();
+        });
+        runAndIgnoreException(() -> {
+            dropColumn(prefix + "protections", "rights");
         });
     }
 
