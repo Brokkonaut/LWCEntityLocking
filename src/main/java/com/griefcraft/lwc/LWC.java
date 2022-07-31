@@ -597,15 +597,7 @@ public class LWC {
         }
 
         if (isMod(player)) {
-            Player protectionOwner = protection.getBukkitOwner();
-
-            if (protectionOwner == null) {
-                return true;
-            }
-
-            if (!isAdmin(protectionOwner)) {
-                return true;
-            }
+            return true;
         }
 
         // Their access level
@@ -689,15 +681,7 @@ public class LWC {
         }
 
         if (isMod(player)) {
-            Player protectionOwner = protection.getBukkitOwner();
-
-            if (protectionOwner == null) {
-                return true;
-            }
-
-            if (!isAdmin(protectionOwner)) {
-                return true;
-            }
+            return true;
         }
 
         // Their access level
