@@ -823,26 +823,17 @@ public class PhysDB extends Database {
             return protection;
         }
 
-        if (!(object instanceof JSONObject)) {
+        if (!(object instanceof JSONObject root)) {
             return protection;
         }
 
-        // obtain the root
-        JSONObject root = (JSONObject) object;
-
         // Attempt to parse rights
-        Object rights = root.get("rights");
-
-        if (rights != null && (rights instanceof JSONArray)) {
-            JSONArray array = (JSONArray) rights;
-
+        if (root.get("rights") instanceof JSONArray array) {
             for (Object node : array) {
                 // we only want to use the maps
-                if (!(node instanceof JSONObject)) {
+                if (!(node instanceof JSONObject map)) {
                     continue;
                 }
-
-                JSONObject map = (JSONObject) node;
 
                 // decode the map
                 Permission permission = Permission.decodeJSON(map);
@@ -855,16 +846,11 @@ public class PhysDB extends Database {
         }
 
         // Attempt to parse flags
-        Object flags = root.get("flags");
-        if (flags != null && (flags instanceof JSONArray)) {
-            JSONArray array = (JSONArray) flags;
-
+        if (root.get("flags") instanceof JSONArray array) {
             for (Object node : array) {
-                if (!(node instanceof JSONObject)) {
+                if (!(node instanceof JSONObject map)) {
                     continue;
                 }
-
-                JSONObject map = (JSONObject) node;
 
                 Flag flag = Flag.decodeJSON(map);
 
