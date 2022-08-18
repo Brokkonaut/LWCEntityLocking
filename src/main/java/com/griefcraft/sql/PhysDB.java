@@ -856,7 +856,7 @@ public class PhysDB extends Database {
 
         // Attempt to parse flags
         Object flags = root.get("flags");
-        if (flags != null && (rights instanceof JSONArray)) {
+        if (flags != null && (flags instanceof JSONArray)) {
             JSONArray array = (JSONArray) flags;
 
             for (Object node : array) {
