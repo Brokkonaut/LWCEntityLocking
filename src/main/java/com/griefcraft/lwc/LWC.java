@@ -1271,6 +1271,9 @@ public class LWC {
     }
 
     public String resolveProtectionConfiguration(EntityType state, String node) {
+        if (state == null) {
+            return configuration.getString("protections." + node);
+        }
         String cacheKey = "e-" + state.name() + "-" + node;
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
@@ -1424,7 +1427,7 @@ public class LWC {
      */
     public String resolveProtectionConfiguration(Material material, String node) {
         if (material == null) {
-            return null;
+            return configuration.getString("protections." + node);
         }
         String cacheKey = "b-" + material.name() + "-" + node;
         if (protectionConfigurationCache.containsKey(cacheKey)) {

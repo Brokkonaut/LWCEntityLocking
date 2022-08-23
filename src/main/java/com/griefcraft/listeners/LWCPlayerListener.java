@@ -106,7 +106,8 @@ public class LWCPlayerListener implements Listener {
     }
 
     protected void onTick() {
-        lastHopper = null;
+        lastItemMoveSource = null;
+        lastItemMoveDestination = null;
         lastEntityInteract = null;
     }
 
@@ -438,40 +439,21 @@ public class LWCPlayerListener implements Listener {
         UUIDRegistry.updateCache(player.getUniqueId(), player.getName());
     }
 
-    private Inventory lastHopper;
-    private boolean lastHopperWasSource;
-    private boolean lastHopperResult;
+    private Inventory lastItemMoveSource;
+    private Inventory lastItemMoveDestination;
+    private boolean lastItemMoveResult;
 
     @EventHandler(ignoreCancelled = true)
     public void onMoveItem(InventoryMoveItemEvent event) {
         boolean result;
 
-        // if the initiator is the same as the source it is a dropper i.e.
-        // depositing items
-        if (event.getInitiator() == event.getSource()) {
-            if (Objects.equal(lastHopper, event.getInitiator()) && lastHopperWasSource) {
-                result = lastHopperResult;
-                // plugin.getLogger().info("Hopper == lasthopper");
-            } else {
-                result = handleMoveItemEvent(event.getInitiator(), event.getDestination());
-
-                lastHopper = event.getInitiator();
-                lastHopperWasSource = true;
-                lastHopperResult = result;
-                // plugin.getLogger().info("Hopper != lasthopper");
-            }
+        if (Objects.equal(lastItemMoveSource, event.getSource()) && Objects.equal(lastItemMoveDestination, event.getDestination())) {
+            result = lastItemMoveResult;
         } else {
-            if (Objects.equal(lastHopper, event.getInitiator()) && !lastHopperWasSource) {
-                result = lastHopperResult;
-                // plugin.getLogger().info("Hopper == lasthopper");
-            } else {
-                result = handleMoveItemEvent(event.getInitiator(), event.getSource());
-
-                lastHopper = event.getInitiator();
-                lastHopperWasSource = false;
-                lastHopperResult = result;
-                // plugin.getLogger().info("Hopper != lasthopper");
-            }
+            result = handleMoveItemEvent(event.getSource(), event.getDestination());
+            lastItemMoveSource = event.getSource();
+            lastItemMoveDestination = event.getDestination();
+            lastItemMoveResult = result;
         }
 
         if (result) {
@@ -482,85 +464,69 @@ public class LWCPlayerListener implements Listener {
     /**
      * Handle the item move event
      *
-     * @param inventory
+     * @param destinationInventory
      * @return true if the move should be cancelled
      */
-    private boolean handleMoveItemEvent(Inventory initiator, Inventory inventory) {
+    private boolean handleMoveItemEvent(Inventory sourceInventory, Inventory destinationInventory) {
         LWC lwc = LWC.getInstance();
 
-        if (inventory == null) {
-            return false;
+        Protection sourceProtection = null;
+        Entity sourceEntity = null;
+        InventoryHolder sourceHolder = sourceInventory.getHolder();
+        if (sourceHolder instanceof BlockState sourceBlock) {
+            sourceProtection = lwc.findProtection(sourceBlock.getLocation());
+        } else if (sourceHolder instanceof DoubleChest doubleChest) {
+            sourceProtection = lwc.findProtection(doubleChest.getLocation());
+        } else if (sourceHolder instanceof Entity entity && lwc.isProtectable(entity)) {
+            sourceEntity = entity;
+            sourceProtection = lwc.findProtection(sourceEntity);
         }
 
-        Location location = null;
-        Entity entityHolder = null;
-        InventoryHolder holder;
-        Location initiatorLocation = null;
-        Entity initiatorEntity = null;
-        InventoryHolder initiatorHolder;
-
-        try {
-            holder = inventory.getHolder();
-            initiatorHolder = initiator.getHolder();
-        } catch (AbstractMethodError e) {
-            return false;
+        Protection destinationProtection = null;
+        Entity destinationEntity = null;
+        InventoryHolder destinationHolder = destinationInventory.getHolder();
+        if (destinationHolder instanceof BlockState destinationBlock) {
+            destinationProtection = lwc.findProtection(destinationBlock.getLocation());
+        } else if (destinationHolder instanceof DoubleChest doubleChest) {
+            destinationProtection = lwc.findProtection(doubleChest.getLocation());
+        } else if (destinationHolder instanceof Entity entity && lwc.isProtectable(entity)) {
+            destinationEntity = entity;
+            destinationProtection = lwc.findProtection(destinationEntity);
         }
 
-        try {
-            if (holder instanceof BlockState) {
-                location = ((BlockState) holder).getLocation();
-            } else if (holder instanceof DoubleChest) {
-                location = ((DoubleChest) holder).getLocation();
-            } else if (holder instanceof Entity && lwc.isProtectable((Entity) holder)) {
-                entityHolder = (Entity) holder;
-            } else {
-                return false;
-            }
-
-            if (initiatorHolder instanceof BlockState) {
-                initiatorLocation = ((BlockState) initiatorHolder).getLocation();
-            } else if (initiatorHolder instanceof Entity && lwc.isProtectable((Entity) initiatorHolder)) {
-                initiatorEntity = (Entity) initiatorHolder;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-
-        // High-intensity zone: increase protection cache if it's full,
-        // otherwise
-        // the database will be getting rammed
-        lwc.getProtectionCache().increaseIfNecessary();
-
-        // Attempt to load the protection at that location/entity
-        Protection protection = entityHolder == null ? lwc.findProtection(location) : lwc.findProtection(entityHolder);
-
-        // If no protection was found we can safely ignore it
-        if (protection == null) {
-            return false;
-        }
-
-        if ((initiatorLocation != null || initiatorEntity != null) && Boolean.parseBoolean(lwc.resolveProtectionConfiguration(Material.HOPPER, "enabled"))) {
-            Protection initiatorProtection = initiatorEntity == null ? lwc.findProtection(initiatorLocation) : lwc.findProtection(initiatorEntity);
-
-            if (initiatorProtection != null) {
-                // if they're owned by the same person then we can allow the
-                // move
-                if (protection.hasSameOwner(initiatorProtection)) {
+        if (sourceProtection != null) {
+            // if they're owned by the same person then we can allow the move
+            if (destinationProtection != null) {
+                if (sourceProtection.hasSameOwner(destinationProtection)) {
                     return false;
                 }
             }
-        }
-        String denyHoppersString;
-        if (entityHolder == null) {
-            denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(protection.getBlockId()), "denyHoppers");
-        } else {
-            denyHoppersString = lwc.resolveProtectionConfiguration(entityHolder.getType(), "denyHoppers");
-        }
-        boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
 
-        // xor = (a && !b) || (!a && b)
-        if (denyHoppers ^ protection.hasFlag(Flag.Type.HOPPER)) {
-            return true;
+            String denyHoppersString = null;
+            if (!sourceProtection.isEntity()) {
+                denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(sourceProtection.getBlockId()), "denyHoppers");
+            } else {
+                denyHoppersString = lwc.resolveProtectionConfiguration(sourceEntity.getType(), "denyHoppers");
+            }
+            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
+
+            if (denyHoppers ^ (sourceProtection.hasFlag(Flag.Type.HOPPER) || sourceProtection.hasFlag(Flag.Type.HOPPEROUT))) {
+                return true;
+            }
+        }
+
+        if (destinationProtection != null) {
+            String denyHoppersString = null;
+            if (!destinationProtection.isEntity()) {
+                denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(destinationProtection.getBlockId()), "denyHoppers");
+            } else {
+                denyHoppersString = lwc.resolveProtectionConfiguration(destinationEntity.getType(), "denyHoppers");
+            }
+            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
+
+            if (denyHoppers ^ (destinationProtection.hasFlag(Flag.Type.HOPPER) || destinationProtection.hasFlag(Flag.Type.HOPPERIN))) {
+                return true;
+            }
         }
 
         return false;

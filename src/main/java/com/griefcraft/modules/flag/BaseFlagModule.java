@@ -110,15 +110,16 @@ public class BaseFlagModule extends JavaModule {
 
         if (args.length < 2) {
             lwc.sendSimpleUsage(sender, "/lwc flag <flag> <on/off>");
+            if (args.length < 1) {
+                // TODO
+                String flags = "";
+                for (Flag.Type type : Flag.Type.values()) {
+                    flags += Colors.Yellow + type.toString().toLowerCase() + Colors.White + ", ";
+                }
+                flags = flags.substring(0, flags.length() - 2);
 
-            // TODO
-            String flags = "";
-            for (Flag.Type type : Flag.Type.values()) {
-                flags += Colors.Yellow + type.toString().toLowerCase() + Colors.White + ", ";
+                lwc.sendLocale(sender, "lwc.flags.available", "flags", flags);
             }
-            flags = flags.substring(0, flags.length() - 2);
-
-            lwc.sendLocale(sender, "lwc.flags.available", "flags", flags);
             return;
         }
 
