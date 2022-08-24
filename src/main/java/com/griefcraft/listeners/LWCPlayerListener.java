@@ -477,9 +477,13 @@ public class LWCPlayerListener implements Listener {
             sourceProtection = lwc.findProtection(sourceBlock.getLocation());
         } else if (sourceHolder instanceof DoubleChest doubleChest) {
             sourceProtection = lwc.findProtection(doubleChest.getLocation());
-        } else if (sourceHolder instanceof Entity entity && lwc.isProtectable(entity)) {
-            sourceEntity = entity;
-            sourceProtection = lwc.findProtection(sourceEntity);
+        } else if (sourceHolder instanceof Entity entity) {
+            if (lwc.isProtectable(entity)) {
+                sourceEntity = entity;
+                sourceProtection = lwc.findProtection(sourceEntity);
+            }
+        } else {
+            return false; // not a protectable source?
         }
 
         Protection destinationProtection = null;
@@ -489,9 +493,13 @@ public class LWCPlayerListener implements Listener {
             destinationProtection = lwc.findProtection(destinationBlock.getLocation());
         } else if (destinationHolder instanceof DoubleChest doubleChest) {
             destinationProtection = lwc.findProtection(doubleChest.getLocation());
-        } else if (destinationHolder instanceof Entity entity && lwc.isProtectable(entity)) {
-            destinationEntity = entity;
-            destinationProtection = lwc.findProtection(destinationEntity);
+        } else if (destinationHolder instanceof Entity entity) {
+            if (lwc.isProtectable(entity)) {
+                destinationEntity = entity;
+                destinationProtection = lwc.findProtection(destinationEntity);
+            }
+        } else {
+            return false; // not a protectable destination?
         }
 
         if (sourceProtection != null) {
