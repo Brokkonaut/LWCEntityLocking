@@ -493,9 +493,9 @@ public class LWCPlayerListener implements Listener {
             destinationProtection = lwc.findProtection(destinationBlock.getLocation());
         } else if (destinationHolder instanceof DoubleChest doubleChest) {
             destinationProtection = lwc.findProtection(doubleChest.getLocation());
-        } else if (destinationHolder instanceof Entity entity) {
-            if (lwc.isProtectable(entity)) {
-                destinationEntity = entity;
+        } else if (destinationHolder instanceof Entity destEntity) {
+            if (lwc.isProtectable(destEntity)) {
+                destinationEntity = destEntity;
                 destinationProtection = lwc.findProtection(destinationEntity);
             }
         } else {
