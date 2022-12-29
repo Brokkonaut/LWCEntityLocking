@@ -224,8 +224,8 @@ public class LWCPlayerListener implements Listener {
         }
         // owner permission is required for damaging entities
         if (!lwc.canDestoryProtection(p, protection)) {
-            if (e.getCause() == DamageCause.ENTITY_ATTACK && entity instanceof ItemFrame) {
-                ItemStack item = ((ItemFrame) entity).getItem();
+            if ((e.getCause() == DamageCause.CUSTOM || e.getCause() == DamageCause.ENTITY_ATTACK) && entity instanceof ItemFrame frame) {
+                ItemStack item = frame.getItem();
                 if (item != null && item.getType() != Material.AIR) {
                     return; // special case for ItemFrames: they call a damageevent when the contained item is removed.
                     // this is allowed for protection members.
