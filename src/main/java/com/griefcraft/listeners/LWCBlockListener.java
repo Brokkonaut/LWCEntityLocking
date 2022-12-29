@@ -379,6 +379,12 @@ public class LWCBlockListener implements Listener {
 
         if (lwc.isProtectable(event.getBlockReplacedState())) {
             Protection existingProtection = lwc.findProtection(block);
+
+            // special case: placing a book in a lectern is also a "block place", this is checked in the PlayerInteract event handler
+            if (existingProtection != null && block.getType() == Material.LECTERN && event.getBlockReplacedState().getType() == Material.LECTERN) {
+                return;
+            }
+
             if (!lwc.canAdminProtection(player, existingProtection)) {
                 // they can't access the protection ..
                 event.setCancelled(true);
