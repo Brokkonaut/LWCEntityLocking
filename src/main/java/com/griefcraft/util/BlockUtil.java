@@ -5,6 +5,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.block.data.type.Chest;
+import org.bukkit.util.Vector;
 
 public class BlockUtil {
 
@@ -68,5 +69,15 @@ public class BlockUtil {
             return relativeBlock;
         }
         return null;
+    }
+
+    public static float getRelativeHitCoordinatesForBlockFace(Vector relativeHitPosition, BlockFace direction) {
+        return switch (direction) {
+            case NORTH -> (float) (1.0D - relativeHitPosition.getX());
+            case SOUTH -> (float) (relativeHitPosition.getX());
+            case WEST -> (float) (relativeHitPosition.getZ());
+            case EAST -> (float) (1.0D - relativeHitPosition.getZ());
+            default -> throw new IncompatibleClassChangeError();
+        };
     }
 }

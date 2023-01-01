@@ -41,6 +41,7 @@ import com.griefcraft.scripting.Module;
 import com.griefcraft.scripting.event.LWCBlockInteractEvent;
 import com.griefcraft.scripting.event.LWCDropItemEvent;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
+import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.UUIDRegistry;
 import java.util.Set;
 import java.util.UUID;
@@ -48,6 +49,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.ChiseledBookshelf;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Lectern;
 import org.bukkit.entity.Entity;
@@ -87,6 +89,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 public class LWCPlayerListener implements Listener {
 
@@ -94,6 +98,7 @@ public class LWCPlayerListener implements Listener {
      * The plugin instance
      */
     private LWCPlugin plugin;
+    private static final boolean HAS_CHISELED_BOOKSHELF = Material.getMaterial("CHISELED_BOOKSHELF") != null;
 
     public LWCPlayerListener(LWCPlugin plugin) {
         this.plugin = plugin;
@@ -621,6 +626,30 @@ public class LWCPlayerListener implements Listener {
                     ItemStack book = lectern.getInventory().getItem(0);
                     if (book == null || book.getType() == Material.AIR) {
                         canAccess = lwc.canAccessProtectionContents(player, protection) || protection.getType() == Type.DONATION;
+                    }
+                }
+            }
+            // special case for chiseled bookshelves
+            if (HAS_CHISELED_BOOKSHELF) {
+                if (protection != null && block.getType() == Material.CHISELED_BOOKSHELF && block.getBlockData() instanceof org.bukkit.block.data.type.ChiseledBookshelf blockData && state instanceof ChiseledBookshelf bookshelf) {
+                    if (event.getBlockFace() == blockData.getFacing()) {
+                        RayTraceResult hit = player.rayTraceBlocks(6);
+                        if (hit != null && block.equals(hit.getHitBlock())) {
+                            Vector relativePosition = hit.getHitPosition().subtract(block.getLocation().toVector());
+                            float x = BlockUtil.getRelativeHitCoordinatesForBlockFace(relativePosition, blockData.getFacing());
+                            float y = (float) relativePosition.getY();
+                            int slot = (x < 0.375F ? 0 : x < 0.6875F ? 1 : 2) + (y >= 0.5 ? 0 : 3);
+
+                            ItemStack inSlot = bookshelf.getInventory().getItem(slot);
+                            boolean occupied = (inSlot != null && inSlot.getType() != Material.AIR || blockData.isSlotOccupied(slot));
+                            if (occupied) {
+                                // we want to take the book out of the slot
+                                canAccess = lwc.canAccessProtectionContents(player, protection);
+                            } else {
+                                // we want to put a book in the slot
+                                canAccess = lwc.canAccessProtectionContents(player, protection) || protection.getType() == Type.DONATION;
+                            }
+                        }
                     }
                 }
             }
