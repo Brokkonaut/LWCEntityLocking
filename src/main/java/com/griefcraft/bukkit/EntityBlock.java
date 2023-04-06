@@ -299,4 +299,9 @@ public class EntityBlock implements Block {
     public boolean isPreferredTool(ItemStack arg0) {
         return false;
     }
+    
+    @Override
+    public String getTranslationKey() {
+        return null;
+    }
 }
