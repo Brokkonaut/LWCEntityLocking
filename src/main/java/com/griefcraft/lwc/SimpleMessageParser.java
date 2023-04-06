@@ -32,6 +32,7 @@ import com.griefcraft.util.Colors;
 import com.griefcraft.util.StringUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class SimpleMessageParser implements MessageParser {
@@ -65,7 +66,7 @@ public class SimpleMessageParser implements MessageParser {
         // add the arguments to the cache key
         if (args != null && args.length > 0) {
             for (Object argument : args) {
-                cacheKey += argument.toString();
+                cacheKey += Objects.toString(argument);
             }
         }
 
@@ -115,7 +116,7 @@ public class SimpleMessageParser implements MessageParser {
         for (String bindKey : bind.keySet()) {
             Object object = bind.get(bindKey);
 
-            value = StringUtil.fastReplace(value, "%" + bindKey + "%", object.toString());
+            value = StringUtil.fastReplace(value, "%" + bindKey + "%", Objects.toString(object));
         }
 
         // include the binds
@@ -132,12 +133,12 @@ public class SimpleMessageParser implements MessageParser {
     private Map<String, Object> parseBinds(Object... args) {
         Map<String, Object> bind = new HashMap<>();
 
-        if (args == null || args.length < 2) {
+        if (args == null || args.length == 0) {
             return bind;
         }
 
         if (args.length % 2 != 0) {
-            throw new IllegalArgumentException("The given arguments length must be equal");
+            throw new IllegalArgumentException("The given arguments length must be even");
         }
 
         int size = args.length;
