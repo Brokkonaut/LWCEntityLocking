@@ -3,7 +3,6 @@ package com.griefcraft.lwc;
 import com.google.common.base.Preconditions;
 import com.griefcraft.bukkit.EntityBlock;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.bukkit.Material;
@@ -11,7 +10,7 @@ import org.bukkit.Material;
 public class BlockMap {
     private static BlockMap instance = new BlockMap();
 
-    private EnumMap<Material, Integer> blockToIdMap = new EnumMap<>(Material.class);
+    private HashMap<Material, Integer> blockToIdMap = new HashMap<>();
 
     private Material[] idToBlockMap = new Material[64];
 

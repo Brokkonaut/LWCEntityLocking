@@ -29,7 +29,8 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -49,7 +50,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
      * Blocks that can be attached to the wall and be protected.
      * This assumes that the block is DESTROYED if the wall they are attached to is broken.
      */
-    public static final Set<Material> PROTECTABLES_WALL = EnumSet.of(Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
+    public static final Set<Material> PROTECTABLES_WALL = new HashSet<>(List.of(Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
             Material.DARK_OAK_WALL_SIGN, Material.SPRUCE_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, //
             Material.WHITE_WALL_BANNER, Material.ORANGE_WALL_BANNER, Material.MAGENTA_WALL_BANNER, Material.LIGHT_BLUE_WALL_BANNER, //
             Material.YELLOW_WALL_BANNER, Material.LIME_WALL_BANNER, Material.PINK_WALL_BANNER, Material.GRAY_WALL_BANNER, //
@@ -58,7 +59,7 @@ public class WallMatcher implements ProtectionFinder.Matcher {
             Material.STONE_BUTTON, Material.LEVER, //
             Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON,
             Material.ACACIA_BUTTON, Material.WARPED_BUTTON, Material.CRIMSON_BUTTON, Material.MANGROVE_BUTTON, 
-            Material.WARPED_WALL_SIGN, Material.CRIMSON_WALL_SIGN, Material.MANGROVE_WALL_SIGN, Material.BAMBOO_BUTTON, Material.BAMBOO_WALL_SIGN);
+            Material.WARPED_WALL_SIGN, Material.CRIMSON_WALL_SIGN, Material.MANGROVE_WALL_SIGN, Material.BAMBOO_BUTTON, Material.BAMBOO_WALL_SIGN));
 
     /**
      * Possible faces around the base block that protections could be at

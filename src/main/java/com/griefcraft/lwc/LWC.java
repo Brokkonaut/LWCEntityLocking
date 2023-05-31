@@ -100,8 +100,8 @@ import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -171,9 +171,9 @@ public class LWC {
      */
     private ICurrency currency;
 
-    private EnumSet<EntityType> protectableEntites = EnumSet.noneOf(EntityType.class);
+    private HashSet<EntityType> protectableEntites = new HashSet<>();
 
-    private EnumSet<Material> protectableBlocks = EnumSet.noneOf(Material.class);
+    private HashSet<Material> protectableBlocks = new HashSet<>();
 
     /**
      * Protection configuration cache

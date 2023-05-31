@@ -29,7 +29,8 @@
 package com.griefcraft.util.matchers;
 
 import com.griefcraft.util.ProtectionFinder;
-import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -42,7 +43,7 @@ import org.bukkit.block.data.Directional;
  */
 public class GravityMatcher implements ProtectionFinder.Matcher {
 
-    public static final Set<Material> PROTECTABLES_POSTS = EnumSet.of(Material.ACACIA_SIGN, Material.BIRCH_SIGN,
+    public static final Set<Material> PROTECTABLES_POSTS = new HashSet<>(List.of(Material.ACACIA_SIGN, Material.BIRCH_SIGN,
             Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN, Material.SPRUCE_SIGN, Material.RAIL,
             Material.POWERED_RAIL, Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON, Material.OAK_BUTTON,
             Material.SPRUCE_BUTTON, Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.DARK_OAK_BUTTON,
@@ -50,7 +51,7 @@ public class GravityMatcher implements ProtectionFinder.Matcher {
             Material.LIGHT_BLUE_BANNER, Material.YELLOW_BANNER, Material.LIME_BANNER, Material.PINK_BANNER,
             Material.GRAY_BANNER, Material.LIGHT_GRAY_BANNER, Material.CYAN_BANNER, Material.PURPLE_BANNER,
             Material.BLUE_BANNER, Material.BROWN_BANNER, Material.GREEN_BANNER, Material.RED_BANNER, Material.BLACK_BANNER,
-            Material.WARPED_SIGN, Material.CRIMSON_SIGN, Material.MANGROVE_SIGN, Material.BAMBOO_SIGN);
+            Material.WARPED_SIGN, Material.CRIMSON_SIGN, Material.MANGROVE_SIGN, Material.BAMBOO_SIGN));
 
     @Override
     public boolean matches(ProtectionFinder finder) {

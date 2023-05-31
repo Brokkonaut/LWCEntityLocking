@@ -30,26 +30,23 @@ package com.griefcraft.util.matchers;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.util.ProtectionFinder;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.data.type.Door;
-import org.bukkit.block.data.type.Gate;
-import org.bukkit.block.data.type.TrapDoor;
 
 /**
  * Matches doors (both Iron & Wooden)
  */
 public class DoorMatcher implements ProtectionFinder.Matcher {
 
-    public static final Set<Material> PROTECTABLES_DOORS = EnumSet.noneOf(Material.class);
-    public static final Set<Material> WOODEN_DOORS = EnumSet.noneOf(Material.class); // doors that open when clicked
-    public static final Set<Material> PRESSURE_PLATES = EnumSet.noneOf(Material.class);
-    public static final Set<Material> FENCE_GATES = EnumSet.noneOf(Material.class);
-    public static final Set<Material> TRAPDOORS = EnumSet.noneOf(Material.class); // trapdoors that open when clicked
+    public static final Set<Material> PROTECTABLES_DOORS = new HashSet<>();
+    public static final Set<Material> WOODEN_DOORS = new HashSet<>(); // doors that open when clicked
+    public static final Set<Material> PRESSURE_PLATES = new HashSet<>();
+    public static final Set<Material> FENCE_GATES = new HashSet<>();
+    public static final Set<Material> TRAPDOORS = new HashSet<>(); // trapdoors that open when clicked
 
     private static final BlockFace[] faces = new BlockFace[] { BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH };
     static {

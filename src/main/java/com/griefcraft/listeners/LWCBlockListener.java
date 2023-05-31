@@ -41,7 +41,7 @@ import com.griefcraft.scripting.event.LWCRedstoneEvent;
 import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.Colors;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -79,7 +79,7 @@ public class LWCBlockListener implements Listener {
     /**
      * A set of blacklisted blocks
      */
-    private final EnumSet<Material> blacklistedBlocks = EnumSet.noneOf(Material.class);
+    private final HashSet<Material> blacklistedBlocks = new HashSet<>();
 
     public LWCBlockListener(LWCPlugin plugin) {
         this.plugin = plugin;
