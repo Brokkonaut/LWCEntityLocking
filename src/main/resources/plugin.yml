@@ -53,6 +53,7 @@ commands:
   cremoveall:
     description: Removes all protections owned by the player
     usage: /<command>
+    permission: lwc.removeall
   climits:
     description: View your current protection limits.
     usage: /<command>
@@ -175,3 +176,6 @@ permissions:
   lwc.autoprotect:
       default: false
       description: Allows you to auto protect LWC protections regardless of how LWC is configured
+  lwc.removeall:
+      default: false
+      description: Allows to remove all own protections at the same time

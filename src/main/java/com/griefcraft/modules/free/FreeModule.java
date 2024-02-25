@@ -133,7 +133,7 @@ public class FreeModule extends JavaModule {
         }
 
         if (args.length < 1) {
-            lwc.sendSimpleUsage(sender, "/lwc -r <protection|modes>");
+            lwc.sendSimpleUsage(sender, "/lwc -r <protection" + (lwc.hasPermission(sender, "lwc.removeall") ? "|allprotections" : "") + "|modes>");
             return;
         }
 
@@ -153,7 +153,7 @@ public class FreeModule extends JavaModule {
             player.disableAllModes();
             player.removeAllActions();
             lwc.sendLocale(sender, "protection.remove.modes.finalize");
-        } else if (type.equals("allprotections")) {
+        } else if (type.equals("allprotections") && lwc.hasPermission(sender, "lwc.removeall")) {
             // Prompt them for /lwc confirm
             lwc.sendLocale(player, "lwc.remove.allprotections");
 
@@ -179,7 +179,7 @@ public class FreeModule extends JavaModule {
             // bind it to the player
             player.addAction(action);
         } else {
-            lwc.sendSimpleUsage(sender, "/lwc -r <protection|allprotections|modes>");
+            lwc.sendSimpleUsage(sender, "/lwc -r <protection" + (lwc.hasPermission(sender, "lwc.removeall") ? "|allprotections" : "") + "|modes>");
         }
 
     }
