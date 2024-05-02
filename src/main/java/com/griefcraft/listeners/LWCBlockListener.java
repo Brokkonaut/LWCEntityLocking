@@ -517,25 +517,6 @@ public class LWCBlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        if (!LWC.ENABLED) {
-            return;
-        }
-
-        LWC lwc = LWC.getInstance();
-
-        Block block = event.getBlock();
-        if (!lwc.isProtectable(block)) {
-            return;
-        }
-
-        Protection protection = lwc.findProtection(block);
-        if (protection != null) {
-            event.setCancelled(true);
-        }
-    }
-
     /**
      * Load and process the configuration
      */

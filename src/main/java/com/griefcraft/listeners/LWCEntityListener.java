@@ -259,6 +259,9 @@ public class LWCEntityListener implements Listener {
         if (!LWC.ENABLED) {
             return;
         }
+        if(event.getBlock().getType() == event.getBlockData().getMaterial()) {
+            return; // allowed to change the block if it does not destroy it
+        }
         LWC lwc = plugin.getLWC();
         if ((lwc.findProtection(event.getBlock()) != null)) {
             event.setCancelled(true);
