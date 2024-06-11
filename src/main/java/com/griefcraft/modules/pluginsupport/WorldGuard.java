@@ -153,14 +153,14 @@ public class WorldGuard extends JavaModule {
         BlockVector3 maximum = region.getMaximumPoint();
 
         // Min values
-        int minBlockX = minimum.getBlockX();
-        int minBlockY = minimum.getBlockY();
-        int minBlockZ = minimum.getBlockZ();
+        int minBlockX = minimum.x();
+        int minBlockY = minimum.y();
+        int minBlockZ = minimum.z();
 
         // Max values
-        int maxBlockX = maximum.getBlockX();
-        int maxBlockY = maximum.getBlockY();
-        int maxBlockZ = maximum.getBlockZ();
+        int maxBlockX = maximum.x();
+        int maxBlockY = maximum.y();
+        int maxBlockZ = maximum.z();
 
         if (args[0].equals("purgeregion")) {
             // get all of the protections inside of the region
