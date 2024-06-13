@@ -55,6 +55,7 @@ import org.bukkit.block.Lectern;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.Event.Result;
@@ -67,6 +68,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityKnockbackByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
@@ -191,6 +193,25 @@ public class LWCPlayerListener implements Listener {
         Protection protection = lwc.findProtection(entity);
         if (protection != null) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityPushedByEntityAttack(EntityKnockbackByEntityEvent e) {
+        Entity entity = e.getEntity();
+        LWC lwc = LWC.getInstance();
+        if (entity instanceof Player || !lwc.isProtectable(entity)) {
+            return;
+        }
+        Protection protection = lwc.findProtection(entity);
+        if (protection != null) {
+            Entity source = e.getSourceEntity();
+            if(source instanceof Projectile projectile && projectile.getShooter() instanceof Entity realSource) {
+                source = realSource;
+            }
+            if (!(source instanceof Player player) || !lwc.canAccessProtection(player, protection)) {
+                e.setCancelled(true);
+            }
         }
     }
 
