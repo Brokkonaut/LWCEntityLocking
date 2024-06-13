@@ -30,6 +30,8 @@ package com.griefcraft.util.locale;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class LocaleClassLoader extends ClassLoader {
@@ -39,8 +41,8 @@ public class LocaleClassLoader extends ClassLoader {
         File file = new File("plugins/LWC/locale/" + name);
 
         try {
-            return new URL("file:" + file.getAbsolutePath());
-        } catch (MalformedURLException e) {
+            return new URI("file:" + file.getAbsolutePath()).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             e.printStackTrace();
         }
 

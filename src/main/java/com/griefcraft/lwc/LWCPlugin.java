@@ -263,7 +263,7 @@ public class LWCPlugin extends JavaPlugin {
                 locale = new LWCResourceBundle(defaultBundle);
 
                 try {
-                    optionalBundle = ResourceBundle.getBundle("lwc", new Locale(localization), new LocaleClassLoader(), new UTF8Control());
+                    optionalBundle = ResourceBundle.getBundle("lwc", Locale.of(localization), new LocaleClassLoader(), new UTF8Control());
                 } catch (MissingResourceException e) {
                 }
 

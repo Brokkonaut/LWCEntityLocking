@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +67,7 @@ public class UUIDFetcher implements Callable<Map<String, UUID>> {
     }
 
     private static HttpURLConnection createConnection() throws Exception {
-        URL url = new URL(PROFILE_URL);
+        URL url = new URI(PROFILE_URL).toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");

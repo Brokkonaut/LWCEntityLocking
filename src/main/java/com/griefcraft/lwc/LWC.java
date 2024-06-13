@@ -886,7 +886,7 @@ public class LWC {
         boolean firstLine = true;
         for (String line : message) {
             if (firstLine && (sender instanceof Player)) {
-                ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(line));
+                ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(line));
             } else {
                 sender.sendMessage(line);
             }
