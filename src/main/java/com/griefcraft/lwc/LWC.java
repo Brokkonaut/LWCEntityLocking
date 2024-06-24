@@ -1415,6 +1415,9 @@ public class LWC {
         if (block == null) {
             return null;
         }
+        if (block instanceof EntityBlock entityBlock) {
+            return resolveProtectionConfiguration(entityBlock.getEntity().getType(), node);
+        }
         return resolveProtectionConfiguration(block.getType(), node);
     }
 
