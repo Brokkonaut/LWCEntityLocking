@@ -795,7 +795,7 @@ public class PhysDB extends Database {
         protection.setX(x);
         protection.setY(y);
         protection.setZ(z);
-        if (blockId == EntityBlock.ENTITY_BLOCK_ID || y < -64 || y > 319) { // this is a bit ugly but fixes broken protections
+        if (blockId == EntityBlock.ENTITY_BLOCK_ID) {
             protection.setIsEntity(true);
         } else {
             protection.setBlockMaterial(BlockMap.instance().getMaterial(blockId));
