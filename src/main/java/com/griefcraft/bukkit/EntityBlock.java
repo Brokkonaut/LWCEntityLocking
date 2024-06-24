@@ -30,7 +30,7 @@ public class EntityBlock implements Block {
     private Entity entity;
     public String version;
 
-    public EntityBlock(Entity entity) {
+    private EntityBlock(Entity entity) {
         this.entity = entity;
     }
 
