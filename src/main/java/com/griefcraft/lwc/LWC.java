@@ -1124,7 +1124,7 @@ public class LWC {
         if (protection == null) {
             protectionCache.addKnownNull(cacheKey);
         }
-        return protection;
+        return (protection != null && protection.isEntity()) ? protection : null;
     }
 
     /**
