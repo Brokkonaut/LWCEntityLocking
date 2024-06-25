@@ -1623,13 +1623,13 @@ public class LWC {
 
             if (protectionType != null) {
                 protection.setType(protectionType);
-                protection.save();
 
                 // If it's being passworded, we need to set the password
                 if (protectionType == Protection.Type.PASSWORD) {
                     String password = StringUtil.join(arguments, 1);
                     protection.setPassword(encrypt(password));
                 }
+                protection.save();
 
                 sendLocale(
                         sender,
