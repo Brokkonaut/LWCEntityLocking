@@ -85,10 +85,10 @@ public class OwnersModule extends JavaModule {
             }
 
             Permission permission = permissions.get(start + index);
-            player.sendMessage(permission.toString());
+            player.getBukkitPlayer().sendMessage(permission.toString());
         }
 
-        lwc.removeModes(player);
+        lwc.removeModes(player.getBukkitPlayer());
     }
 
     @Override

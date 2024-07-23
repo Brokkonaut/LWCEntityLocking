@@ -82,11 +82,11 @@ public class ModifyModule extends JavaModule {
                 rights = data.split(" ");
             }
 
-            lwc.removeModes(player);
-            lwc.processRightsModifications(player, protection, rights);
+            lwc.removeModes(player.getBukkitPlayer());
+            lwc.processRightsModifications(player.getBukkitPlayer(), protection, rights);
         } else {
             lwc.sendLocale(player, "protection.interact.error.notowner", "block", LWC.materialToString(protection.getBlockMaterial()));
-            lwc.removeModes(player);
+            lwc.removeModes(player.getBukkitPlayer());
         }
 
     }

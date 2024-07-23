@@ -61,7 +61,7 @@ public class AdminVersion extends JavaModule {
         String pluginColor = Colors.Green;
         // Version currVersion = LWCInfo.FULL_VERSION;
 
-        lwc.sendLocale(sender, "protection.admin.version.finalize", "plugin_color", pluginColor, "plugin_version", lwc.getPlugin().getDescription().getVersion(), "latest_plugin", "unknown");
+        lwc.sendLocale(sender, "protection.admin.version.finalize", "plugin_color", pluginColor, "plugin_version", lwc.getPlugin().getPluginMeta().getVersion(), "latest_plugin", "unknown");
     }
 
 }

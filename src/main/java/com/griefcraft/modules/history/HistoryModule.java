@@ -138,7 +138,7 @@ public class HistoryModule extends JavaModule {
         // Uh-oh! This normally will not happen (?)
         if (history == null) {
             lwcPlayer.removeAllActions();
-            lwcPlayer.sendMessage("Refusing to send null history object");
+            lwcPlayer.getBukkitPlayer().sendMessage("Refusing to send null history object");
             return;
         }
 
@@ -148,7 +148,7 @@ public class HistoryModule extends JavaModule {
         }
 
         // Send the header
-        lwcPlayer.sendMessage("History tool: Page " + (page + 1) + "/" + relatedHistory.size());
+        lwcPlayer.getBukkitPlayer().sendMessage("History tool: Page " + (page + 1) + "/" + relatedHistory.size());
 
         // Send the details
         sendDetails(player, history);

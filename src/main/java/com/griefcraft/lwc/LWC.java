@@ -105,8 +105,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -887,12 +886,23 @@ public class LWC {
         boolean firstLine = true;
         for (String line : message) {
             if (firstLine && (sender instanceof Player)) {
-                ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(line));
+                sender.sendActionBar(LegacyComponentSerializer.legacySection().deserialize(line));
             } else {
                 sender.sendMessage(line);
             }
             firstLine = false;
         }
+    }
+
+    /**
+     * Send a locale to a player or console
+     *
+     * @param sender
+     * @param key
+     * @param args
+     */
+    public void sendLocale(LWCPlayer sender, String key, Object... args) {
+        sendLocale(sender, key, args);
     }
 
     /**
@@ -1839,15 +1849,9 @@ public class LWC {
      *
      * @param sender
      */
-    public void removeModes(CommandSender sender) {
-        if (sender instanceof Player) {
-            Player bPlayer = (Player) sender;
-
-            if (notInPersistentMode(bPlayer.getName())) {
-                wrapPlayer(bPlayer).removeAllActions();
-            }
-        } else if (sender instanceof LWCPlayer) {
-            removeModes(((LWCPlayer) sender).getBukkitPlayer());
+    public void removeModes(Player sender) {
+        if (notInPersistentMode(sender.getName())) {
+            wrapPlayer(sender).removeAllActions();
         }
     }
 
@@ -1941,7 +1945,7 @@ public class LWC {
      * @return the plugin version
      */
     public double getVersion() {
-        return Double.parseDouble(plugin.getDescription().getVersion());
+        return Double.parseDouble(plugin.getPluginMeta().getVersion());
     }
 
     /**

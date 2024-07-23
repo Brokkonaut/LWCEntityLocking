@@ -38,16 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
 
-public class LWCPlayer implements CommandSender {
+public class LWCPlayer {
 
     /**
      * The LWC instance
@@ -128,7 +121,6 @@ public class LWCPlayer implements CommandSender {
     /**
      * @return the player's name
      */
-    @Override
     public String getName() {
         return player.getName();
     }
@@ -360,108 +352,5 @@ public class LWCPlayer implements CommandSender {
         }
 
         return related;
-    }
-
-    @Override
-    public void sendMessage(String s) {
-        player.sendMessage(s);
-    }
-
-    @Override
-    public void sendMessage(String... s) {
-        for (String _s : s) {
-            sendMessage(_s);
-        }
-    }
-
-    @Override
-    public Server getServer() {
-        return player.getServer();
-    }
-
-    @Override
-    public boolean isPermissionSet(String s) {
-        return player.isPermissionSet(s);
-    }
-
-    @Override
-    public boolean isPermissionSet(Permission permission) {
-        return player.isPermissionSet(permission);
-    }
-
-    @Override
-    public boolean hasPermission(String s) {
-        return player.hasPermission(s);
-    }
-
-    @Override
-    public boolean hasPermission(Permission permission) {
-        return player.hasPermission(permission);
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b) {
-        return player.addAttachment(plugin, s, b);
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin) {
-        return player.addAttachment(plugin);
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b, int i) {
-        return player.addAttachment(plugin, s, b, i);
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin, int i) {
-        return player.addAttachment(plugin, i);
-    }
-
-    @Override
-    public void removeAttachment(PermissionAttachment permissionAttachment) {
-        player.removeAttachment(permissionAttachment);
-    }
-
-    @Override
-    public void recalculatePermissions() {
-        player.recalculatePermissions();
-    }
-
-    @Override
-    public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-        return player.getEffectivePermissions();
-    }
-
-    @Override
-    public boolean isOp() {
-        return player.isOp();
-    }
-
-    @Override
-    public void setOp(boolean b) {
-        player.setOp(b);
-    }
-
-    @Override
-    public Spigot spigot() {
-        return player.spigot();
-    }
-
-    @Override
-    public void sendMessage(UUID target, String message) {
-        player.sendMessage(target, message);
-        
-    }
-
-    @Override
-    public void sendMessage(UUID target, String... message) {
-        player.sendMessage(target, message);
-    }
-
-    @Override
-    public Component name() {
-        return Component.text(getName());
     }
 }

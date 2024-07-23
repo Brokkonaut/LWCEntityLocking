@@ -94,7 +94,7 @@ public class BaseFlagModule extends JavaModule {
         }
 
         protection.save();
-        lwc.removeModes(player);
+        lwc.removeModes(player.getBukkitPlayer());
     }
 
     @Override
@@ -150,7 +150,7 @@ public class BaseFlagModule extends JavaModule {
         }
 
         // ensure it is not a restricted flag
-        if (match.isRestricted() && !lwc.isAdmin(player)) {
+        if (match.isRestricted() && !lwc.isAdmin(player.getBukkitPlayer())) {
             lwc.sendLocale(player, "protection.accessdenied");
             return;
         }

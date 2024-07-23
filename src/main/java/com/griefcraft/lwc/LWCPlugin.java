@@ -217,7 +217,7 @@ public class LWCPlugin extends JavaPlugin {
     public void onEnable() {
         lwc = new LWC(this);
 
-        LWCInfo.setVersion(getDescription().getVersion());
+        LWCInfo.setVersion(getPluginMeta().getVersion());
         LWC.ENABLED = true;
 
         loadLocales();

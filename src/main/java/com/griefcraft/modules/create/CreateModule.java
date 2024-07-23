@@ -76,7 +76,7 @@ public class CreateModule extends JavaModule {
         // check permissions again (DID THE LITTLE SHIT MOVE WORLDS??!?!?!?!?!?)
         if (!lwc.hasPermission(event.getPlayer(), "lwc.create." + protectionType, "lwc.create", "lwc.protect")) {
             lwc.sendLocale(player, "protection.accessdenied");
-            lwc.removeModes(player);
+            lwc.removeModes(player.getBukkitPlayer());
             event.setResult(Result.CANCEL);
             return;
         }
@@ -91,7 +91,7 @@ public class CreateModule extends JavaModule {
             entity = ((EntityBlock) block).getEntity();
         }
 
-        lwc.removeModes(player);
+        lwc.removeModes(player.getBukkitPlayer());
         LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(player.getBukkitPlayer(), block);
         lwc.getModuleLoader().dispatchEvent(evt);
 
@@ -129,7 +129,7 @@ public class CreateModule extends JavaModule {
                 protection = physDb.registerProtection(block.getType(), Protection.Type.matchType(protectionType), worldName, player.getUniqueId().toString(), "", blockX, blockY, blockZ);
             }
             lwc.sendLocale(player, "protection.interact.create.finalize");
-            lwc.processRightsModifications(player, protection, rights);
+            lwc.processRightsModifications(player.getBukkitPlayer(), protection, rights);
         }
 
         // tell the modules that a protection was registered
@@ -186,7 +186,7 @@ public class CreateModule extends JavaModule {
             switch (Protection.Type.matchType(type)) {
                 case PASSWORD:
                     if (args.length < 2) {
-                        lwc.sendSimpleUsage(player, "/lwc -c password <Password>");
+                        lwc.sendSimpleUsage(player.getBukkitPlayer(), "/lwc -c password <Password>");
                         return;
                     }
 

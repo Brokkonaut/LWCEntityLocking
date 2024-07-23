@@ -68,7 +68,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityKnockbackByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
@@ -197,7 +196,7 @@ public class LWCPlayerListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityPushedByEntityAttack(EntityKnockbackByEntityEvent e) {
+    public void onEntityPushedByEntityAttack(com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
         if (entity instanceof Player || !lwc.isProtectable(entity)) {
@@ -205,7 +204,7 @@ public class LWCPlayerListener implements Listener {
         }
         Protection protection = lwc.findProtection(entity);
         if (protection != null) {
-            Entity source = e.getSourceEntity();
+            Entity source = e.getPushedBy();
             if(source instanceof Projectile projectile && projectile.getShooter() instanceof Entity realSource) {
                 source = realSource;
             }
