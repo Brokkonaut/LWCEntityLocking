@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -457,5 +458,10 @@ public class LWCPlayer implements CommandSender {
     @Override
     public void sendMessage(UUID target, String... message) {
         player.sendMessage(target, message);
+    }
+
+    @Override
+    public Component name() {
+        return Component.text(getName());
     }
 }

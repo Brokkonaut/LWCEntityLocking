@@ -72,6 +72,8 @@ public class Statistics {
 
     private static long blockCacheMissNull;
 
+    private static int updatedLegacyEntities;
+
     /**
      * Add a query
      */
@@ -167,6 +169,9 @@ public class Statistics {
         sender.sendMessage("  Usage: " + cacheColour + String.format("%.2f", cachePercentFilled) + "% " + Colors.White + " ( " + cache.size() + "/" + cache.totalCapacity() + " [" + cache.capacity() + "+" + cache.adaptiveCapacity() + "] )");
         sender.sendMessage("  Blocks: " + Colors.Green + "Hit: " + formatNumber(blockCacheHit) + " + " + formatNumber(blockCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(blockCacheMiss) + " + " + formatNumber(blockCacheMissNull));
         sender.sendMessage("  Entities: " + Colors.Green + "Hit: " + formatNumber(entityCacheHit) + " + " + formatNumber(entityCacheHitNull) + " " + Colors.Red + "Miss: " + formatNumber(entityCacheMiss) + " + " + formatNumber(entityCacheMissNull));
+        if (updatedLegacyEntities > 0) {
+            sender.sendMessage("  Updated Legacy Entities: " + Colors.Green + formatNumber(updatedLegacyEntities));
+        }
         sender.sendMessage("  Profile: ");
         sendMethodCounter(sender, cache.getMethodCounter());
         // sender.sendMessage(" Reads: " + formatNumber(cache.getReads()) + " | " + String.format("%.2f", getAverage(cache.getReads())) + " / second");
@@ -255,6 +260,10 @@ public class Statistics {
 
     public static void addBlockCacheMissNull() {
         blockCacheMissNull++;
+    }
+
+    public static void addUpdatedLegacyEntity() {
+        updatedLegacyEntities++;
     }
 
     public static long getBlockCacheHit() {

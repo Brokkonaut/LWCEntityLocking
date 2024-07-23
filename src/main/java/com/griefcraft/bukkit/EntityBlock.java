@@ -1,5 +1,6 @@
 package com.griefcraft.bukkit;
 
+import com.destroystokyo.paper.block.BlockSoundGroup;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +8,7 @@ import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.SoundGroup;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -36,17 +38,17 @@ public class EntityBlock implements Block {
 
     @Override
     public int getX() {
-        return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
+        return this.entity.getLocation().getBlockX();
     }
 
     @Override
     public int getY() {
-        return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
+        return this.entity.getLocation().getBlockY();
     }
 
     @Override
     public int getZ() {
-        return POSITION_OFFSET + this.entity.getUniqueId().hashCode();
+        return this.entity.getLocation().getBlockZ();
     }
 
     @Override
@@ -302,6 +304,78 @@ public class EntityBlock implements Block {
     
     @Override
     public String getTranslationKey() {
+        return null;
+    }
+
+    @Override
+    public String translationKey() {
+        return null;
+    }
+
+    @Override
+    public boolean isValidTool(ItemStack itemStack) {
+        return false;
+    }
+
+    @Override
+    public Biome getComputedBiome() {
+        return null;
+    }
+
+    @Override
+    public boolean isBuildable() {
+        return false;
+    }
+
+    @Override
+    public boolean isBurnable() {
+        return false;
+    }
+
+    @Override
+    public boolean isReplaceable() {
+        return false;
+    }
+
+    @Override
+    public boolean isSolid() {
+        return false;
+    }
+
+    @Override
+    public boolean isCollidable() {
+        return false;
+    }
+
+    @Override
+    public boolean breakNaturally(boolean triggerEffect, boolean dropExperience) {
+        return false;
+    }
+
+    @Override
+    public boolean breakNaturally(ItemStack tool, boolean triggerEffect, boolean dropExperience) {
+        return false;
+    }
+
+    @Override
+    public void tick() {
+    }
+
+    @Override
+    public void fluidTick() {
+    }
+
+    @Override
+    public void randomTick() {
+    }
+
+    @Override
+    public BlockSoundGroup getSoundGroup() {
+        return null;
+    }
+
+    @Override
+    public SoundGroup getBlockSoundGroup() {
         return null;
     }
 }

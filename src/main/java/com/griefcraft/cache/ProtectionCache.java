@@ -30,9 +30,11 @@ package com.griefcraft.cache;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.entity.Entity;
 
 public class ProtectionCache {
 
@@ -58,6 +60,11 @@ public class ProtectionCache {
     private final LRUCache<Protection, Object> references;
 
     /**
+     * Weak references to protections by UUID
+     */
+    private final WeakLRUCache<UUID, Protection> byEntityId;
+
+    /**
      * Weak references to protections and their cache key
      * (protection.getCacheKey())
      */
@@ -80,6 +87,8 @@ public class ProtectionCache {
     private final LRUCache<CacheKey, Object> byKnownNulls;
 
     private final LRUCache<CacheKey, Object> directByKnownNulls;
+    
+    private final LRUCache<UUID, Object> byKnownNullsEntities;
 
     /**
      * The capacity of the cache
@@ -109,8 +118,10 @@ public class ProtectionCache {
         this.byCacheKey = new WeakLRUCache<>(capacity);
         this.byId = new WeakLRUCache<>(capacity);
         this.byKnownBlock = new WeakLRUCache<>(capacity);
+        this.byEntityId = new WeakLRUCache<>(capacity);
         this.byKnownNulls = new LRUCache<>(capacity);
         this.directByKnownNulls = new LRUCache<>(capacity);
+        this.byKnownNullsEntities = new LRUCache<>(capacity);
     }
 
     /**
@@ -183,6 +194,8 @@ public class ProtectionCache {
         byKnownBlock.clear();
         byKnownNulls.clear();
         directByKnownNulls.clear();
+        byKnownNullsEntities.clear();
+        byEntityId.clear();
     }
 
     /**
@@ -215,12 +228,22 @@ public class ProtectionCache {
 
         counter.increment("addProtection");
 
-        byKnownNulls.remove(protection.getCacheKey());
-        directByKnownNulls.remove(protection.getCacheKey());
+        if (protection.getEntityId() != null) {
+            byKnownNullsEntities.remove(protection.getEntityId());
+        } else {
+            byKnownNulls.remove(protection.getCacheKey());
+            directByKnownNulls.remove(protection.getCacheKey());
+        }
+
         // Add the hard reference
         references.put(protection, null);
 
         // Add weak references which are used to lookup protections
+        if (protection.getEntityId() != null) {
+            byEntityId.put(protection.getEntityId(), protection);
+            byId.put(protection.getId(), protection);
+            return;
+        }
         byCacheKey.put(protection.getCacheKey(), protection);
         byId.put(protection.getId(), protection);
 
@@ -246,6 +269,13 @@ public class ProtectionCache {
         counter.increment("removeProtection");
 
         references.remove(protection);
+
+        if (protection.getEntityId() != null) {
+            byEntityId.remove(protection.getEntityId());
+            byId.remove(protection.getId());
+            return;
+        }
+
         byId.remove(protection.getId());
 
         if (protection.getProtectionFinder() != null) {
@@ -316,6 +346,16 @@ public class ProtectionCache {
     }
 
     /**
+     * Check if a entity protection is known to not exist in the database
+     *
+     * @param entityId
+     * @return
+     */
+    public boolean isKnownNull(UUID entityId) {
+        return byKnownNullsEntities.containsKey(entityId);
+    }
+
+    /**
      * Get a protection in the cache via its cache key
      *
      * @param cacheKey
@@ -344,6 +384,16 @@ public class ProtectionCache {
     public Protection getProtection(Block block) {
         return getProtection(cacheKey(block.getWorld().getName(), block.getX(),
                 block.getY(), block.getZ()));
+    }
+
+    /**
+     * Get a protection in the cache for the given entity
+     *
+     * @param entity
+     * @return
+     */
+    public Protection getProtection(Entity entity) {
+        return byEntityId.get(entity.getUniqueId());
     }
 
     /**
@@ -404,10 +454,16 @@ public class ProtectionCache {
         byKnownBlock.maxCapacity = totalCapacity();
         byKnownNulls.maxCapacity = totalCapacity();
         directByKnownNulls.maxCapacity = totalCapacity();
+        byEntityId.maxCapacity = totalCapacity();
+        byKnownNullsEntities.maxCapacity = totalCapacity();
     }
 
     public LWC getLwc() {
         return lwc;
+    }
+
+    public void addKnownNull(UUID entityId) {
+        byKnownNullsEntities.put(entityId, null);
     }
 
 }

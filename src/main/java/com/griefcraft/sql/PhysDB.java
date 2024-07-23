@@ -305,6 +305,10 @@ public class PhysDB extends Database {
                 column.setType("INTEGER");
                 protections.add(column);
 
+                column = new Column("entityid");
+                column.setType("VARCHAR(36)");
+                protections.add(column);
+
                 column = new Column("data");
                 column.setType("TEXT");
                 protections.add(column);
@@ -413,6 +417,12 @@ public class PhysDB extends Database {
             if (!resetDatabaseVersion) {
                 loadDatabaseVersion();
                 loadEntityLockingDatabaseVersion();
+                if (databaseVersion < 0) {
+                    databaseVersion = 0;
+                }
+                if (entityLockingDatabaseVersion < 0) {
+                    entityLockingDatabaseVersion = 0;
+                }
             }
         }
 
@@ -449,8 +459,9 @@ public class PhysDB extends Database {
             dropIndex("history", "in14");
 
             // Create our updated (good) indexes
-            doUpdatedDatabaseVersion7(); // do this here to avoid regenerating the index
+            doUpdatesDatabaseVersion7(); // do this here to avoid regenerating the index
             createIndex("protections", "protections_main", "x, y, z, world");
+            createIndex("protections", "protections_entity", "entityid");
             createIndex("protections", "protections_utility", "owner");
             createIndex("history", "history_main", "protectionId");
             createIndex("history", "history_utility", "player");
@@ -517,7 +528,7 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 6) {
-            doUpdatedDatabaseVersion7(); // do this here to avoid regenerating the index
+            doUpdatesDatabaseVersion7(); // do this here to avoid regenerating the index
             createIndex("protections", "protections_main", "x, y, z, world");
             createIndex("protections", "protections_utility", "owner");
             createIndex("history", "history_utility", "player");
@@ -526,9 +537,15 @@ public class PhysDB extends Database {
         }
 
         if (databaseVersion == 7) {
-            doUpdatedDatabaseVersion7();
+            doUpdatesDatabaseVersion7();
 
             incrementDatabaseVersion();
+        }
+        
+        if (databaseVersion == 8) {
+            doUpdatesDatabaseVersion8();
+
+            incrementDatabaseVersion(); 
         }
 
         if (entityLockingDatabaseVersion == 0) {
@@ -743,7 +760,7 @@ public class PhysDB extends Database {
         }
 
         Protection protection = runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE id = ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE id = ?");
             statement.setInt(1, id);
 
             return resolveProtection(statement);
@@ -763,7 +780,7 @@ public class PhysDB extends Database {
      */
     public List<Protection> loadProtectionsUsingType(Protection.Type type) {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE type = ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE type = ?");
             statement.setInt(1, type.ordinal());
 
             return resolveProtections(statement);
@@ -783,6 +800,8 @@ public class PhysDB extends Database {
         int x = set.getInt("x");
         int y = set.getInt("y");
         int z = set.getInt("z");
+        String entityidString = set.getString("entityid");
+        UUID entityid = entityidString == null ? null : UUID.fromString(entityidString);
         int blockId = set.getInt("blockId");
         int type = set.getInt("type");
         String world = set.getString("world");
@@ -800,6 +819,7 @@ public class PhysDB extends Database {
         } else {
             protection.setBlockMaterial(BlockMap.instance().getMaterial(blockId));
         }
+        protection.setEntityId(entityid);
         protection.setType(Protection.Type.values()[type]);
         protection.setWorld(world);
         protection.setOwner(owner);
@@ -917,7 +937,7 @@ public class PhysDB extends Database {
         int finalPrecacheSize = precacheSize;
 
         List<Protection> protections = runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections ORDER BY id DESC LIMIT ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections ORDER BY id DESC LIMIT ?");
             statement.setInt(1, finalPrecacheSize);
             statement.setFetchSize(10);
 
@@ -988,7 +1008,7 @@ public class PhysDB extends Database {
         // System.out.println("loadProtection() => QUERYING");
 
         Protection protection = runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE x = ? AND y = ? AND z = ? AND world = ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE x = ? AND y = ? AND z = ? AND world = ? AND entityid IS NULL");
             statement.setInt(1, x);
             statement.setInt(2, y);
             statement.setInt(3, z);
@@ -1018,13 +1038,55 @@ public class PhysDB extends Database {
     }
 
     /**
+     * Load a protection for an entity at the given coordinates
+     *
+     * @param entity
+     * @return the Protection object
+     */
+    public Protection loadProtection(Entity entity, boolean ignoreProtectionCount) {
+        return loadProtection(entity.getUniqueId(), ignoreProtectionCount);
+    }
+
+    public Protection loadProtection(UUID entityId, boolean ignoreProtectionCount) {
+        // Is it possible that there are protections in the cache?
+        if (!ignoreProtectionCount && hasAllProtectionsCached()) {
+            // System.out.println("loadProtection() => HAS_ALL_PROTECTIONS_CACHED");
+            return null; // nothing was in the cache, nothing assumed to be in
+                         // the database
+        }
+        ProtectionCache cache = LWC.getInstance().getProtectionCache();
+        if (cache.isKnownNull(entityId)) {
+            return null;
+        }
+        // System.out.println("loadProtection() => QUERYING");
+
+        Protection protection = runAndThrowModuleExceptionIfFailing(() -> {
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE entityid = ?");
+            statement.setString(1, entityId.toString());
+
+            return resolveProtection(statement);
+        });
+
+        if (protection != null) {
+            // cache the protection
+            cache.addProtection(protection);
+            Statistics.addEntityCacheMiss();
+        } else {
+            cache.addKnownNull(entityId);
+            Statistics.addEntityCacheMissNull();
+        }
+
+        return protection;
+    }
+
+    /**
      * Load all protections (use sparingly !!)
      *
      * @return
      */
     public List<Protection> loadProtections() {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections");
 
             return resolveProtections(statement);
         });
@@ -1037,7 +1099,7 @@ public class PhysDB extends Database {
      */
     public List<Protection> loadProtectionsOrderedByChunk() {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed, x>>4 AS xshift4, z>>4 AS zshift4 FROM " + prefix + "protections ORDER BY xshift4, zshift4");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed, x>>4 AS xshift4, z>>4 AS zshift4 FROM " + prefix + "protections ORDER BY xshift4, zshift4");
 
             return resolveProtections(statement);
         });
@@ -1074,7 +1136,7 @@ public class PhysDB extends Database {
      */
     public List<Protection> loadProtections(String world, int x1, int x2, int y1, int y2, int z1, int z2) {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE world = ? AND x >= ? AND x <= ? AND y >= ? AND y <= ? AND z >= ? AND z <= ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE world = ? AND x >= ? AND x <= ? AND y >= ? AND y <= ? AND z >= ? AND z <= ? AND entityid IS NULL");
 
             statement.setString(1, world);
             statement.setInt(2, x1);
@@ -1097,7 +1159,7 @@ public class PhysDB extends Database {
      */
     public List<Protection> loadProtectionsByPlayerAlsoIfNotOwner(String player) {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? OR data LIKE ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? OR data LIKE ?");
             UUID uuid = UUIDRegistry.getUUID(player);
             String playerString = uuid != null ? uuid.toString() : player;
             statement.setString(1, playerString);
@@ -1115,7 +1177,7 @@ public class PhysDB extends Database {
      */
     public List<Protection> loadProtectionsByPlayer(String player) {
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ?");
             UUID uuid = UUIDRegistry.getUUID(player);
             statement.setString(1, uuid != null ? uuid.toString() : player);
 
@@ -1134,7 +1196,7 @@ public class PhysDB extends Database {
     public List<Protection> loadProtectionsByPlayer(String player, int start, int count) {
         UUID uuid = UUIDRegistry.getUUID(player);
         return runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? ORDER BY id DESC limit ?,?");
+            PreparedStatement statement = prepare("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections WHERE owner = ? ORDER BY id DESC limit ?,?");
             statement.setString(1, uuid != null ? uuid.toString() : player);
             statement.setInt(2, start);
             statement.setInt(3, count);
@@ -1157,19 +1219,19 @@ public class PhysDB extends Database {
      * @return
      */
     public Protection registerEntityProtection(Entity entity, Protection.Type type, String world, String player, String data, int x, int y, int z) {
-        return registerProtection(EntityBlock.ENTITY_BLOCK_ID, type, world, player, data, x, y, z);
+        return registerProtection(EntityBlock.ENTITY_BLOCK_ID, type, world, player, data, x, y, z, entity.getUniqueId());
     }
 
     public Protection registerProtection(Material block, Protection.Type type, String world, String player, String data, int x, int y, int z) {
         int blockId = BlockMap.instance().registerOrGetId(block);
-        return registerProtection(blockId, type, world, player, data, x, y, z);
+        return registerProtection(blockId, type, world, player, data, x, y, z, null);
     }
 
-    private Protection registerProtection(int blockId, Protection.Type type, String world, String player, String data, int x, int y, int z) {
+    private Protection registerProtection(int blockId, Protection.Type type, String world, String player, String data, int x, int y, int z, UUID entityId) {
         ProtectionCache cache = LWC.getInstance().getProtectionCache();
 
         runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("INSERT INTO " + prefix + "protections (blockId, type, world, owner, password, x, y, z, date, last_accessed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement statement = prepare("INSERT INTO " + prefix + "protections (blockId, type, world, owner, password, x, y, z, entityid, date, last_accessed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             statement.setInt(1, blockId);
             statement.setInt(2, type.ordinal());
@@ -1179,8 +1241,9 @@ public class PhysDB extends Database {
             statement.setInt(6, x);
             statement.setInt(7, y);
             statement.setInt(8, z);
-            statement.setString(9, new Timestamp(new Date().getTime()).toString());
-            statement.setLong(10, System.currentTimeMillis() / 1000L);
+            statement.setString(9, entityId != null ? entityId.toString() : null);
+            statement.setString(10, new Timestamp(new Date().getTime()).toString());
+            statement.setLong(11, System.currentTimeMillis() / 1000L);
 
             statement.executeUpdate();
         });
@@ -1188,10 +1251,11 @@ public class PhysDB extends Database {
         // We need to create the initial transaction for this protection
         // this transaction is viewable and modifiable during
         // POST_REGISTRATION
+        if (entityId == null) {
+            cache.remove(ProtectionCache.cacheKey(world, x, y, z));
+        }
 
-        cache.remove(ProtectionCache.cacheKey(world, x, y, z));
-
-        Protection protection = loadProtection(world, x, y, z, true);
+        Protection protection = entityId != null ? loadProtection(entityId, true) : loadProtection(world, x, y, z, true);
         protection.removeCache();
 
         // if history logging is enabled, create it
@@ -1639,7 +1703,7 @@ public class PhysDB extends Database {
      */
     public void saveProtection(Protection protection) {
         runAndThrowModuleExceptionIfFailing(() -> {
-            PreparedStatement statement = prepare("REPLACE INTO " + prefix + "protections (id, type, blockId, world, data, owner, password, x, y, z, date, last_accessed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement statement = prepare("REPLACE INTO " + prefix + "protections (id, type, blockId, world, data, owner, password, x, y, z, entityid, date, last_accessed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             statement.setInt(1, protection.getId());
             statement.setInt(2, protection.getType().ordinal());
@@ -1652,8 +1716,9 @@ public class PhysDB extends Database {
             statement.setInt(8, protection.getX());
             statement.setInt(9, protection.getY());
             statement.setInt(10, protection.getZ());
-            statement.setString(11, protection.getCreation());
-            statement.setLong(12, protection.getLastAccessed());
+            statement.setString(11, protection.getEntityId() != null ? protection.getEntityId().toString() : null);
+            statement.setString(12, protection.getCreation());
+            statement.setLong(13, protection.getLastAccessed());
 
             statement.executeUpdate();
         });
@@ -2155,7 +2220,7 @@ public class PhysDB extends Database {
     /**
      * Optimize some columns
      */
-    private void doUpdatedDatabaseVersion7() {
+    private void doUpdatesDatabaseVersion7() {
         runAndIgnoreException(() -> {
             Statement statement = connection.createStatement();
             statement.executeUpdate("ALTER TABLE `" + prefix + "protections` CHANGE `owner` `owner` VARCHAR(36)");
@@ -2168,6 +2233,30 @@ public class PhysDB extends Database {
             dropColumn(prefix + "protections", "rights");
         });
     }
+    
+    /**
+     * Add entityid column
+     */
+    private void doUpdatesDatabaseVersion8() {
+        runAndThrowModuleExceptionIfFailing(() -> {
+            Statement statement = null;
+            try {
+                statement = connection.createStatement();
+                statement.execute("SELECT entityid FROM " + prefix + "protections LIMIT 1");
+            } catch (SQLException e) {
+                addColumn(prefix + "protections", "entityid", "VARCHAR(36) AFTER `z`");
+                createIndex("protections", "protections_entity", "entityid");
+            } finally {
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                    }
+                }
+            }
+        });
+    }
+    
 
     public HashMap<Integer, String> loadBlockMappings() {
         return runAndThrowModuleExceptionIfFailing(() -> {
@@ -2223,7 +2312,7 @@ public class PhysDB extends Database {
                 resultStatement.setFetchSize(Integer.MIN_VALUE);
             }
 
-            ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections" + where);
+            ResultSet result = resultStatement.executeQuery("SELECT id, owner, type, x, y, z, entityid, data, blockId, world, password, date, last_accessed FROM " + prefix + "protections" + where);
 
             List<Integer> exemptedBlocks = LWC.getInstance().getConfiguration().getIntList("optional.exemptBlocks", new ArrayList<Integer>());
             // int completed = 0;

@@ -175,10 +175,11 @@ public class LWC {
 
     private HashSet<Material> protectableBlocks = new HashSet<>();
 
+    private record ProtectionConfigurationKey(String category, String type, String config) {}
     /**
      * Protection configuration cache
      */
-    private final Map<String, String> protectionConfigurationCache = new HashMap<>();
+    private final Map<ProtectionConfigurationKey, String> protectionConfigurationCache = new HashMap<>();
 
     public LWC(LWCPlugin plugin) {
         this.plugin = plugin;
@@ -1106,6 +1107,22 @@ public class LWC {
                 && block.getY() == block2.getY()
                 && block.getZ() == block2.getZ();
     }
+    
+    public void updateLoadedLegacyProtection(Entity entity) {
+        if(!isProtectable(entity)) {
+            return;
+        }
+        int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
+        CacheKey cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
+        Protection protection =  protectionCache.getProtection(cacheKey);
+        if(protection != null && protection.isEntity() && protection.getEntityId() == null) {
+            protectionCache.removeProtection(protection);
+            protection.setEntityId(entity.getUniqueId());
+            protection.save();
+            protectionCache.addProtection(protection);
+            Statistics.addUpdatedLegacyEntity();
+        }
+    }
 
     /**
      * Find a protection for an entity
@@ -1115,16 +1132,40 @@ public class LWC {
      * @return
      */
     public Protection findProtection(Entity entity) {
+        Protection protection = protectionCache.getProtection(entity);
+        if (protection != null && protection.isEntity()) {
+            return protection;
+        }
+        if (!protectionCache.isKnownNull(entity.getUniqueId())) {
+            protection = physicalDatabase.loadProtection(entity, false);
+            if (protection != null) {
+                return protection;
+            }
+        }
+
+        // legacy
         int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
         CacheKey cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
         if (protectionCache.isKnownNull(cacheKey)) {
             return null;
         }
-        Protection protection = physicalDatabase.loadProtection(entity.getWorld().getName(), A, A, A);
+        protection = physicalDatabase.loadProtection(entity.getWorld().getName(), A, A, A);
         if (protection == null) {
             protectionCache.addKnownNull(cacheKey);
+            return null;
         }
-        return (protection != null && protection.isEntity()) ? protection : null;
+        if (!protection.isEntity()) {
+            return null;
+        }
+        // upgrade legacy protection
+        if (protection.getEntityId() == null) {
+            protectionCache.removeProtection(protection);
+            protection.setEntityId(entity.getUniqueId());
+            protection.save();
+            protectionCache.addProtection(protection);
+            Statistics.addUpdatedLegacyEntity();
+        }
+        return protection;
     }
 
     /**
@@ -1274,7 +1315,7 @@ public class LWC {
         if (state == null) {
             return configuration.getString("protections." + node);
         }
-        String cacheKey = "e-" + state.name() + "-" + node;
+        ProtectionConfigurationKey cacheKey = new ProtectionConfigurationKey("e", state.name(), node);
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
@@ -1293,7 +1334,7 @@ public class LWC {
     }
 
     public String resolveSpecialProtectionConfiguration(String special, String node) {
-        String cacheKey = "s-" + special + "-" + node;
+        ProtectionConfigurationKey cacheKey = new ProtectionConfigurationKey("s", special, node);
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }
@@ -1432,7 +1473,7 @@ public class LWC {
         if (material == null) {
             return configuration.getString("protections." + node);
         }
-        String cacheKey = "b-" + material.name() + "-" + node;
+        ProtectionConfigurationKey cacheKey = new ProtectionConfigurationKey("b", material.name(), node);
         if (protectionConfigurationCache.containsKey(cacheKey)) {
             return protectionConfigurationCache.get(cacheKey);
         }

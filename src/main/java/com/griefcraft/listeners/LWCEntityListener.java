@@ -28,6 +28,7 @@
 
 package com.griefcraft.listeners;
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.griefcraft.bukkit.EntityBlock;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
@@ -267,5 +268,10 @@ public class LWCEntityListener implements Listener {
             event.setCancelled(true);
             return;
         }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityAddToWorld(EntityAddToWorldEvent event) {
+        plugin.getLWC().updateLoadedLegacyProtection(event.getEntity());
     }
 }

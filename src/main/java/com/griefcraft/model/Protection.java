@@ -194,6 +194,11 @@ public class Protection {
     private int z;
 
     /**
+     * The enttiy UUID if known (not known for legacy protections)
+     */
+    private UUID entityId;
+    
+    /**
      * The timestamp of when the protection was last accessed
      */
     private long lastAccessed;
@@ -906,6 +911,9 @@ public class Protection {
      * Remove blocks around the protection in a radius of 3, to account for broken known / null blocks
      */
     public void radiusRemoveCache() {
+        if (isEntity()) {
+            return;
+        }
         ProtectionCache cache = LWC.getInstance().getProtectionCache();
 
         for (int x = -3; x <= 3; x++) {
@@ -1018,7 +1026,7 @@ public class Protection {
         if (cachedBlock != null) {
             return cachedBlock;
         }
-        if (getBlockId() == EntityBlock.ENTITY_BLOCK_ID) {
+        if (entityId != null || getBlockId() == EntityBlock.ENTITY_BLOCK_ID) {
             return null;
         }
 
@@ -1092,5 +1100,17 @@ public class Protection {
 
     public void setModified() {
         modified = true;
+    }
+
+    public void setEntityId(UUID entityId) {
+        this.entityId = entityId;
+        if(this.entityId != null) {
+            this.isEntity = true;
+        }
+        modified = true;
+    }
+
+    public UUID getEntityId() {
+        return entityId;
     }
 }
