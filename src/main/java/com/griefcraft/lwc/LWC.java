@@ -902,7 +902,7 @@ public class LWC {
      * @param args
      */
     public void sendLocale(LWCPlayer sender, String key, Object... args) {
-        sendLocale(sender, key, args);
+        sendLocale(sender.getBukkitPlayer(), key, args);
     }
 
     /**
