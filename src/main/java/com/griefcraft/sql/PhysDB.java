@@ -2244,7 +2244,7 @@ public class PhysDB extends Database {
                 statement = connection.createStatement();
                 statement.execute("SELECT entityid FROM " + prefix + "protections LIMIT 1");
             } catch (SQLException e) {
-                addColumn(prefix + "protections", "entityid", "VARCHAR(36) AFTER `z`");
+                addColumn(prefix + "protections", "entityid", currentType == Type.SQLite ? "VARCHAR(36)" : "VARCHAR(36) AFTER `z`");
                 createIndex("protections", "protections_entity", "entityid");
             } finally {
                 if (statement != null) {
