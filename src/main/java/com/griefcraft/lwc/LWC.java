@@ -996,6 +996,10 @@ public class LWC {
 
         List<Protection> protections = physicalDatabase.loadProtectionsByPlayerAlsoIfNotOwner(oldplayer);
         for (Protection p : protections) {
+            Protection existing = protectionCache.getProtectionById(p.getId());
+            if (existing != null) {
+                p = existing;
+            }
             if (p.getOwner() != null && p.getOwner().equalsIgnoreCase(oldPlayerString)) {
                 p.setOwner(newplayerid);
             }
@@ -1006,7 +1010,10 @@ public class LWC {
                 }
             }
             p.save();
-            protectionCache.addProtection(p);
+            if (existing == null) {
+                p.removeCache();
+                protectionCache.addProtection(p);
+            }
         }
         return protections.size();
     }
