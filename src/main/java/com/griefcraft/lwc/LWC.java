@@ -174,7 +174,9 @@ public class LWC {
 
     private HashSet<Material> protectableBlocks = new HashSet<>();
 
-    private record ProtectionConfigurationKey(String category, String type, String config) {}
+    private record ProtectionConfigurationKey(String category, String type, String config) {
+    }
+
     /**
      * Protection configuration cache
      */
@@ -1040,7 +1042,7 @@ public class LWC {
 
         sender.sendMessage("Loading protections via STREAM mode");
         List<Protection> protections = physicalDatabase.streamDeleteProtections(where, sender);
-        for(Protection protection : protections) {
+        for (Protection protection : protections) {
             // remove the block ?
             if (shouldRemoveBlocks) {
                 removeBlocks.add(protection.getBlock());
@@ -1124,15 +1126,15 @@ public class LWC {
                 && block.getY() == block2.getY()
                 && block.getZ() == block2.getZ();
     }
-    
+
     public void updateLoadedLegacyProtection(Entity entity) {
-        if(!isProtectable(entity)) {
+        if (!isProtectable(entity)) {
             return;
         }
         int A = EntityBlock.POSITION_OFFSET + entity.getUniqueId().hashCode();
         CacheKey cacheKey = ProtectionCache.cacheKey(entity.getWorld().getName(), A, A, A);
-        Protection protection =  protectionCache.getProtection(cacheKey);
-        if(protection != null && protection.isEntity() && protection.getEntityId() == null) {
+        Protection protection = protectionCache.getProtection(cacheKey);
+        if (protection != null && protection.isEntity() && protection.getEntityId() == null) {
             protectionCache.removeProtection(protection);
             protection.setEntityId(entity.getUniqueId());
             protection.save();
