@@ -51,12 +51,14 @@ import com.griefcraft.modules.admin.AdminExpire;
 import com.griefcraft.modules.admin.AdminFind;
 import com.griefcraft.modules.admin.AdminForceOwner;
 import com.griefcraft.modules.admin.AdminLocale;
+import com.griefcraft.modules.admin.AdminProtectable;
 import com.griefcraft.modules.admin.AdminPurge;
 import com.griefcraft.modules.admin.AdminPurgeBanned;
 import com.griefcraft.modules.admin.AdminRebuild;
 import com.griefcraft.modules.admin.AdminReload;
 import com.griefcraft.modules.admin.AdminRemove;
 import com.griefcraft.modules.admin.AdminReport;
+import com.griefcraft.modules.admin.AdminTags;
 import com.griefcraft.modules.admin.AdminTransfer;
 import com.griefcraft.modules.admin.AdminVersion;
 import com.griefcraft.modules.admin.AdminView;
@@ -100,16 +102,21 @@ import com.griefcraft.util.UUIDRegistry;
 import com.griefcraft.util.config.Configuration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -173,6 +180,8 @@ public class LWC {
     private HashSet<EntityType> protectableEntites = new HashSet<>();
 
     private HashSet<Material> protectableBlocks = new HashSet<>();
+
+    private final HashMap<Material, List<NamespacedKey>> materialTags = new HashMap<>();
 
     private record ProtectionConfigurationKey(String category, String type, String config) {
     }
@@ -1341,11 +1350,30 @@ public class LWC {
 
         String value = configuration.getString("protections." + node);
 
-        String temp = configuration.getString("protections.entities." + state.name().toLowerCase()
-                + "." + node);
+        String key = null;
+        try {
+            key = state.getKey().asMinimalString();
+        } catch (Exception ignored) {
+            plugin.getLogger().warning("Entity type " + state + " has no key!");
+        }
+        if (key != null) {
+            // special case for boats
+            if (key.endsWith("_chest_boat") || key.endsWith("_chest_raft")) {
+                String temp = configuration.getString("protections.entities." + "chest_boat" + "." + node);
+                if (temp != null && !temp.isEmpty()) {
+                    value = temp;
+                }
+            } else if (key.endsWith("_boat") || key.endsWith("_raft")) {
+                String temp = configuration.getString("protections.entities." + "boat" + "." + node);
+                if (temp != null && !temp.isEmpty()) {
+                    value = temp;
+                }
+            }
 
-        if (temp != null && !temp.isEmpty()) {
-            value = temp;
+            String temp = configuration.getString("protections.entities." + key + "." + node);
+            if (temp != null && !temp.isEmpty()) {
+                value = temp;
+            }
         }
 
         protectionConfigurationCache.put(cacheKey, value);
@@ -1500,12 +1528,22 @@ public class LWC {
         List<String> names = new ArrayList<>();
 
         String materialName = normalizeMaterialName(material);
+        if (!materialName.equals(material.getKey().asMinimalString())) {
+            names.add(material.getKey().asMinimalString());
+        }
 
         // add the name & the block id
         names.add(materialName);
 
-        if (!materialName.equals(material.toString().toLowerCase())) {
-            names.add(material.toString().toLowerCase());
+
+        // Add tags for this material
+        for (NamespacedKey key : materialTags.getOrDefault(material, List.of())) {
+            String keyString = key.asString();
+            String keyStringMinimal = key.asMinimalString();
+            names.add("#" + keyStringMinimal);
+            if (!keyStringMinimal.equals(keyString)) {
+                names.add("#" + keyString);
+            }
         }
 
         // Add the wildcards last so it can be overriden
@@ -1514,11 +1552,12 @@ public class LWC {
         String value = configuration.getString("protections." + node);
 
         for (String name : names) {
-            String temp = configuration.getString("protections.blocks." + name
-                    + "." + node);
+            String key = "protections.blocks." + name + "." + node;
+            String temp = configuration.getString(key);
 
             if (temp != null && !temp.isEmpty()) {
                 value = temp;
+                break;
             }
         }
 
@@ -1531,6 +1570,7 @@ public class LWC {
      * unnecessarily)
      */
     public void load() {
+        loadMaterialTags();
         configuration = Configuration.load("core.yml");
         registerCoreModules();
 
@@ -1580,6 +1620,18 @@ public class LWC {
         moduleLoader.loadAll();
     }
 
+    private void loadMaterialTags() {
+        for (Tag<Material> tag : plugin.getServer().getTags(Tag.REGISTRY_BLOCKS, Material.class)) {
+            for (Keyed e : tag.getValues()) {
+                if (e instanceof Material mat) {
+                    materialTags.computeIfAbsent(mat, m -> new ArrayList<>()).add(tag.getKey());
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * Register the core modules for LWC
      */
@@ -1609,10 +1661,12 @@ public class LWC {
         registerModule(new AdminFind());
         registerModule(new AdminForceOwner());
         registerModule(new AdminLocale());
+        registerModule(new AdminProtectable());
         registerModule(new AdminPurge());
         registerModule(new AdminReload());
         registerModule(new AdminRemove());
         registerModule(new AdminReport());
+        registerModule(new AdminTags());
         registerModule(new AdminVersion());
         registerModule(new AdminPurgeBanned());
         registerModule(new AdminExpire());
@@ -1814,6 +1868,10 @@ public class LWC {
         }
     }
 
+    public Set<Material> getProtectableBlocks() {
+        return Collections.unmodifiableSet(protectableBlocks);
+    }
+
     private void preloadProtectables() {
         protectableBlocks.clear();
         protectableEntites.clear();
@@ -1823,8 +1881,10 @@ public class LWC {
             }
         }
         for (EntityType t : EntityType.values()) {
-            if (Boolean.parseBoolean(resolveProtectionConfiguration(t, "enabled"))) {
-                protectableEntites.add(t);
+            if (t != EntityType.UNKNOWN) {
+                if (Boolean.parseBoolean(resolveProtectionConfiguration(t, "enabled"))) {
+                    protectableEntites.add(t);
+                }
             }
         }
     }
