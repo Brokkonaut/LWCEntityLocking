@@ -303,6 +303,11 @@ public class ProtectionCache {
         directByKnownNulls.remove(cacheKey);
     }
 
+    public void remove(UUID entityId) {
+        byEntityId.remove(entityId);
+        byKnownNullsEntities.remove(entityId);
+    }
+
     /**
      * Make a cache key known as null in the cache
      *
@@ -465,5 +470,4 @@ public class ProtectionCache {
     public void addKnownNull(UUID entityId) {
         byKnownNullsEntities.put(entityId, null);
     }
-
 }

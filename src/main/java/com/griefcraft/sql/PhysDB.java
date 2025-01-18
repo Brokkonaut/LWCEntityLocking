@@ -1253,6 +1253,8 @@ public class PhysDB extends Database {
         // POST_REGISTRATION
         if (entityId == null) {
             cache.remove(ProtectionCache.cacheKey(world, x, y, z));
+        } else {
+            cache.remove(entityId);
         }
 
         Protection protection = entityId != null ? loadProtection(entityId, true) : loadProtection(world, x, y, z, true);
