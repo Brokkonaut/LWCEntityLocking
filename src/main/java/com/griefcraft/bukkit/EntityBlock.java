@@ -370,6 +370,7 @@ public class EntityBlock implements Block {
     }
 
     @Override
+    @Deprecated
     public BlockSoundGroup getSoundGroup() {
         return null;
     }
