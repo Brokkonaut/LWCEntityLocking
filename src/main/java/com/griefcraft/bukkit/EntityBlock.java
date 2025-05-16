@@ -379,4 +379,9 @@ public class EntityBlock implements Block {
     public SoundGroup getBlockSoundGroup() {
         return null;
     }
+
+    @Override
+    public boolean isSuffocating() {
+        return false;
+    }
 }
