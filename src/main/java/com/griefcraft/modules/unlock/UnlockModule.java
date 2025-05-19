@@ -85,7 +85,7 @@ public class UnlockModule extends JavaModule {
             Protection protection = action.getProtection();
 
             if (protection == null) {
-                lwc.sendLocale(player, "protection.internalerror", "id", "unlock");
+                lwc.logAndPrintInternalException(player.getBukkitPlayer(), "UNLOCK", null, protection);
                 return;
             }
 

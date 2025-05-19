@@ -236,8 +236,7 @@ public class LWCBlockListener implements Listener {
             }
         } catch (Exception e) {
             event.setCancelled(true);
-            lwc.sendLocale(player, "protection.internalerror", "id", "BLOCK_BREAK");
-            e.printStackTrace();
+            lwc.logAndPrintInternalException(player, "BLOCK_BREAK", e, protection);
         }
     }
 
@@ -491,6 +490,7 @@ public class LWCBlockListener implements Listener {
             }
         }
 
+        Protection protection = null;
         try {
             LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(player, block);
             lwc.getModuleLoader().dispatchEvent(evt);
@@ -501,7 +501,7 @@ public class LWCBlockListener implements Listener {
             }
 
             // All good!
-            Protection protection = lwc.getPhysicalDatabase().registerProtection(block.getType(), type, block.getWorld().getName(), player.getUniqueId().toString(), "", block.getX(), block.getY(), block.getZ());
+            protection = lwc.getPhysicalDatabase().registerProtection(block.getType(), type, block.getWorld().getName(), player.getUniqueId().toString(), "", block.getX(), block.getY(), block.getZ());
 
             if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(block, "quiet"))) {
                 lwc.sendLocale(player, "protection.onplace.create.finalize", "type", lwc.getPlugin().getMessageParser().parseMessage(autoRegisterType.toLowerCase()), "block", LWC.materialToString(block));
@@ -511,8 +511,7 @@ public class LWCBlockListener implements Listener {
                 lwc.getModuleLoader().dispatchEvent(new LWCProtectionRegistrationPostEvent(protection));
             }
         } catch (Exception e) {
-            lwc.sendLocale(player, "protection.internalerror", "id", "PLAYER_INTERACT");
-            e.printStackTrace();
+            lwc.logAndPrintInternalException(player, "BLOCK_PLACE", e, protection);
         }
     }
 

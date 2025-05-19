@@ -174,6 +174,7 @@ public class LWCEntityListener implements Listener {
             return;
         }
 
+        Protection protection = null;
         try {
             Block entityBlock = EntityBlock.getEntityBlock(entity);
 
@@ -186,7 +187,7 @@ public class LWCEntityListener implements Listener {
             }
 
             // All good!
-            Protection protection = lwc.getPhysicalDatabase().registerEntityProtection(entity, type, entity.getWorld().getName(), player.getUniqueId().toString(), "", entityBlock.getX(), entityBlock.getY(), entityBlock.getZ());
+            protection = lwc.getPhysicalDatabase().registerEntityProtection(entity, type, entity.getWorld().getName(), player.getUniqueId().toString(), "", entityBlock.getX(), entityBlock.getY(), entityBlock.getZ());
 
             if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(entityBlock, "quiet"))) {
                 lwc.sendLocale(player, "protection.onplace.create.finalize", "type", lwc.getPlugin().getMessageParser().parseMessage(autoRegisterType.toLowerCase()), "block", LWC.materialToString(entityBlock));
@@ -196,8 +197,7 @@ public class LWCEntityListener implements Listener {
                 lwc.getModuleLoader().dispatchEvent(new LWCProtectionRegistrationPostEvent(protection));
             }
         } catch (Exception e) {
-            lwc.sendLocale(player, "protection.internalerror", "id", "PLAYER_INTERACT");
-            e.printStackTrace();
+            lwc.logAndPrintInternalException(player, "ENTITY_CREATE", e, protection);
         }
     }
 

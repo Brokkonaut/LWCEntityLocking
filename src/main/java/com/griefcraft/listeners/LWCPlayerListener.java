@@ -449,8 +449,7 @@ public class LWCPlayerListener implements Listener {
                 return true;
             }
         } catch (Exception e) {
-            lwc.sendLocale(player, "protection.internalerror", "id", "PLAYER_INTERACT");
-            e.printStackTrace();
+            lwc.logAndPrintInternalException(player, "PLAYER_INTERACT_ENTITY", e, protection);
             return true;
         }
         lastEntityInteract = entity.getUniqueId();
@@ -633,9 +632,10 @@ public class LWCPlayerListener implements Listener {
             }
         }
 
+        Protection protection = null;
         try {
             Set<String> actions = lwcPlayer.getActionNames();
-            Protection protection = lwc.findProtection(block.getLocation());
+            protection = lwc.findProtection(block.getLocation());
             Module.Result result;
             boolean canAccess = protection == null || lwc.canAccessProtection(player, protection);
 
@@ -767,8 +767,7 @@ public class LWCPlayerListener implements Listener {
         } catch (Exception e) {
             event.setCancelled(true);
             event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-            lwc.sendLocale(player, "protection.internalerror", "id", "PLAYER_INTERACT");
-            e.printStackTrace();
+            lwc.logAndPrintInternalException(player, "PLAYER_INTERACT", e, protection);
         }
     }
 

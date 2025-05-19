@@ -74,7 +74,7 @@ public class BaseFlagModule extends JavaModule {
         }
 
         if (type == null) {
-            lwc.sendLocale(player, "protection.internalerror", "id", "flg");
+            lwc.logAndPrintInternalException(player.getBukkitPlayer(), "BASE_FLAG", null, protection);
             return;
         }
 

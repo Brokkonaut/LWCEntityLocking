@@ -109,6 +109,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -2022,5 +2023,31 @@ public class LWC {
      */
     public boolean isHistoryEnabled() {
         return !configuration.getBoolean("core.disableHistory", false);
+    }
+
+    public void logAndPrintInternalException(Player player, String playerMessage, Exception exception, Protection protection) {
+        if (player != null) {
+            sendLocale(player, "protection.internalerror", "id", playerMessage == null ? "UNKNOWN" : playerMessage);
+        }
+        String message = "Internal exception";
+        if (player != null) {
+            message += "; Player at " + toBlockString(player.getLocation());
+        }
+        if (protection != null) {
+            message += "; Protection at " + toBlockString(protection);
+        }
+        if (exception != null) {
+            getPlugin().getLogger().log(Level.SEVERE, message, exception);
+        } else {
+            getPlugin().getLogger().log(Level.SEVERE, message);
+        }
+    }
+
+    private static String toBlockString(Protection loc) {
+        return "[" + loc.getWorld() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "]";
+    }
+
+    private static String toBlockString(Location loc) {
+        return "[" + loc.getWorld() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + "]";
     }
 }
