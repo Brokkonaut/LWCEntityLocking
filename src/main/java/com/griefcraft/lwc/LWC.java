@@ -2031,7 +2031,7 @@ public class LWC {
         }
         String message = "Internal exception";
         if (player != null) {
-            message += "; Player at " + toBlockString(player.getLocation());
+            message += "; Player " + player.getName() + "(" + player.getUniqueId() + ") at " + toBlockString(player.getLocation());
         }
         if (protection != null) {
             message += "; Protection at " + toBlockString(protection);
@@ -2048,6 +2048,6 @@ public class LWC {
     }
 
     private static String toBlockString(Location loc) {
-        return "[" + loc.getWorld() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + "]";
+        return "[" + loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + "]";
     }
 }
