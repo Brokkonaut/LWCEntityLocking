@@ -92,7 +92,7 @@ public class LWCEntityListener implements Listener {
 
         entityCreatedByPlayer(entity, player);
     }
-    
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onHangingPlace(HangingPlaceEvent event) {
         Player player = event.getPlayer();
@@ -169,8 +169,8 @@ public class LWCEntityListener implements Listener {
             player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
             return;
         }
-        
-        if(plugin.getLWC().findProtection(entity) != null) {
+
+        if (plugin.getLWC().findProtection(entity) != null) {
             return;
         }
 
@@ -201,7 +201,7 @@ public class LWCEntityListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void entityInteract(EntityInteractEvent event) {
         Block block = event.getBlock();
 
@@ -216,7 +216,7 @@ public class LWCEntityListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void entityBreakDoor(EntityBreakDoorEvent event) {
         Block block = event.getBlock();
 
@@ -233,7 +233,7 @@ public class LWCEntityListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         if (!LWC.ENABLED || event.isCancelled()) {
             return;
@@ -260,7 +260,7 @@ public class LWCEntityListener implements Listener {
         if (!LWC.ENABLED) {
             return;
         }
-        if(event.getBlock().getType() == event.getBlockData().getMaterial()) {
+        if (event.getBlock().getType() == event.getBlockData().getMaterial()) {
             return; // allowed to change the block if it does not destroy it
         }
         LWC lwc = plugin.getLWC();
@@ -269,7 +269,7 @@ public class LWCEntityListener implements Listener {
             return;
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityAddToWorld(EntityAddToWorldEvent event) {
         plugin.getLWC().updateLoadedLegacyProtection(event.getEntity());

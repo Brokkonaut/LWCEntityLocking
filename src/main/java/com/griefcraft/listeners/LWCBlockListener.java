@@ -283,7 +283,7 @@ public class LWCBlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
         if (!LWC.ENABLED || event.isCancelled()) {
             return;

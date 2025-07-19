@@ -205,7 +205,7 @@ public class LWCPlayerListener implements Listener {
         Protection protection = lwc.findProtection(entity);
         if (protection != null) {
             Entity source = e.getPushedBy();
-            if(source instanceof Projectile projectile && projectile.getShooter() instanceof Entity realSource) {
+            if (source instanceof Projectile projectile && projectile.getShooter() instanceof Entity realSource) {
                 source = realSource;
             }
             if (!(source instanceof Player player) || !lwc.canAccessProtection(player, protection)) {
@@ -260,7 +260,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
@@ -274,7 +274,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
@@ -295,7 +295,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityInteract(PlayerInteractEntityEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
@@ -316,7 +316,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onAtEntityInteract(PlayerInteractAtEntityEvent e) {
         Entity entity = e.getRightClicked();
         LWC lwc = LWC.getInstance();
@@ -336,7 +336,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void storageMinecraftInventoryOpen(InventoryOpenEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
         if ((!(holder instanceof StorageMinecart)) && (!(holder instanceof HopperMinecart))) {
@@ -467,7 +467,7 @@ public class LWCPlayerListener implements Listener {
     private Inventory lastItemMoveDestination;
     private boolean lastItemMoveResult;
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMoveItem(InventoryMoveItemEvent event) {
         boolean result;
 
@@ -564,7 +564,7 @@ public class LWCPlayerListener implements Listener {
         return false;
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         if (event.isCancelled() || !LWC.ENABLED) {
             return;
@@ -596,7 +596,7 @@ public class LWCPlayerListener implements Listener {
      * lwc.sendLocale(event.getPlayer(), "lwc.blockedmessage"); } }
      */
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (!LWC.ENABLED) {
             return;
@@ -782,7 +782,7 @@ public class LWCPlayerListener implements Listener {
         LWCPlayer.removePlayer(event.getPlayer());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerTakeLecternBook(PlayerTakeLecternBookEvent event) {
         LWC lwc = LWC.getInstance();
 
@@ -798,7 +798,7 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         LWC lwc = LWC.getInstance();
 
