@@ -25,6 +25,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.bukkit.util.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 
 public class EntityBlock implements Block {
     public static final int ENTITY_BLOCK_ID = 5000;
@@ -354,6 +355,11 @@ public class EntityBlock implements Block {
 
     @Override
     public boolean breakNaturally(ItemStack tool, boolean triggerEffect, boolean dropExperience) {
+        return false;
+    }
+    
+    @Override
+    public boolean breakNaturally(@NotNull ItemStack tool, boolean triggerEffect, boolean dropExperience, boolean forceEffect) {
         return false;
     }
 
