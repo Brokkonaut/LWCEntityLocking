@@ -39,6 +39,7 @@ import com.griefcraft.integration.permissions.SuperPermsPermissions;
 import com.griefcraft.integration.permissions.VaultPermissions;
 import com.griefcraft.migration.ConfigPost300;
 import com.griefcraft.migration.MySQLPost200;
+import com.griefcraft.model.Flag;
 import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Permission;
 import com.griefcraft.model.Protection;
@@ -89,6 +90,8 @@ import com.griefcraft.modules.unlock.UnlockModule;
 import com.griefcraft.scripting.Module;
 import com.griefcraft.scripting.ModuleLoader;
 import com.griefcraft.scripting.event.LWCAccessEvent;
+import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
+import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.scripting.event.LWCReloadEvent;
 import com.griefcraft.scripting.event.LWCSendLocaleEvent;
 import com.griefcraft.sql.Database;
@@ -758,6 +761,144 @@ public class LWC {
 
         return event.getAccess() == Permission.Access.PLAYER
                 || event.getAccess() == Permission.Access.ADMIN;
+    }
+
+    /**
+     * Check if it is allowed to transfer items from one object (block or entity) to another one.
+     * Both protections may be null if the object is not protected. if the source or destination is an entity
+     * sourceEntity / destinationEntity must be set.
+     * 
+     * @param sourceProtection the protection of the source object or null if unprotected
+     * @param sourceEntity the source entity if it is an entity
+     * @param destinationProtection the protection of the destination object or null if unprotected
+     * @param destinationEntity the destination entity if it is an entity
+     * @return true if and only if it is allowed to transfer items respecting the protection owners and the hopper flags.
+     */
+    public boolean checkTransferItemAllowed(Protection sourceProtection, Entity sourceEntity, Protection destinationProtection, Entity destinationEntity) {
+        if (sourceProtection != null) {
+            // if they're owned by the same person then we can allow the move
+            if (destinationProtection != null) {
+                if (sourceProtection.hasSameOwner(destinationProtection)) {
+                    return true;
+                }
+            }
+
+            String denyHoppersString = null;
+            if (sourceEntity == null) {
+                denyHoppersString = resolveProtectionConfiguration(BlockMap.instance().getMaterial(sourceProtection.getBlockId()), "denyHoppers");
+            } else {
+                denyHoppersString = resolveProtectionConfiguration(sourceEntity.getType(), "denyHoppers");
+            }
+            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
+
+            if (denyHoppers ^ (sourceProtection.hasFlag(Flag.Type.HOPPER) || sourceProtection.hasFlag(Flag.Type.HOPPEROUT))) {
+                return false;
+            }
+        }
+
+        if (destinationProtection != null) {
+            String denyHoppersString = null;
+            if (destinationEntity == null) {
+                denyHoppersString = resolveProtectionConfiguration(BlockMap.instance().getMaterial(destinationProtection.getBlockId()), "denyHoppers");
+            } else {
+                denyHoppersString = resolveProtectionConfiguration(destinationEntity.getType(), "denyHoppers");
+            }
+            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
+
+            if (denyHoppers ^ (destinationProtection.hasFlag(Flag.Type.HOPPER) || destinationProtection.hasFlag(Flag.Type.HOPPERIN))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void tryProtectPlacedBlockForPlayer(Player player, Block block) {
+        if (!ENABLED) {
+            return;
+        }
+        // Update the cache if a protection is matched here
+        Protection current = findProtection(block.getLocation());
+        if (current != null) {
+            if (!current.isBlockInWorld()) {
+                // Corrupted protection
+                log("Removing corrupted protection: " + current);
+                current.remove();
+            } else {
+                if (current.getProtectionFinder() != null) {
+                    current.getProtectionFinder().fullMatchBlocks();
+                    getProtectionCache().addProtection(current);
+                }
+
+                return;
+            }
+        }
+
+        // The placable block must be protectable
+        if (!isProtectable(block)) {
+            return;
+        }
+
+        String autoRegisterType = resolveProtectionConfiguration(block, "autoRegister");
+
+        // is it auto protectable?
+        if (!autoRegisterType.equalsIgnoreCase("private") && !autoRegisterType.equalsIgnoreCase("public") && !autoRegisterType.equalsIgnoreCase("donation") && !autoRegisterType.equalsIgnoreCase("showcase")) {
+            return;
+        }
+
+        if (!hasPermission(player, "lwc.create." + autoRegisterType, "lwc.create", "lwc.protect")) {
+            return;
+        }
+
+        // Parse the type
+        Protection.Type type;
+
+        try {
+            type = Protection.Type.matchType(autoRegisterType);
+        } catch (IllegalArgumentException e) {
+            // No auto protect type found
+            return;
+        }
+
+        // Is it okay?
+        if (type == null) {
+            player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
+            return;
+        }
+
+        // If it's a chest, make sure they aren't placing it connected to
+        // an already registered chest
+        Block connectedChest = BlockUtil.findAdjacentDoubleChest(block);
+        if (connectedChest != null) {
+            // They're placing it beside a chest, check if it's already protected
+            if (findProtection(connectedChest.getLocation()) != null) {
+                return;
+            }
+        }
+
+        Protection protection = null;
+        try {
+            LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(player, block);
+            getModuleLoader().dispatchEvent(evt);
+
+            // something cancelled registration
+            if (evt.isCancelled()) {
+                return;
+            }
+
+            // All good!
+            protection = getPhysicalDatabase().registerProtection(block.getType(), type, block.getWorld().getName(), player.getUniqueId().toString(), "", block.getX(), block.getY(), block.getZ());
+
+            if (!Boolean.parseBoolean(resolveProtectionConfiguration(block, "quiet"))) {
+                sendLocale(player, "protection.onplace.create.finalize", "type", getPlugin().getMessageParser().parseMessage(autoRegisterType.toLowerCase()), "block", LWC.materialToString(block));
+            }
+
+            if (protection != null) {
+                getModuleLoader().dispatchEvent(new LWCProtectionRegistrationPostEvent(protection));
+            }
+        } catch (Exception e) {
+            logAndPrintInternalException(player, "BLOCK_PLACE", e, protection);
+        }
     }
 
     /**

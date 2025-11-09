@@ -30,10 +30,8 @@ package com.griefcraft.listeners;
 
 import com.google.common.base.Objects;
 import com.griefcraft.bukkit.EntityBlock;
-import com.griefcraft.lwc.BlockMap;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
-import com.griefcraft.model.Flag;
 import com.griefcraft.model.LWCPlayer;
 import com.griefcraft.model.Protection;
 import com.griefcraft.model.Protection.Type;
@@ -526,42 +524,7 @@ public class LWCPlayerListener implements Listener {
             return false; // not a protectable destination?
         }
 
-        if (sourceProtection != null) {
-            // if they're owned by the same person then we can allow the move
-            if (destinationProtection != null) {
-                if (sourceProtection.hasSameOwner(destinationProtection)) {
-                    return false;
-                }
-            }
-
-            String denyHoppersString = null;
-            if (!sourceProtection.isEntity()) {
-                denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(sourceProtection.getBlockId()), "denyHoppers");
-            } else {
-                denyHoppersString = lwc.resolveProtectionConfiguration(sourceEntity.getType(), "denyHoppers");
-            }
-            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
-
-            if (denyHoppers ^ (sourceProtection.hasFlag(Flag.Type.HOPPER) || sourceProtection.hasFlag(Flag.Type.HOPPEROUT))) {
-                return true;
-            }
-        }
-
-        if (destinationProtection != null) {
-            String denyHoppersString = null;
-            if (!destinationProtection.isEntity()) {
-                denyHoppersString = lwc.resolveProtectionConfiguration(BlockMap.instance().getMaterial(destinationProtection.getBlockId()), "denyHoppers");
-            } else {
-                denyHoppersString = lwc.resolveProtectionConfiguration(destinationEntity.getType(), "denyHoppers");
-            }
-            boolean denyHoppers = Boolean.parseBoolean(denyHoppersString);
-
-            if (denyHoppers ^ (destinationProtection.hasFlag(Flag.Type.HOPPER) || destinationProtection.hasFlag(Flag.Type.HOPPERIN))) {
-                return true;
-            }
-        }
-
-        return false;
+        return !lwc.checkTransferItemAllowed(sourceProtection, sourceEntity, destinationProtection, destinationEntity);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

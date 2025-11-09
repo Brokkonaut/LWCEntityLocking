@@ -35,11 +35,8 @@ import com.griefcraft.lwc.LWCPlugin;
 import com.griefcraft.model.Flag;
 import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.event.LWCProtectionDestroyEvent;
-import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
-import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.scripting.event.LWCRedstoneEvent;
 import com.griefcraft.util.BlockUtil;
-import com.griefcraft.util.Colors;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -431,89 +428,9 @@ public class LWCBlockListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
-        // Update the cache if a protection is matched here
-        Protection current = lwc.findProtection(block.getLocation());
-        if (current != null) {
-            if (!current.isBlockInWorld()) {
-                // Corrupted protection
-                lwc.log("Removing corrupted protection: " + current);
-                current.remove();
-            } else {
-                if (current.getProtectionFinder() != null) {
-                    current.getProtectionFinder().fullMatchBlocks();
-                    lwc.getProtectionCache().addProtection(current);
-                }
-
-                return;
-            }
-        }
-
-        // The placable block must be protectable
-        if (!lwc.isProtectable(block)) {
-            return;
-        }
-
-        String autoRegisterType = lwc.resolveProtectionConfiguration(block, "autoRegister");
-
-        // is it auto protectable?
-        if (!autoRegisterType.equalsIgnoreCase("private") && !autoRegisterType.equalsIgnoreCase("public") && !autoRegisterType.equalsIgnoreCase("donation") && !autoRegisterType.equalsIgnoreCase("showcase")) {
-            return;
-        }
-
-        if (!lwc.hasPermission(player, "lwc.create." + autoRegisterType, "lwc.create", "lwc.protect")) {
-            return;
-        }
-
-        // Parse the type
-        Protection.Type type;
-
-        try {
-            type = Protection.Type.matchType(autoRegisterType);
-        } catch (IllegalArgumentException e) {
-            // No auto protect type found
-            return;
-        }
-
-        // Is it okay?
-        if (type == null) {
-            player.sendMessage(Colors.Red + "LWC_INVALID_CONFIG_autoRegister");
-            return;
-        }
-
-        // If it's a chest, make sure they aren't placing it connected to
-        // an already registered chest
-        Block connectedChest = BlockUtil.findAdjacentDoubleChest(block);
-        if (connectedChest != null) {
-            // They're placing it beside a chest, check if it's already protected
-            if (lwc.findProtection(connectedChest.getLocation()) != null) {
-                return;
-            }
-        }
-
-        Protection protection = null;
-        try {
-            LWCProtectionRegisterEvent evt = new LWCProtectionRegisterEvent(player, block);
-            lwc.getModuleLoader().dispatchEvent(evt);
-
-            // something cancelled registration
-            if (evt.isCancelled()) {
-                return;
-            }
-
-            // All good!
-            protection = lwc.getPhysicalDatabase().registerProtection(block.getType(), type, block.getWorld().getName(), player.getUniqueId().toString(), "", block.getX(), block.getY(), block.getZ());
-
-            if (!Boolean.parseBoolean(lwc.resolveProtectionConfiguration(block, "quiet"))) {
-                lwc.sendLocale(player, "protection.onplace.create.finalize", "type", lwc.getPlugin().getMessageParser().parseMessage(autoRegisterType.toLowerCase()), "block", LWC.materialToString(block));
-            }
-
-            if (protection != null) {
-                lwc.getModuleLoader().dispatchEvent(new LWCProtectionRegistrationPostEvent(protection));
-            }
-        } catch (Exception e) {
-            lwc.logAndPrintInternalException(player, "BLOCK_PLACE", e, protection);
-        }
+        lwc.tryProtectPlacedBlockForPlayer(player, block);
     }
+
 
     /**
      * Load and process the configuration

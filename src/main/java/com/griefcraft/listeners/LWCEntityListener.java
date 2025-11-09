@@ -37,9 +37,13 @@ import com.griefcraft.model.Protection;
 import com.griefcraft.scripting.event.LWCProtectionRegisterEvent;
 import com.griefcraft.scripting.event.LWCProtectionRegistrationPostEvent;
 import com.griefcraft.util.Colors;
+import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 import java.util.Iterator;
 import java.util.UUID;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -48,6 +52,8 @@ import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
@@ -70,7 +76,8 @@ public class LWCEntityListener implements Listener {
     private LWCPlugin plugin;
 
     private UUID placedArmorStandOrSpawnEggPlayer;
-
+    private UUID placedGolemOrWitherPlayer;
+    
     public LWCEntityListener(LWCPlugin plugin) {
         this.plugin = plugin;
         new BukkitRunnable() {
@@ -83,6 +90,7 @@ public class LWCEntityListener implements Listener {
 
     protected void onTick() {
         placedArmorStandOrSpawnEggPlayer = null;
+        placedGolemOrWitherPlayer = null;
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -120,6 +128,21 @@ public class LWCEntityListener implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBlockPlace(BlockPlaceEvent e) {
+        Material blockType = e.getBlock().getType();
+        if (blockType == Material.WITHER_SKELETON_SKULL || blockType == Material.CARVED_PUMPKIN || blockType == Material.JACK_O_LANTERN) {
+            placedGolemOrWitherPlayer = e.getPlayer().getUniqueId();
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBlockPlace(PlayerInteractEvent e) {
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.hasBlock() && e.hasItem() && Tag.ITEMS_AXES.isTagged(e.getItem().getType()) && Tag.COPPER_GOLEM_STATUES.isTagged(e.getClickedBlock().getType())) {
+            placedGolemOrWitherPlayer = e.getPlayer().getUniqueId();
+        }
+    }
+
     @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
     public void onCreatureSpawn(CreatureSpawnEvent e) {
         if (placedArmorStandOrSpawnEggPlayer != null) {
@@ -127,8 +150,28 @@ public class LWCEntityListener implements Listener {
             Entity entity = e.getEntity();
             placedArmorStandOrSpawnEggPlayer = null;
             if (player != null && !e.isCancelled() && (e.getEntityType() == EntityType.ARMOR_STAND || e.getSpawnReason() == SpawnReason.SPAWNER_EGG)) {
-                if (player.getWorld().equals(entity.getWorld()) && player.getLocation().distanceSquared(entity.getLocation()) <= 25) {
+                if (player.getWorld().equals(entity.getWorld()) && player.getLocation().distanceSquared(entity.getLocation()) <= 36) {
                     entityCreatedByPlayer(entity, player);
+                }
+            }
+        }
+        if (placedGolemOrWitherPlayer != null) {
+            Player player = plugin.getServer().getPlayer(placedGolemOrWitherPlayer);
+            Entity entity = e.getEntity();
+            placedGolemOrWitherPlayer = null;
+            if (player != null && !e.isCancelled() && ((e.getEntityType() == EntityType.WITHER || e.getEntityType() == EntityType.COPPER_GOLEM || e.getEntityType() == EntityType.IRON_GOLEM || e.getEntityType() == EntityType.SNOW_GOLEM)
+                    && (e.getSpawnReason() == SpawnReason.BUILD_IRONGOLEM || e.getSpawnReason() == SpawnReason.BUILD_COPPERGOLEM || e.getSpawnReason() == SpawnReason.REANIMATE || e.getSpawnReason() == SpawnReason.BUILD_SNOWMAN || e.getSpawnReason() == SpawnReason.BUILD_WITHER))) {
+                if (player.getWorld().equals(entity.getWorld()) && player.getLocation().distanceSquared(entity.getLocation()) <= 36) {
+                    entityCreatedByPlayer(entity, player);
+                    if (e.getEntityType() == EntityType.COPPER_GOLEM && e.getSpawnReason() == SpawnReason.BUILD_COPPERGOLEM) {
+                        Location blockBelow = e.getEntity().getLocation().add(0, -1, 0);
+                        plugin.getServer().getScheduler().runTask(plugin, () -> {
+                            Block block = blockBelow.getBlock();
+                            if (Tag.COPPER_CHESTS.isTagged(block.getType())) {
+                                plugin.getLWC().tryProtectPlacedBlockForPlayer(player, block);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -267,6 +310,38 @@ public class LWCEntityListener implements Listener {
         if ((lwc.findProtection(event.getBlock()) != null)) {
             event.setCancelled(true);
             return;
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onItemTransportingEntityValidateTargetEvent(ItemTransportingEntityValidateTargetEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+        if (!event.isAllowed()) {
+            return;
+        }
+        LWC lwc = plugin.getLWC();
+        Protection entityProtection = lwc.findProtection(event.getEntity());
+        Protection blockProtection = lwc.findProtection(event.getBlock());
+        Material blockType = event.getBlock().getType();
+        boolean isBlockSource = Tag.COPPER_CHESTS.isTagged(blockType);
+        Protection sourceProtection = null;
+        Protection targetProtection = null;
+        Entity sourceEntity = null;
+        Entity targetEntity = null;
+        if (isBlockSource) {
+            sourceProtection = blockProtection;
+            targetProtection = entityProtection;
+            targetEntity = event.getEntity();
+        } else {
+            sourceProtection = entityProtection;
+            targetProtection = blockProtection;
+            sourceEntity = event.getEntity();
+        }
+
+        if (!lwc.checkTransferItemAllowed(sourceProtection, sourceEntity, targetProtection, targetEntity)) {
+            event.setAllowed(false);
         }
     }
 
