@@ -428,7 +428,7 @@ public class LWCBlockListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
-        lwc.tryProtectPlacedBlockForPlayer(player, block);
+        lwc.tryProtectPlacedBlockForPlayer(player, block, false);
     }
 
 

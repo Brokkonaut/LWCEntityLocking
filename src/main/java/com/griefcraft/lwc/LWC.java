@@ -813,13 +813,16 @@ public class LWC {
         return true;
     }
 
-    public void tryProtectPlacedBlockForPlayer(Player player, Block block) {
+    public void tryProtectPlacedBlockForPlayer(Player player, Block block, boolean keepExistingProtection) {
         if (!ENABLED) {
             return;
         }
         // Update the cache if a protection is matched here
         Protection current = findProtection(block.getLocation());
         if (current != null) {
+            if (keepExistingProtection) {
+                return;
+            }
             if (!current.isBlockInWorld()) {
                 // Corrupted protection
                 log("Removing corrupted protection: " + current);

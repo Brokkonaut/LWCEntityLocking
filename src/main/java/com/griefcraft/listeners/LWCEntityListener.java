@@ -40,11 +40,11 @@ import com.griefcraft.util.Colors;
 import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 import java.util.Iterator;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -77,7 +77,9 @@ public class LWCEntityListener implements Listener {
 
     private UUID placedArmorStandOrSpawnEggPlayer;
     private UUID placedGolemOrWitherPlayer;
-    
+
+    private static final BlockFace[] POSSIBLE_COPPER_CHEST_LOCATIONS = new BlockFace[] { BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+
     public LWCEntityListener(LWCPlugin plugin) {
         this.plugin = plugin;
         new BukkitRunnable() {
@@ -164,11 +166,14 @@ public class LWCEntityListener implements Listener {
                 if (player.getWorld().equals(entity.getWorld()) && player.getLocation().distanceSquared(entity.getLocation()) <= 36) {
                     entityCreatedByPlayer(entity, player);
                     if (e.getEntityType() == EntityType.COPPER_GOLEM && e.getSpawnReason() == SpawnReason.BUILD_COPPERGOLEM) {
-                        Location blockBelow = e.getEntity().getLocation().add(0, -1, 0);
+                        Location loc = e.getEntity().getLocation();
                         plugin.getServer().getScheduler().runTask(plugin, () -> {
-                            Block block = blockBelow.getBlock();
-                            if (Tag.COPPER_CHESTS.isTagged(block.getType())) {
-                                plugin.getLWC().tryProtectPlacedBlockForPlayer(player, block);
+                            Block golemPos = loc.getBlock();
+                            for (BlockFace face : POSSIBLE_COPPER_CHEST_LOCATIONS) {
+                                Block block = golemPos.getRelative(face);
+                                if (Tag.COPPER_CHESTS.isTagged(block.getType())) {
+                                    plugin.getLWC().tryProtectPlacedBlockForPlayer(player, block, true);
+                                }
                             }
                         });
                     }
