@@ -312,7 +312,13 @@ public class LWCEntityListener implements Listener {
             return; // allowed to change the block if it does not destroy it
         }
         LWC lwc = plugin.getLWC();
-        if ((lwc.findProtection(event.getBlock()) != null)) {
+        Protection protection = lwc.findProtection(event.getBlock());
+        if (protection != null) {
+            if (event.getEntity() instanceof Player player) {
+                if (lwc.canAdminProtection(player, protection)) {
+                    return;
+                }
+            }
             event.setCancelled(true);
             return;
         }
