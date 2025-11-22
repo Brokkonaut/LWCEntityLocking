@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -428,9 +429,12 @@ public class LWCBlockListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
+        if (Tag.COPPER_CHESTS.isTagged(block.getType()) && Tag.COPPER_CHESTS.isTagged(event.getBlockReplacedState().getType())) {
+            return;
+        }
+
         lwc.tryProtectPlacedBlockForPlayer(player, block, false);
     }
-
 
     /**
      * Load and process the configuration
