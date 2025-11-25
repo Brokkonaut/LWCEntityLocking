@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.ChiseledBookshelf;
@@ -635,6 +636,9 @@ public class LWCPlayerListener implements Listener {
                         }
                     }
                 }
+            }
+            if (protection != null && Tag.WOODEN_SHELVES.isTagged(block.getType())) {
+                canAccess = lwc.canAccessProtectionContents(player, protection);
             }
 
             // Calculate if the player has a pending action (i.e any action

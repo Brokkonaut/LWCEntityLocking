@@ -77,7 +77,17 @@ public class BlockUtil {
             case SOUTH -> (float) (relativeHitPosition.getX());
             case WEST -> (float) (relativeHitPosition.getZ());
             case EAST -> (float) (1.0D - relativeHitPosition.getZ());
-            default -> throw new IncompatibleClassChangeError();
+            default -> throw new IllegalArgumentException("direction must be cardinal");
+        };
+    }
+    
+    public static BlockFace rotateClockwise(BlockFace direction) {
+        return switch (direction) {
+            case NORTH -> BlockFace.EAST;
+            case SOUTH -> BlockFace.WEST;
+            case WEST -> BlockFace.NORTH;
+            case EAST -> BlockFace.SOUTH;
+            default -> throw new IllegalArgumentException("direction must be cardinal");
         };
     }
 }

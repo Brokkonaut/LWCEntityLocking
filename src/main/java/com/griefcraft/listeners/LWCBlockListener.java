@@ -48,6 +48,7 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.type.Shelf;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -434,6 +435,59 @@ public class LWCBlockListener implements Listener {
         }
 
         lwc.tryProtectPlacedBlockForPlayer(player, block, false);
+    }
+
+    /**
+     * Avoid connecting shelfes of different players
+     */
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBlockRedstone(BlockRedstoneEvent event) {
+        if (!LWC.ENABLED) {
+            return;
+        }
+
+        if (event.getNewCurrent() <= 0) {
+            return; // just check for power on
+        }
+        LWC lwc = plugin.getLWC();
+        Block changed = event.getBlock();
+        if (!lwc.isProtectable(changed) || !(changed.getBlockData() instanceof Shelf shelf)) {
+            return;
+        }
+
+        BlockFace selfFacing = shelf.getFacing();
+        boolean selfProtectionLookedUp = false;
+        Protection selfProtection = null;
+
+        Block otherBlock = changed.getRelative(BlockUtil.rotateClockwise(selfFacing));
+        if (otherBlock.getBlockData() instanceof Shelf other && other.isPowered() && other.getFacing() == selfFacing) {
+            if (!selfProtectionLookedUp) {
+                selfProtectionLookedUp = true;
+                selfProtection = lwc.findProtection(changed);
+            }
+            Protection otherProtection = lwc.findProtection(otherBlock);
+            if (selfProtection != null || otherProtection != null) {
+                if (selfProtection == null || otherProtection == null || !selfProtection.hasSameOwner(otherProtection)) {
+                    event.setNewCurrent(0);
+                    return;
+                }
+            }
+        }
+
+        otherBlock = changed.getRelative(BlockUtil.rotateClockwise(selfFacing).getOppositeFace());
+        if (otherBlock.getBlockData() instanceof Shelf other && other.isPowered() && other.getFacing() == selfFacing) {
+            if (!selfProtectionLookedUp) {
+                selfProtectionLookedUp = true;
+                selfProtection = lwc.findProtection(changed);
+            }
+            Protection otherProtection = lwc.findProtection(otherBlock);
+            if (selfProtection != null || otherProtection != null) {
+                if (selfProtection == null || otherProtection == null || !selfProtection.hasSameOwner(otherProtection)) {
+                    event.setNewCurrent(0);
+                    return;
+                }
+            }
+        }
     }
 
     /**
