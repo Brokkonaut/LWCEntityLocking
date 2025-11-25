@@ -78,7 +78,7 @@ public class LWCEntityListener implements Listener {
     private UUID placedArmorStandOrSpawnEggPlayer;
     private UUID placedGolemOrWitherPlayer;
 
-    private static final BlockFace[] POSSIBLE_COPPER_CHEST_LOCATIONS = new BlockFace[] { BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
+    private static final BlockFace[] POSSIBLE_COPPER_CHEST_LOCATIONS = new BlockFace[] { BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST,BlockFace.UP };
 
     public LWCEntityListener(LWCPlugin plugin) {
         this.plugin = plugin;
