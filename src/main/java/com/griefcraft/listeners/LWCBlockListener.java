@@ -415,6 +415,28 @@ public class LWCBlockListener implements Listener {
                 }
             }
         }
+        // next to a shelf may not be a powered shelf that you don't have access to ..
+        if (block.getBlockData() instanceof Shelf shelf) {
+            BlockFace selfFacing = shelf.getFacing();
+
+            Block otherBlock = block.getRelative(BlockUtil.rotateClockwise(selfFacing));
+            if (otherBlock.getBlockData() instanceof Shelf other && other.isPowered() && other.getFacing() == selfFacing) {
+                Protection otherProtection = lwc.findProtection(otherBlock);
+                if (otherProtection != null || !lwc.canAdminProtection(player, otherProtection)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            otherBlock = block.getRelative(BlockUtil.rotateClockwise(selfFacing).getOppositeFace());
+            if (otherBlock.getBlockData() instanceof Shelf other && other.isPowered() && other.getFacing() == selfFacing) {
+                Protection otherProtection = lwc.findProtection(otherBlock);
+                if (otherProtection != null || !lwc.canAdminProtection(player, otherProtection)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
     }
 
     /**
