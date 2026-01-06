@@ -65,10 +65,12 @@ public class EntityBlock implements Block {
         return new EntityBlock(entity);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<MetadataValue> getMetadata(String metadataKey) {
         return null;
@@ -375,6 +377,7 @@ public class EntityBlock implements Block {
     public void randomTick() {
     }
 
+    @SuppressWarnings("removal")
     @Override
     @Deprecated
     public BlockSoundGroup getSoundGroup() {
