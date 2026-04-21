@@ -55,6 +55,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.Event.Result;
@@ -247,7 +248,7 @@ public class LWCPlayerListener implements Listener {
         }
         // owner permission is required for damaging entities
         if (!lwc.canDestoryProtection(p, protection)) {
-            if ((e.getCause() == DamageCause.CUSTOM || e.getCause() == DamageCause.ENTITY_ATTACK) && entity instanceof ItemFrame frame) {
+            if ((e.getCause() == DamageCause.CUSTOM || e.getCause() == DamageCause.ENTITY_ATTACK) && entity instanceof ItemFrame frame && lwc.canAccessProtectionContents(p, protection)) {
                 ItemStack item = frame.getItem();
                 if (item != null && item.getType() != Material.AIR) {
                     return; // special case for ItemFrames: they call a damageevent when the contained item is removed.
@@ -309,7 +310,7 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (!lwc.canAccessProtectionContents(p, protection)) {
+        if (!opensInventoryOnInteract(p, entity) && !lwc.canAccessProtectionContents(p, protection)) {
             e.setCancelled(true);
         }
     }
@@ -329,25 +330,36 @@ public class LWCPlayerListener implements Listener {
         if (protection == null) {
             return;
         }
-        if (!lwc.canAccessProtectionContents(p, protection)) {
+        if (!opensInventoryOnInteract(p, entity) && !lwc.canAccessProtectionContents(p, protection)) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void storageMinecraftInventoryOpen(InventoryOpenEvent event) {
+    public void entityInventoryOpen(InventoryOpenEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
-        if ((!(holder instanceof StorageMinecart)) && (!(holder instanceof HopperMinecart))) {
+        if (!(event.getPlayer() instanceof Player player) || !(holder instanceof Entity entity) || entity instanceof Player) {
             return;
         }
-        Entity entity = (Entity) holder;
         LWC lwc = LWC.getInstance();
         if (!lwc.isProtectable(entity)) {
             return;
         }
-        if (onPlayerEntityInteract((Player) event.getPlayer(), entity, event.isCancelled(), true)) {
+        if (onPlayerEntityInteract(player, entity, event.isCancelled(), true)) {
             event.setCancelled(true);
         }
+    }
+
+    private boolean opensInventoryOnInteract(Player player, Entity entity) {
+        if (!(entity instanceof InventoryHolder)) {
+            return false;
+        }
+
+        if (entity instanceof StorageMinecart || entity instanceof HopperMinecart) {
+            return true;
+        }
+
+        return entity instanceof Vehicle && player.isSneaking();
     }
 
     private UUID lastEntityInteract;
@@ -365,7 +377,7 @@ public class LWCPlayerListener implements Listener {
         try {
             Set<String> actions = lwcPlayer.getActionNames();
             Module.Result result;
-            boolean canAccess = lwc.canAccessProtectionContents(player, protection);
+            boolean canAccess = protection == null || lwc.canAccessProtection(player, protection);
 
             // Calculate if the player has a pending action (i.e any action
             // besides 'interacted')
