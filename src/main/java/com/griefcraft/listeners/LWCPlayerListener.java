@@ -70,11 +70,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -765,6 +764,170 @@ public class LWCPlayerListener implements Listener {
         }
     }
 
+    private Protection resolveInventoryProtection(LWC lwc, Player player, Inventory inventory) {
+        InventoryHolder holder= inventory.getHolder();
+
+        if (holder == null) {
+            return null;
+        }
+
+        try {
+            return lwc.findProtectionByInventoryHolder(holder);
+        } catch (Exception e) {
+            Location ploc = player.getLocation();
+            lwc.log("Exception with resolving the protection for " + holder.getClass().getSimpleName() + " near "
+                    + player.getName() + " [" + ploc.getBlockX() + " " + ploc.getBlockY() + " " + ploc.getBlockZ() + "]");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean isEmpty(ItemStack item) {
+        return item == null || item.getType() == Material.AIR;
+    }
+
+    private ItemStack getCurrentItem(InventoryClickEvent event) {
+        try {
+            return event.getCurrentItem();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
+    private boolean isProtectedInventorySlot(InventoryClickEvent event, Inventory protectedInventory) {
+        return event.getRawSlot() >= 0 && event.getRawSlot() < protectedInventory.getSize();
+    }
+
+    private boolean protectedInventoryContainsSimilarItem(Inventory protectedInventory, ItemStack target) {
+        if (isEmpty(target)) {
+            return false;
+        }
+
+        for (ItemStack item : protectedInventory.getContents()) {
+            if (!isEmpty(item) && item.isSimilar(target)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean removesFromProtectedInventory(Inventory protectedInventory, InventoryClickEvent event) {
+        boolean topSlot = isProtectedInventorySlot(event, protectedInventory);
+        ItemStack current = getCurrentItem(event);
+
+        switch (event.getAction()) {
+            case NOTHING:
+            case DROP_ALL_CURSOR:
+            case DROP_ONE_CURSOR:
+            case PLACE_SOME:
+            case PLACE_ALL:
+            case PLACE_ONE:
+            case PLACE_FROM_BUNDLE:
+                return false;
+            case PICKUP_ALL:
+            case PICKUP_HALF:
+            case PICKUP_ONE:
+            case PICKUP_SOME:
+            case DROP_ALL_SLOT:
+            case DROP_ONE_SLOT:
+            case CLONE_STACK:
+            case PICKUP_FROM_BUNDLE:
+            case PICKUP_ALL_INTO_BUNDLE:
+            case PICKUP_SOME_INTO_BUNDLE:
+            case PLACE_ALL_INTO_BUNDLE:
+            case PLACE_SOME_INTO_BUNDLE:
+            case MOVE_TO_OTHER_INVENTORY:
+            case SWAP_WITH_CURSOR:
+            case HOTBAR_SWAP:
+                return topSlot && !isEmpty(current);
+            case COLLECT_TO_CURSOR:
+                return protectedInventoryContainsSimilarItem(protectedInventory, event.getCursor());           
+            default:
+                return true;
+        }
+    }
+
+    private boolean insertsIntoProtectedInventory(Player player, Inventory protectedInventory, InventoryClickEvent event) {
+        boolean topSlot = isProtectedInventorySlot(event, protectedInventory);
+        ItemStack current = getCurrentItem(event);
+        ItemStack cursor = event.getCursor();
+
+        switch (event.getAction()) {
+            case NOTHING:
+            case PICKUP_ALL:
+            case PICKUP_HALF:
+            case PICKUP_ONE:
+            case PICKUP_SOME:
+            case DROP_ALL_CURSOR:
+            case DROP_ONE_CURSOR:
+            case DROP_ALL_SLOT:
+            case DROP_ONE_SLOT:
+            case CLONE_STACK:
+            case COLLECT_TO_CURSOR:
+            case PICKUP_ALL_INTO_BUNDLE:
+            case PICKUP_SOME_INTO_BUNDLE:
+                return false;
+            case PLACE_ALL:
+            case PLACE_ONE:
+            case PLACE_SOME:
+            case PLACE_FROM_BUNDLE:
+            case SWAP_WITH_CURSOR:
+            case PLACE_ALL_INTO_BUNDLE:
+            case PLACE_SOME_INTO_BUNDLE:
+                return topSlot && !isEmpty(cursor);
+            case MOVE_TO_OTHER_INVENTORY:
+                return !topSlot && !isEmpty(current);
+            case HOTBAR_SWAP:
+            case PICKUP_FROM_BUNDLE:
+                return topSlot;
+            default:
+                return true;
+        }
+    }
+
+    private boolean touchesProtectedInventory(InventoryDragEvent event, Inventory protectedInventory) {
+        for (int rawSlot : event.getRawSlots()) {
+            if (rawSlot >= 0 && rawSlot < protectedInventory.getSize()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        LWC lwc = LWC.getInstance();
+
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        Inventory protectedInventory = event.getView().getTopInventory();
+        if (protectedInventory == null) {
+            return;
+        }
+
+        Protection protection = resolveInventoryProtection(lwc, player, protectedInventory);
+        if (protection == null) {
+            return;
+        }
+
+        if (!lwc.canAccessProtection(player, protection)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!touchesProtectedInventory(event, protectedInventory)) {
+            return;
+        }
+
+        if (!lwc.canAccessProtectionContents(player, protection) && protection.getType() != Protection.Type.DONATION) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         LWC lwc = LWC.getInstance();
@@ -776,107 +939,36 @@ public class LWCPlayerListener implements Listener {
         // Player interacting with the inventory
         Player player = (Player) event.getWhoClicked();
 
-        // The inventory they are using
-        Inventory inventory = event.getInventory();
-
-        if (inventory == null || event.getSlot() < 0) {
+        Inventory protectedInventory = event.getView().getTopInventory();
+        if (protectedInventory == null) {
             return;
         }
 
-        // Location of the container
-        Location location;
-        InventoryHolder holder = null;
-
-        try {
-            holder = event.getInventory().getHolder();
-        } catch (AbstractMethodError e) {
-            lwc.log("Caught issue with Bukkit's Inventory.getHolder() method! This is occuring NEAR the player: " + player.getName());
-            lwc.log("This player is located at: " + player.getLocation().toString());
-            lwc.log("This should be reported to the Bukkit developers.");
-            e.printStackTrace();
-            return;
-        }
-
-        try {
-            if (holder instanceof BlockState) {
-                location = ((BlockState) holder).getLocation();
-            } else if (holder instanceof DoubleChest) {
-                location = ((DoubleChest) holder).getLocation();
-            } else {
-                return;
-            }
-        } catch (Exception e) {
-            Location ploc = player.getLocation();
-            String holderName = holder != null ? holder.getClass().getSimpleName() : "Unknown Block";
-            lwc.log("Exception with getting the location of a " + holderName + " has occurred NEAR the player: " + player.getName() + " [" + ploc.getBlockX() + " " + ploc.getBlockY() + " " + ploc.getBlockZ() + "]");
-            lwc.log("The exact location of the block is not possible to obtain. This is caused by a Minecraft or Bukkit exception normally.");
-            e.printStackTrace();
-            return;
-        }
-
-        // Attempt to load the protection at that location
-        Protection protection = lwc.findProtection(location);
-
-        // If no protection was found we can safely ignore it
+        Protection protection = resolveInventoryProtection(lwc, player, protectedInventory);
         if (protection == null) {
             return;
         }
 
-        // If it's not a donation or showcase chest, ignore if
-        if (protection.getType() != Protection.Type.DONATION && protection.getType() != Protection.Type.SHOWCASE) {
+        if (!lwc.canAccessProtection(player, protection)) {
+            event.setCancelled(true);
             return;
         }
 
-        if (protection.getType() != Protection.Type.SHOWCASE && event.getAction() != InventoryAction.COLLECT_TO_CURSOR) {
-            // If it's not a container, we don't want it
-            if (event.getSlotType() != InventoryType.SlotType.CONTAINER) {
-                return;
-            }
-
-            // Nifty trick: these will different IFF they are interacting with
-            // the player's inventory or hotbar instead of the block's inventory
-            if (event.getSlot() != event.getRawSlot()) {
-                return;
-            }
-
-            // The item they are taking/swapping with
-            ItemStack item;
-
-            try {
-                item = event.getCurrentItem();
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return;
-            }
-
-            // Item their cursor has
-            ItemStack cursor = event.getCursor();
-
-            if (item == null || item.getType() == null || item.getType() == Material.AIR) {
-                return;
-            }
-
-            // if it's not a right click or a shift click it should be a left
-            // click (no shift)
-            // this is for when players are INSERTing items (i.e. item in hand
-            // and left clicking)
-            if (player.getInventory().getItemInMainHand() == null && (!event.isRightClick() && !event.isShiftClick())) {
-                return;
-            }
-
-            // Are they inserting a stack?
-            if (cursor != null && item.isSimilar(cursor)) {
-                // If they are clicking an item of the stack type, they are
-                // inserting it into the inventory, not switching it
-                return;
-            }
+        if (event.getSlot() < 0) {
+            return;
         }
 
-        // Can they use it? (remove items/etc)
-        boolean canAccessContents = lwc.canAccessProtectionContents(player, protection);
+        boolean removesItems = removesFromProtectedInventory(protectedInventory, event);
+        boolean insertsItems = insertsIntoProtectedInventory(player, protectedInventory, event);
 
-        // nope.avi
-        if (!canAccessContents) {
-            event.setCancelled(true);
+        if (!removesItems && !insertsItems) {
+            return;
+        }
+
+        if (!lwc.canAccessProtectionContents(player, protection)) {
+            if (removesItems || protection.getType() != Protection.Type.DONATION) {
+                event.setCancelled(true);
+            }
         }
     }
 }

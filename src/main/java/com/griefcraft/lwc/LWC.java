@@ -125,12 +125,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
 
@@ -1369,6 +1371,22 @@ public class LWC {
         return findProtection(block.getState());
     }
 
+    public Protection findProtectionByInventoryHolder(InventoryHolder holder) {
+        if (holder instanceof BlockState blockState) {
+            return findProtection(blockState);
+        }
+
+        if (holder instanceof DoubleChest doubleChest) {
+            return findProtection(doubleChest.getLocation());
+        }
+
+        if (holder instanceof Entity entity && isProtectable(entity)) {
+            return findProtection(entity);
+        }
+
+        return null;
+    }
+
     public Protection findProtection(BlockState block) {
         if (block instanceof EntityBlock) {
             return findProtection(((EntityBlock) block).getEntity());
@@ -1408,6 +1426,26 @@ public class LWC {
         }
 
         return found;
+    }
+
+    public void closeInventoryForUnauthorizedViewers(Protection protection) {
+        if (protection == null) {
+            return;
+        }
+
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            Inventory topInventory = player.getOpenInventory().getTopInventory();
+            InventoryHolder holder = topInventory.getHolder();
+            Protection openProtection = holder != null ? findProtectionByInventoryHolder(holder) : null;
+
+            if (isSameProtection(protection, openProtection) && !canAccessProtection(player, protection)) {
+                player.closeInventory();
+            }
+        }
+    }
+
+    private boolean isSameProtection(Protection protection, Protection other) {
+        return protection != null && other != null && protection.getId() == other.getId();
     }
 
     /**
@@ -1889,6 +1927,7 @@ public class LWC {
                     protection.setPassword(encrypt(password));
                 }
                 protection.save();
+                closeInventoryForUnauthorizedViewers(protection);
 
                 sendLocale(
                         sender,
@@ -1901,6 +1940,8 @@ public class LWC {
         } catch (IllegalArgumentException e) {
             // It's normal for this to be thrown if nothing was matched
         }
+
+        boolean accessRulesChanged = false;
 
         for (String value : arguments) {
             boolean remove = false;
@@ -1980,6 +2021,7 @@ public class LWC {
                 // add it to the protection and queue it to be saved
                 protection.addPermission(permission);
                 protection.save();
+                accessRulesChanged = true;
 
                 if (type == Permission.Type.PLAYER) {
                     sendLocale(sender, "protection.interact.rights.register."
@@ -1996,6 +2038,7 @@ public class LWC {
             } else {
                 protection.removePermissions(value, type);
                 protection.save();
+                accessRulesChanged = true;
 
                 if (type == Permission.Type.PLAYER) {
                     sendLocale(sender, "protection.interact.rights.remove."
@@ -2010,6 +2053,10 @@ public class LWC {
                                     + "]" : "");
                 }
             }
+        }
+
+        if (accessRulesChanged) {
+            closeInventoryForUnauthorizedViewers(protection);
         }
     }
 
