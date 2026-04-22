@@ -41,7 +41,13 @@ import com.griefcraft.util.locale.UTF8Control;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
@@ -64,6 +70,10 @@ public class LWCPlugin extends JavaPlugin {
      * The message parser to parse messages with
      */
     private MessageParser messageParser;
+
+    private static final List<String> MODIFY_PROTECTION_TYPES = Arrays.asList("public", "private", "password", "donation", "showcase");
+
+    private static final List<String> MODIFY_PREFIXES = Arrays.asList("p:", "g:", "t:", "town:", "item:", "r:", "region:", "@", "-");
 
     @Override
     public boolean onCommand(CommandSender sender, Command command,
@@ -199,6 +209,36 @@ public class LWCPlugin extends JavaPlugin {
         }
 
         return false;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command,
+            String commandLabel, String[] args) {
+        String commandName = command.getName().toLowerCase(Locale.ROOT);
+
+        if (commandName.equals("cmodify")) {
+            return completeModify(sender, args);
+        }
+
+        if (commandName.equals("lwc")) {
+            if (args.length == 1) {
+                if (args[0].isEmpty()) {
+                    return null;
+                }
+
+                if (!lwc.hasPlayerPermission(sender, "lwc.modify")) {
+                    return Collections.emptyList();
+                }
+
+                return filterCompletions(Arrays.asList("modify", "-m"), args[0]);
+            }
+
+            if (args.length > 1 && isModifyCommand(args[0])) {
+                return completeModify(sender, Arrays.copyOfRange(args, 1, args.length));
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -342,6 +382,95 @@ public class LWCPlugin extends JavaPlugin {
      */
     public MessageParser getMessageParser() {
         return messageParser;
+    }
+
+    private List<String> completeModify(CommandSender sender, String[] args) {
+        if (!lwc.hasPlayerPermission(sender, "lwc.modify")) {
+            return Collections.emptyList();
+        }
+
+        if (args.length > 1 && isProtectionType(args[0])) {
+            return Collections.emptyList();
+        }
+
+        String current = args.length == 0 ? "" : args[args.length - 1];
+        List<String> staticCompletions = new ArrayList<>();
+        List<String> completions = new ArrayList<>();
+
+        if (args.length <= 1) {
+            staticCompletions.addAll(MODIFY_PROTECTION_TYPES);
+            staticCompletions.add("id:");
+        }
+
+        staticCompletions.addAll(MODIFY_PREFIXES);
+        completions.addAll(staticCompletions);
+        addPlayerCompletions(completions, staticCompletions);
+
+        return filterCompletions(completions, current);
+    }
+
+    private void addPlayerCompletions(List<String> completions, List<String> staticCompletions) {
+        for (Player player : getServer().getOnlinePlayers()) {
+            String playerName = player.getName();
+
+            if (collidesWithStaticCompletion(playerName, staticCompletions)) {
+                addCompletion(completions, "p:" + playerName);
+                addCompletion(completions, "@p:" + playerName);
+                addCompletion(completions, "-p:" + playerName);
+            } else {
+                addCompletion(completions, playerName);
+                addCompletion(completions, "@" + playerName);
+                addCompletion(completions, "-" + playerName);
+            }
+        }
+    }
+
+    private void addCompletion(List<String> completions, String completion) {
+        if (completion != null && !completion.isEmpty()) {
+            completions.add(completion);
+        }
+    }
+
+    private List<String> filterCompletions(List<String> completions, String current) {
+        String normalizedCurrent = current.toLowerCase(Locale.ROOT);
+        Map<String, String> uniqueCompletions = new LinkedHashMap<>();
+
+        for (String completion : completions) {
+            String normalizedCompletion = completion.toLowerCase(Locale.ROOT);
+
+            if (normalizedCompletion.startsWith(normalizedCurrent)) {
+                uniqueCompletions.putIfAbsent(normalizedCompletion, completion);
+            }
+        }
+
+        List<String> filtered = new ArrayList<>(uniqueCompletions.values());
+        filtered.sort(String.CASE_INSENSITIVE_ORDER);
+        return filtered;
+    }
+
+    private boolean collidesWithStaticCompletion(String playerName, List<String> staticCompletions) {
+        for (String completion : staticCompletions) {
+            if (completion.equalsIgnoreCase(playerName) || completion.equalsIgnoreCase(playerName + ":")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isProtectionType(String argument) {
+        for (String protectionType : MODIFY_PROTECTION_TYPES) {
+            if (protectionType.equalsIgnoreCase(argument)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isModifyCommand(String commandName) {
+        String normalizedCommandName = commandName.toLowerCase(Locale.ROOT);
+        return normalizedCommandName.equals("modify") || StringUtil.hasFlag(normalizedCommandName, "m");
     }
 
     @Override
