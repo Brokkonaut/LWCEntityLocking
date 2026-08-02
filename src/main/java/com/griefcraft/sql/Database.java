@@ -219,6 +219,7 @@ public abstract class Database {
 
         try {
             if (connection != null) {
+                connection.rollback();
                 connection.close();
             }
         } catch (SQLException e) {
