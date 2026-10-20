@@ -41,6 +41,8 @@ import com.griefcraft.scripting.event.LWCDropItemEvent;
 import com.griefcraft.scripting.event.LWCProtectionInteractEvent;
 import com.griefcraft.util.BlockUtil;
 import com.griefcraft.util.UUIDRegistry;
+import io.papermc.paper.event.entity.EntityBreakByEntityEvent;
+import io.papermc.paper.event.entity.EntityBreakEvent;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
@@ -141,6 +143,30 @@ public class LWCPlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityBreakByEntity(EntityBreakByEntityEvent e) {
+        Entity entity = e.getEntity();
+        LWC lwc = LWC.getInstance();
+        if (!lwc.isProtectable(entity)) {
+            return;
+        }
+        Protection protection = lwc.findProtection(entity);
+        if (protection == null) {
+            return;
+        }
+        if (e.getCause() != EntityBreakEvent.RemoveCause.ENTITY || !(e.getRemover() instanceof Player)) {
+            e.setCancelled(true); // never allow non-players to damage protected entities
+            return;
+        }
+        Player p = (Player) e.getRemover();
+        // owner permission is required for removing hangings
+        if (!lwc.canDestoryProtection(p, protection)) {
+            e.setCancelled(true);
+            return;
+        }
+        protection.remove();
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityCombust(EntityCombustEvent e) {
         Entity entity = e.getEntity();
         LWC lwc = LWC.getInstance();
@@ -181,6 +207,22 @@ public class LWCPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent event) {
         if (event instanceof HangingBreakByEntityEvent) {
+            return;
+        }
+        Entity entity = event.getEntity();
+        LWC lwc = LWC.getInstance();
+        if (!lwc.isProtectable(entity)) {
+            return;
+        }
+        Protection protection = lwc.findProtection(entity);
+        if (protection != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityBreak(EntityBreakEvent event) {
+        if (event instanceof EntityBreakByEntityEvent) {
             return;
         }
         Entity entity = event.getEntity();
